@@ -1,0 +1,8 @@
+.gitignore
+Dockerfile
+__pycache__
+*.pyc
+.mypy_cache
+.coverage
+htmlcov
+.venv
