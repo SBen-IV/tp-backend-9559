@@ -1,19 +1,33 @@
+# For development, hot reloads as code is changed
 watch:
 	docker compose watch
 
+# Run without building (unless never built)
 up:
 	docker compose up
 
+# Build the images
 build:
 	docker compose build
 
+# Stop and remove containers
 down:
 	docker compose down
 
+# Force building images and run
 run: build up
 
+# To see logs of containers, useful when using `watch` as it
+# doesn't provide logs
 logs:
 	docker compose logs -f
 
+# Enter the backend container to run migrations
 enter_backend:
 	docker compose exec 9559-backend bash
+
+# Remove the volume attached to the database
+# It will remove ALL TABLES which will have to be re-created with
+# migrations
+reset_db:
+	docker volume rm backend_9559-db-itil

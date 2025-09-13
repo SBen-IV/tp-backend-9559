@@ -5,6 +5,7 @@
 - [uv](https://github.com/astral-sh/uv)
 - `python`
 - [docker](https://docs.docker.com/engine/install/) with `docker compose`
+- Optional: `make` (to use Makefile to run docker commands)
 
 # Technologies
 
@@ -14,18 +15,79 @@
 
 # Development
 
+## Hot reloading
+
 Run the following command to develop with hot-reloading (every change made to the code will automatically be reloaded in the container):
 
-```
+```sh
 docker compose watch
 ```
 
-or use `make`
+or use
 
-```
+```sh
 make watch
+```
+
+## Run containers
+
+To run without hot-reloading use
+
+```sh
+make up
+```
+
+or to force build images and then run use
+
+```sh
+make run
+```
+
+## Migrations
+
+In order to populate the database it is necessary to run migrations. The steps are the following:
+
+1. Create the model under `app/models` with all its attributes.
+2. Run
+
+```sh
+make enter_backend
+```
+
+to enter the backend container.\
+
+3. Once inside, run
+
+```sh
+alembic revision --autogenerate -m "{message}"
+```
+
+where `{message}` is the revision message, like "create user table" or "add column name to user table".
+It will generate a file in `app/alembic/versions/` with the revision message and some random characters.\
+
+4. Check in the file that the table is correctly setup.
+5. Inside the container you can run
+
+```sh
+alembic upgrade head
+```
+
+to apply the changes.
+
+6. If you want to revert the changes you can use
+
+```sh
+alembic downgrade -1
+```
+
+or you can stop the containers, remove the volume and apply all migrations again (which shouldn't take too long):
+
+```sh
+make down # Stop the containers
+make reset_db # Remove volume
+make run # or `make up`, in any case it will run the migrations automatically
 ```
 
 # API
 
-The app will be running on `localhost:8000`. To use OpenAPI (which provides an interface to interact with the API) use `localhost:8000/docs`
+The app will be running on `localhost:8000`. To use Swagger UI (which provides an interface to interact with the API) use `localhost:8000/docs`
