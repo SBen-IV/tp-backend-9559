@@ -1,21 +1,23 @@
 # 9559 TP Backend
 
-# Requirements
+ITIL
+
+## Requirements
 
 - [uv](https://github.com/astral-sh/uv)
 - `python`
 - [docker](https://docs.docker.com/engine/install/) with `docker compose`
 - Optional: `make` (to use Makefile to run docker commands)
 
-# Technologies
+## Technologies
 
 - Database: PostgreSQL
 - Backend: Python with [FastAPI](https://fastapi.tiangolo.com/)
 - Migrations: Alembic
 
-# Development
+## Development
 
-## Hot reloading
+### Hot reloading
 
 Run the following command to develop with hot-reloading (every change made to the code will automatically be reloaded in the container):
 
@@ -29,7 +31,7 @@ or use
 make watch
 ```
 
-## Run containers
+### Run containers
 
 To run without hot-reloading use
 
@@ -43,7 +45,7 @@ or to force build images and then run use
 make run
 ```
 
-## Migrations
+### Migrations
 
 In order to populate the database it is necessary to run migrations. The steps are the following:
 
@@ -88,6 +90,14 @@ make reset_db # Remove volume
 make run # or `make up`, in any case it will run the migrations automatically
 ```
 
-# API
+## API
 
-The app will be running on `localhost:8000`. To use Swagger UI (which provides an interface to interact with the API) use `localhost:8000/docs`
+The app will be running on `localhost:8000`.
+
+To use Swagger UI (which provides an interface to interact with the API) use `localhost:8000/docs`.
+
+## References
+
+- [FastAPI template](https://github.com/fastapi/full-stack-fastapi-template)
+- [Alembic](https://alembic.sqlalchemy.org/en/latest/)
+- [SQLModel](https://sqlmodel.tiangolo.com/)
