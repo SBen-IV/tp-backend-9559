@@ -21,6 +21,7 @@ if config.config_file_name is not None:
 
 from sqlmodel import SQLModel
 from app.utils.config import settings # noqa
+from app.models.app_version import AppVersion
 
 target_metadata = SQLModel.metadata
 
