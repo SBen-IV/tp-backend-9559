@@ -54,7 +54,7 @@ In order to populate the database it is necessary to run migrations. The steps a
 make enter_backend
 ```
 
-to enter the backend container.\
+to enter the backend container.
 
 3. Once inside, run
 
@@ -63,7 +63,7 @@ alembic revision --autogenerate -m "{message}"
 ```
 
 where `{message}` is the revision message, like "create user table" or "add column name to user table".
-It will generate a file in `app/alembic/versions/` with the revision message and some random characters.\
+It will generate a file in `app/alembic/versions/` with the revision message and some random characters.
 
 4. Check in the file that the table is correctly setup.
 5. Inside the container you can run
