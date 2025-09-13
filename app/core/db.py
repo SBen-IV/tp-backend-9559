@@ -1,12 +1,21 @@
-from sqlmodel import Session, create_engine
+import os
 
+import sqlalchemy as sa
+from sqlmodel import Session, create_engine, select
+
+from app.models.app_version import AppVersion
 from app.utils.config import settings
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
+def set_version(session: Session, version: str) -> None:
+    new_version = AppVersion(version=version)
+    session.add(new_version)
+    session.commit()
+
+
 def init_db(session: Session) -> None:
-    pass
     # Tables should be created with Alembic migrations
     # But if you don't want to use migrations, create
     # the tables un-commenting the next lines
@@ -15,13 +24,18 @@ def init_db(session: Session) -> None:
     # This works because the models are already imported and registered from app.models
     # SQLModel.metadata.create_all(engine)
 
-    # user = session.exec(
-    #     select(User).where(User.email == settings.FIRST_SUPERUSER)
-    # ).first()
-    # if not user:
-    #     user_in = UserCreate(
-    #         email=settings.FIRST_SUPERUSER,
-    #         password=settings.FIRST_SUPERUSER_PASSWORD,
-    #         is_superuser=True,
-    #     )
-    #     user = crud.create_user(session=session, user_create=user_in)
+    # Check that the table exists in case its the first time running and there is no migration for AppVersion yet
+    insp = sa.inspect(engine)
+
+    if not insp.has_table("appversion"):
+        return
+
+    # Get version and update
+    version = session.exec(select(AppVersion)).first()
+    env_version = os.getenv("VERSION", "0.1.0")
+
+    if not version:
+        set_version(session, env_version)
+    elif version.version < env_version:
+        session.delete(version)
+        set_version(session, env_version)
