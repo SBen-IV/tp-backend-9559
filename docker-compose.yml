@@ -1,7 +1,7 @@
 services:
   9559-db:
     container_name: 9559-db
-    image: postgres:17
+    image: postgres:17-alpine3.22
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -20,8 +20,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB?Variable not set}
 
   9559-prestart:
-    container_name: 9559-prestart
-    image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
+    container_name: 9559-backend-prestart
+    image: "${DOCKER_IMAGE_BACKEND?Variable not set}-prestart:${TAG-latest}"
     build:
       context: .
     networks:

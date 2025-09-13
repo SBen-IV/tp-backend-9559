@@ -9,8 +9,8 @@ from app.core.db import engine
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-max_tries = 60 * 5  # 5 minutes
-wait_seconds = 1
+max_tries = 60 * 1  # 1 minute
+wait_seconds = 2
 
 
 @retry(
