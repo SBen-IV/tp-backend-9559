@@ -2,6 +2,8 @@ FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1
 
+RUN useradd -ms /bin/bash app
+
 WORKDIR /app/
 
 # Install uv
@@ -39,5 +41,7 @@ COPY ./app /app/app
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
+
+USER app
 
 CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
