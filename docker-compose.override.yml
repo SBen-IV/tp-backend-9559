@@ -23,8 +23,10 @@ services:
           target: /app
           ignore:
             - .venv
+            - ./app/alembic/versions
         - path: ./pyproject.toml
           action: rebuild
     # TODO: remove once coverage is done locally
     volumes:
       - ./htmlcov:/app/htmlcov
+      - ./app/alembic/versions:/app/app/alembic/versions
