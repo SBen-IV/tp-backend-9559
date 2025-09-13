@@ -1,5 +1,6 @@
 services:
   9559-db:
+    container_name: 9559-db
     image: postgres:17
     restart: always
     healthcheck:
@@ -18,7 +19,30 @@ services:
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
       - POSTGRES_DB=${POSTGRES_DB?Variable not set}
 
+  9559-prestart:
+    container_name: 9559-prestart
+    image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
+    build:
+      context: .
+    networks:
+      - default
+    depends_on:
+      9559-db:
+        condition: service_healthy
+        restart: true
+    command: bash scripts/prestart.sh
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_SERVER=${POSTGRES_SERVER}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      # - TESTING=${TESTING}
+
   9559-backend:
+    container_name: 9559-backend
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     restart: always
     networks:
@@ -27,6 +51,8 @@ services:
       9559-db:
         condition: service_healthy
         restart: true
+      9559-prestart:
+        condition: service_completed_successfully
     env_file:
       - .env
     environment:

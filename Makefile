@@ -1,0 +1,2 @@
+watch:
+	docker compose watch
