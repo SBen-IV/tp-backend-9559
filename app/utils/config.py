@@ -1,9 +1,11 @@
 import os
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import AnyUrl, BeforeValidator, PostgresDsn, computed_field
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from app.models.app_version import AppVersion
 
 
 def parse_cors(v: Any) -> list[str] | str:
@@ -23,6 +25,8 @@ class Settings(BaseSettings):
 
     FRONTEND_HOST: str = "http://localhost:5173"
     API_V1_STR: str = "/api/v1"
+
+    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
@@ -44,19 +48,21 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
-        host = self.POSTGRES_SERVER
-
-        if os.environ.get("REVISION_DB", False):
-            host = "localhost"
-
         return MultiHostUrl.build(
             scheme="postgresql+psycopg",
             username=self.POSTGRES_USER,
             password=self.POSTGRES_PASSWORD,
-            host=host,
+            host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
         )
+
+    @computed_field
+    @property
+    def APP_VERSION(self) -> AppVersion:
+        version = f"{os.getenv('VERSION', '0.1.0')}-{self.ENVIRONMENT}"
+
+        return AppVersion(version=version)
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     SECRET_KEY: str = "secret"  # secrets.token_urlsafe(32)

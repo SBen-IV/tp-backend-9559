@@ -1,5 +1,3 @@
-import os
-
 import sqlalchemy as sa
 from sqlmodel import Session, create_engine, select
 
@@ -9,9 +7,8 @@ from app.utils.config import settings
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
-def set_version(session: Session, version: str) -> None:
-    new_version = AppVersion(version=version)
-    session.add(new_version)
+def set_version(session: Session, version: AppVersion) -> None:
+    session.add(version)
     session.commit()
 
 
@@ -32,10 +29,10 @@ def init_db(session: Session) -> None:
 
     # Get version and update
     version = session.exec(select(AppVersion)).first()
-    env_version = os.getenv("VERSION", "0.1.0")
+    env_version = settings.APP_VERSION
 
     if not version:
         set_version(session, env_version)
-    elif version.version < env_version:
+    elif version.version < env_version.version:
         session.delete(version)
         set_version(session, env_version)
