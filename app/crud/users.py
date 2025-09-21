@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
 
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, verify_password
 from app.models.users import Usuario, UsuarioRegistrar
 
 
@@ -24,3 +24,11 @@ class UsuariosService:
     def get_user_by_email(*, session: Session, email: str) -> Usuario | None:
         query = select(Usuario).where(Usuario.email == email)
         return session.exec(query).first()
+
+    def authenticate(*, session: Session, email: str, password: str) -> Usuario | None:
+        db_user = UsuariosService.get_user_by_email(session=session, email=email)
+        if not db_user:
+            return None
+        if not verify_password(password, db_user.contraseña_hasheada):
+            return None
+        return db_user
