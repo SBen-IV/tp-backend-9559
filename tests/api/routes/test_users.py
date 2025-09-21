@@ -36,3 +36,22 @@ def test_create_new_user(client: TestClient, session: Session) -> None:
     assert usuario_db.nombre == nombre
     assert usuario_db.apellido == apellido
     assert verify_password(contraseña, usuario_db.contraseña_hasheada)
+
+
+def test_create_user_same_email_fails(client: TestClient, session: Session) -> None:
+    nombre = "Bob II"
+    apellido = "Biby"
+    email = "bob@company.com"
+    contraseña = "12345bobby"
+
+    data = {
+        "nombre": nombre,
+        "apellido": apellido,
+        "email": email,
+        "contraseña": contraseña,
+    }
+
+    r = client.post(f"{BASE_URL}/signup", json=data)
+
+    assert 400 <= r.status_code < 500
+    assert r.json()["detail"] == "Ya existe un usuario con ese email"
