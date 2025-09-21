@@ -1,7 +1,9 @@
 import sqlalchemy as sa
 from sqlmodel import Session, create_engine, select
 
+from app.crud.users import UsuariosService
 from app.models.app_version import AppVersion
+from app.models.users import UsuarioRegistrar
 from app.utils.config import settings
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
@@ -10,6 +12,17 @@ engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 def set_version(session: Session, version: AppVersion) -> None:
     session.add(version)
     session.commit()
+
+
+def add_test_data(session: Session) -> None:
+    usuario = UsuarioRegistrar(
+        nombre="Alice",
+        apellido="Smith",
+        email="alice@company.com",
+        rol="EMPLEADO",
+        contraseña="12345678",
+    )
+    UsuariosService.create_user(session=session, usuario_registrar=usuario)
 
 
 def init_db(session: Session) -> None:
@@ -36,3 +49,5 @@ def init_db(session: Session) -> None:
     elif version.version < env_version.version:
         session.delete(version)
         set_version(session, env_version)
+
+    add_test_data(session)
