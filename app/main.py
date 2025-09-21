@@ -16,6 +16,7 @@ app = FastAPI(
     generate_unique_id_function=custom_generate_unique_id,
 )
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.all_cors_origins,

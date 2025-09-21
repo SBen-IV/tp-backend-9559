@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.api.deps import SessionDep
-from app.crud.users import UsuarioService as crud
+from app.crud.users import UsuariosService as crud
 from app.models.users import UsuarioPublico, UsuarioRegistrar
 
 router = APIRouter(prefix="/users")
@@ -18,5 +18,8 @@ async def register_user(
             status_code=400, detail="Ya existe un usuario con ese email"
         )
 
-    usuario = crud.create_user(session=session, usuario_registrar=usuario_registrar)
+    usuario = crud.create_user(
+        session=session,
+        usuario_registrar=UsuarioRegistrar.model_validate(usuario_registrar),
+    )
     return usuario

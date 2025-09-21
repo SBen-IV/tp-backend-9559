@@ -4,7 +4,7 @@ from app.core.security import get_password_hash
 from app.models.users import Usuario, UsuarioRegistrar
 
 
-class UsuarioService:
+class UsuariosService:
     def create_user(
         *, session: Session, usuario_registrar: UsuarioRegistrar
     ) -> Usuario:
