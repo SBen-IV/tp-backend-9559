@@ -26,6 +26,10 @@ logs:
 enter_backend:
 	docker compose exec 9559-backend bash
 
+# Enter db, once inside you can make SQL queries as usual
+enter_db:
+	docker compose exec 9559-db psql itil -U postgres
+
 # Remove the volume attached to the database
 # It will remove ALL TABLES which will have to be re-created with
 # migrations
