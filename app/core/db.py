@@ -2,8 +2,9 @@ import sqlalchemy as sa
 from sqlmodel import Session, create_engine, select
 
 from app.crud.users import UsuariosService
+from app.db_seed import seed_usuarios
 from app.models.app_version import AppVersion
-from app.models.users import UsuarioRegistrar
+from app.models.users import Usuario
 from app.utils.config import settings
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
@@ -14,15 +15,21 @@ def set_version(session: Session, version: AppVersion) -> None:
     session.commit()
 
 
-def add_test_data(session: Session) -> None:
-    usuario = UsuarioRegistrar(
-        nombre="Alice",
-        apellido="Smith",
-        email="alice@company.com",
-        rol="EMPLEADO",
-        contraseña="12345678",
-    )
-    UsuariosService.create_user(session=session, usuario_registrar=usuario)
+def populate_db(session: Session) -> None:
+    usuarios = [usuario.email for usuario in session.exec(select(Usuario)).all()]
+
+    for usuario in seed_usuarios:
+        if usuario.email not in usuarios:
+            UsuariosService.create_user(session=session, usuario_registrar=usuario)
+
+    # usuario = UsuarioRegistrar(
+    #     nombre="Alice",
+    #     apellido="Smith",
+    #     email="alice@company.com",
+    #     rol="EMPLEADO",
+    #     contraseña="12345678",
+    # )
+    # UsuariosService.create_user(session=session, usuario_registrar=usuario)
 
 
 def init_db(session: Session) -> None:
@@ -50,4 +57,4 @@ def init_db(session: Session) -> None:
         session.delete(version)
         set_version(session, env_version)
 
-    add_test_data(session)
+    populate_db(session)
