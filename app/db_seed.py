@@ -1,6 +1,6 @@
 import os
 
-from app.models.users import UsuarioRegistrar
+from app.models.users import Rol, UsuarioRegistrar
 
 seed_usuarios = []
 
@@ -11,7 +11,7 @@ if os.getenv("TESTS", None):
             nombre="Alice",
             apellido="Smith",
             email="alice@company.com",
-            rol="EMPLEADO",
+            rol=Rol.EMPLEADO,
             contraseña="12345678",
         )
     ]

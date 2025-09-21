@@ -22,15 +22,6 @@ def populate_db(session: Session) -> None:
         if usuario.email not in usuarios:
             UsuariosService.create_user(session=session, usuario_registrar=usuario)
 
-    # usuario = UsuarioRegistrar(
-    #     nombre="Alice",
-    #     apellido="Smith",
-    #     email="alice@company.com",
-    #     rol="EMPLEADO",
-    #     contraseña="12345678",
-    # )
-    # UsuariosService.create_user(session=session, usuario_registrar=usuario)
-
 
 def init_db(session: Session) -> None:
     # Tables should be created with Alembic migrations
