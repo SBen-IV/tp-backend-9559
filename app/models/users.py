@@ -1,13 +1,20 @@
 import uuid
+from enum import Enum
 
 from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
 
 
+class Rol(str, Enum):
+    EMPLEADO = "EMPLEADO"
+    CLIENTE = "CLIENTE"
+
+
 class UsuarioBase(SQLModel):
     nombre: str = Field(max_length=255)
     apellido: str = Field(max_length=255)
-    email: EmailStr = Field(unique=True, max_length=255)
+    email: EmailStr = Field(unique=True, max_length=255, index=True)
+    rol: Rol
 
 
 class UsuarioRegistrar(UsuarioBase):

@@ -15,12 +15,14 @@ def test_create_new_user(client: TestClient, session: Session) -> None:
     apellido = "Bib"
     email = "bob@company.com"
     contraseña = "bobby12345"
+    rol = "EMPLEADO"
 
     data = {
         "nombre": nombre,
         "apellido": apellido,
         "email": email,
         "contraseña": contraseña,
+        "rol": rol,
     }
 
     r = client.post(f"{BASE_URL}/signup", json=data)
@@ -31,12 +33,14 @@ def test_create_new_user(client: TestClient, session: Session) -> None:
     assert usuario["nombre"] == nombre
     assert usuario["apellido"] == apellido
     assert usuario["email"] == email
+    assert usuario["rol"] == rol
 
     usuario_query = select(Usuario).where(Usuario.email == email)
     usuario_db: Usuario = session.exec(usuario_query).first()
     assert usuario_db
     assert usuario_db.nombre == nombre
     assert usuario_db.apellido == apellido
+    assert usuario_db.rol == rol
     assert verify_password(contraseña, usuario_db.contraseña_hasheada)
 
 
@@ -45,12 +49,14 @@ def test_create_user_same_email_fails(client: TestClient, session: Session) -> N
     apellido = "Biby"
     email = "bob@company.com"
     contraseña = "12345bobby"
+    rol = "EMPLEADO"
 
     data = {
         "nombre": nombre,
         "apellido": apellido,
         "email": email,
         "contraseña": contraseña,
+        "rol": rol,
     }
 
     r = client.post(f"{BASE_URL}/signup", json=data)
@@ -66,12 +72,14 @@ def test_create_user_validate_password_too_short(
     apellido = "Boy"
     email = "bobjr@company.com"
     contraseña = "12345"
+    rol = "EMPLEADO"
 
     data = {
         "nombre": nombre,
         "apellido": apellido,
         "email": email,
         "contraseña": contraseña,
+        "rol": rol,
     }
 
     r = client.post(f"{BASE_URL}/signup", json=data)
@@ -90,12 +98,14 @@ def test_create_user_validate_password_too_long(
     apellido = "Boy"
     email = "bobjr@company.com"
     contraseña = "1231231231231231231231231231231231231231231"
+    rol = "EMPLEADO"
 
     data = {
         "nombre": nombre,
         "apellido": apellido,
         "email": email,
         "contraseña": contraseña,
+        "rol": rol,
     }
 
     r = client.post(f"{BASE_URL}/signup", json=data)
