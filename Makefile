@@ -42,4 +42,4 @@ pytest:
 
 # Run tests with coverage, 9559-backend service must be up with `watch` or `up`
 coverage:
-	docker compose exec 9559-backend bash scripts/tests-start.sh
+	docker compose exec --env TESTS=1 9559-backend bash scripts/tests-start.sh
