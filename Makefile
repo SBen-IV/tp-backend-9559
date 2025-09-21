@@ -31,3 +31,11 @@ enter_backend:
 # migrations
 reset_db:
 	docker volume rm backend_9559-db-itil
+
+# Run only tests, 9559-backend service must be up with `watch` or `up`
+pytest:
+	docker compose exec 9559-backend pytest
+
+# Run tests with coverage, 9559-backend service must be up with `watch` or `up`
+coverage:
+	docker compose exec 9559-backend bash scripts/tests-start.sh
