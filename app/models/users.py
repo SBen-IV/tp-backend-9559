@@ -29,3 +29,8 @@ class Usuario(UsuarioBase, table=True):
     __tablename__: str = "usuarios"
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
     contraseña_hasheada: str
+
+
+class UsuarioLogin(SQLModel):
+    email: EmailStr
+    contraseña: str
