@@ -85,10 +85,10 @@ def test_create_user_validate_password_too_short(
     r = client.post(f"{BASE_URL}/signup", json=data)
 
     assert 400 <= r.status_code < 500
-    detail = r.json()["detail"][0]
-    assert detail
-    assert detail["type"] == "string_too_short"
-    assert any(loc == "contraseña" for loc in detail["loc"])
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at least 8 characters"
+    assert details['field'] == "contraseña"
 
 
 def test_create_user_validate_password_too_long(
@@ -111,7 +111,7 @@ def test_create_user_validate_password_too_long(
     r = client.post(f"{BASE_URL}/signup", json=data)
 
     assert 400 <= r.status_code < 500
-    detail = r.json()["detail"][0]
-    assert detail
-    assert detail["type"] == "string_too_long"
-    assert any(loc == "contraseña" for loc in detail["loc"])
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at most 40 characters"
+    assert details['field'] == "contraseña"
