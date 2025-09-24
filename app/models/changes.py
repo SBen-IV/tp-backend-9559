@@ -12,19 +12,17 @@ class Prioridad(str, Enum):
 
 
 class CambioBase(SQLModel):
-    pass
+    titulo: str
+    descripcion: str
+    prioridad: Prioridad
 
 
 class CambioCrear(CambioBase):
-    titulo: str
-    descripcion: str
-    prioridad: Prioridad
+    pass
 
 
 class CambioPublico(CambioBase):
-    titulo: str
-    descripcion: str
-    prioridad: Prioridad
+    pass
 
 
 class Cambio(CambioBase, table=True):
