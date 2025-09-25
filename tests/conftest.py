@@ -16,6 +16,8 @@ def session_fixture() -> Generator[Session, None, None]:
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
+    # This creates all models for tests even if there is no version/revision created
+    # for a particular class
     SQLModel.metadata.create_all(engine)
 
     with Session(engine) as session:
@@ -35,6 +37,6 @@ def client_fixture(session: Session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module", name="empleado_token_headers")
 def empleado_token_headers(client: TestClient) -> dict[str, str]:
     return get_empleado_token_headers(client)

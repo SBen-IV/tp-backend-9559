@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, SessionDep
+from app.crud.changes import CambiosService as crud
 from app.models.changes import CambioCrear, CambioPublico
 
 router = APIRouter(prefix="/changes")
@@ -8,10 +9,12 @@ router = APIRouter(prefix="/changes")
 
 @router.post("/", response_model=CambioPublico)
 async def create_change(
-    session: SessionDep, current_user: CurrentUser, cambio_crear: CambioCrear
+    session: SessionDep, current_user: CurrentUser, cambio_in: CambioCrear
 ) -> CambioPublico:
-    return CambioPublico(
-        titulo=cambio_crear.titulo,
-        descripcion=cambio_crear.descripcion,
-        prioridad=cambio_crear.prioridad,
+    cambio_crear = CambioCrear.model_validate(
+        cambio_in, update={"owner_id": current_user.id}
     )
+
+    cambio = crud.create_cambio(session=session, cambio_crear=cambio_crear)
+
+    return cambio

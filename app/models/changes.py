@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from enum import Enum
 
 from sqlmodel import Field, SQLModel
@@ -11,18 +12,32 @@ class Prioridad(str, Enum):
     URGENTE = "URGENTE"
 
 
+class EstadoCambio(str, Enum):
+    RECIBIDO = "RECIBIDO"
+    ACEPTADO = "ACEPTADO"
+    RECHAZADO = "RECHAZADO"
+    EN_PROGRESO = "EN_PROGRESO"
+    CERRADO = "CERRADO"
+
+
 class CambioBase(SQLModel):
-    titulo: str
-    descripcion: str
+    titulo: str = Field(min_length=1, max_length=255)
+    descripcion: str = Field(min_length=1)
     prioridad: Prioridad
+    estado: EstadoCambio = Field(default=EstadoCambio.RECIBIDO)
+    fecha_creacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    owner_id: None | uuid.UUID = Field(foreign_key="usuarios.id")
 
 
-class CambioCrear(CambioBase):
-    pass
+class CambioCrear(SQLModel):
+    titulo: str = Field(min_length=1, max_length=255)
+    descripcion: str = Field(min_length=1)
+    prioridad: Prioridad
+    owner_id: None | uuid.UUID = Field(default=None)
 
 
 class CambioPublico(CambioBase):
-    pass
+    id: uuid.UUID
 
 
 class Cambio(CambioBase, table=True):

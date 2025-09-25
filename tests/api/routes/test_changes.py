@@ -1,11 +1,11 @@
+# ruff: noqa: ARG001
+from datetime import datetime, timezone
+
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
+from sqlmodel import Session
 
-from app.core.security import verify_password
-from app.models.changes import Cambio, Prioridad
+from app.models.changes import EstadoCambio, Prioridad
 from app.utils.config import settings
-
-# ruff: noqa
 
 BASE_URL = f"{settings.API_V1_STR}/changes"
 
@@ -17,13 +17,22 @@ def test_create_new_cambio(
     descripcion = "Change old 2 cores CPU to brand new 32 cores CPU"
     prioridad = Prioridad.URGENTE
 
+    now = datetime.now(timezone.utc)
+
     data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
 
     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
 
     assert 200 <= r.status_code < 300
+
     cambio = r.json()
+
     assert cambio
     assert cambio["titulo"] == titulo
     assert cambio["descripcion"] == descripcion
     assert cambio["prioridad"] == prioridad
+    assert cambio["fecha_creacion"] > str(now)
+    assert cambio["estado"] == EstadoCambio.RECIBIDO
+    # Just check that `owner_id` is present, maybe if a get user
+    # is implemented we can check if it's equal
+    assert cambio["owner_id"]

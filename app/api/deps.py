@@ -1,3 +1,4 @@
+import uuid
 from collections.abc import Generator
 from typing import Annotated
 
@@ -6,7 +7,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.core import security
 from app.core.db import engine
@@ -40,12 +41,12 @@ def get_current_user(session: SessionDep, token: TokenDep) -> Usuario:
             detail="No se pudo validar las credenciales",
         )
 
-    user = session.exec(select(Usuario).where(Usuario.id == token_data.sub.encode()))
+    usuario = session.get(Usuario, uuid.UUID(token_data.sub))
 
-    if not user:
+    if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    return user
+    return usuario
 
 
 CurrentUser = Annotated[Usuario, Depends(get_current_user)]
