@@ -36,3 +36,69 @@ def test_create_new_cambio(
     # Just check that `owner_id` is present, maybe if a get user
     # is implemented we can check if it's equal
     assert cambio["owner_id"]
+
+
+def test_create_cambio_with_empty_title_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'cambio' with empty 'titulo'
+    titulo = ""
+    descripcion = "Change old 2 cores CPU to brand new 32 cores CPU"
+    prioridad = Prioridad.URGENTE
+
+    data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
+
+    # When user tries to create a 'cambio'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at least 1 character"
+    assert details["field"] == "titulo"
+
+
+def test_create_cambio_with_titulo_too_long_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'cambio' with too long 'titulo' (256 characters)
+    titulo = "This is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is"
+    descripcion = "Change old 2 cores CPU to brand new 32 cores CPU"
+    prioridad = Prioridad.URGENTE
+
+    data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
+
+    # When user tries to create a 'cambio'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at most 255 characters"
+    assert details["field"] == "titulo"
+
+
+def test_create_cambio_with_empty_description_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'cambio' with empty 'descripcion'
+    titulo = "Windows update"
+    descripcion = ""
+    prioridad = Prioridad.URGENTE
+
+    data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
+
+    # When user tries to create a 'cambio'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at least 1 character"
+    assert details["field"] == "descripcion"
