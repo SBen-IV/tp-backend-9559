@@ -1,7 +1,7 @@
+# ruff: noqa: ARG001
 from fastapi.testclient import TestClient
-from app.utils.config import settings
 
-# ruff: noqa
+from app.utils.config import settings
 
 BASE_URL = f"{settings.API_V1_STR}/login"
 

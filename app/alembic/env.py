@@ -23,6 +23,7 @@ from sqlmodel import SQLModel
 from app.utils.config import settings # noqa
 from app.models.app_version import AppVersion 
 from app.models.users import Usuario
+from app.models.changes import Cambio
 
 target_metadata = SQLModel.metadata
 

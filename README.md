@@ -68,6 +68,7 @@ to enter the backend container.
 
 ```sh
 alembic revision --autogenerate -m "{message}"
+# Alternatively there is a script `add-revision.sh` that only requires the message as argument, in case you forget the command
 ```
 
 where `{message}` is the revision message, like "create user table" or "add column name to user table".

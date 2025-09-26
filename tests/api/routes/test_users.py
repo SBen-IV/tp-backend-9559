@@ -1,11 +1,10 @@
+# ruff: noqa: ARG001
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 from app.core.security import verify_password
 from app.models.users import Usuario
 from app.utils.config import settings
-
-# ruff: noqa
 
 BASE_URL = f"{settings.API_V1_STR}/users"
 
@@ -88,7 +87,7 @@ def test_create_user_validate_password_too_short(
     details = r.json()["details"][0]
     assert details
     assert details["message"] == "String should have at least 8 characters"
-    assert details['field'] == "contraseña"
+    assert details["field"] == "contraseña"
 
 
 def test_create_user_validate_password_too_long(
@@ -114,4 +113,4 @@ def test_create_user_validate_password_too_long(
     details = r.json()["details"][0]
     assert details
     assert details["message"] == "String should have at most 40 characters"
-    assert details['field'] == "contraseña"
+    assert details["field"] == "contraseña"
