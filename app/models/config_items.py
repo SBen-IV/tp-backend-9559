@@ -22,19 +22,19 @@ class EstadoItem(str, Enum):
 
 
 class ItemConfiguracionBase(SQLModel):
-    nombre: str = Field(min_length=1)
+    nombre: str = Field(min_length=1, max_length=255)
     descripcion: str = Field(min_length=1)
-    version: str
-    estado: EstadoItem = Field(default=EstadoItem.PLANEADO)
+    version: str = Field(min_length=1)
     categoria: CategoriaItem
-    fecha_creacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     owner_id: None | uuid.UUID = Field(foreign_key="usuarios.id")
+    estado: EstadoItem = Field(default=EstadoItem.PLANEADO)
+    fecha_creacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class ItemConfiguracionCrear(SQLModel):
-    nombre: str = Field(min_length=1)
+    nombre: str = Field(min_length=1, max_length=255)
     descripcion: str = Field(min_length=1)
-    version: str
+    version: str = Field(min_length=1)
     categoria: CategoriaItem
     owner_id: None | uuid.UUID = Field(default=None)
 

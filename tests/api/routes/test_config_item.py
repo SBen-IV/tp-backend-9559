@@ -44,3 +44,146 @@ def test_create_new_config_item(
     # Just check that `owner_id` is present, maybe if a get user
     # is implemented we can check if it's equal
     assert item_configuracion["owner_id"]
+
+
+def test_create_item_configuracion_with_empty_nombre_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'item configuracion' with empty 'nombre'
+    nombre = ""
+    descripcion = "Sistema operativo"
+    categoria = CategoriaItem.SOFTWARE
+    version = "1H25"
+
+    data = {
+        "nombre": nombre,
+        "descripcion": descripcion,
+        "categoria": categoria,
+        "version": version,
+    }
+
+    # When user tries to create a 'item configuracion'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at least 1 character"
+    assert details["field"] == "nombre"
+
+
+def test_create_item_configuracion_with_nombre_too_long_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'item configuracion' with too long 'nombre' (256 characters)
+    nombre = "This is a very long nombreThis is a very long nombreThis is a very long nombreThis is a very long nombreThis is a very long nombreThis is a very long nombreThis is a very long nombreThis is a very long nombreThis is a very long nombreThis is a very long no"
+    descripcion = "Sistema operativo"
+    categoria = CategoriaItem.SOFTWARE
+    version = "1H25"
+
+    data = {
+        "nombre": nombre,
+        "descripcion": descripcion,
+        "categoria": categoria,
+        "version": version,
+    }
+
+    # When user tries to create a 'item configuracion'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at most 255 characters"
+    assert details["field"] == "nombre"
+
+
+def test_create_item_configuracion_with_empty_description_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'item configuracion' with empty 'descripcion'
+    nombre = "Windows 10"
+    descripcion = ""
+    categoria = CategoriaItem.SOFTWARE
+    version = "1H25"
+
+    data = {
+        "nombre": nombre,
+        "descripcion": descripcion,
+        "categoria": categoria,
+        "version": version,
+    }
+
+    # When user tries to create a 'item configuracion'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at least 1 character"
+    assert details["field"] == "descripcion"
+
+
+def test_create_item_configuracion_with_empty_version_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'item configuracion' with empty 'version'
+    nombre = "Windows 10"
+    descripcion = "Sistema operativo"
+    categoria = CategoriaItem.SOFTWARE
+    version = ""
+
+    data = {
+        "nombre": nombre,
+        "descripcion": descripcion,
+        "categoria": categoria,
+        "version": version,
+    }
+
+    # When user tries to create a 'item configuracion'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at least 1 character"
+    assert details["field"] == "version"
+
+
+def test_create_item_configuracion_with_empty_categoria_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'item configuracion' with empty 'categoria'
+    nombre = "Windows 10"
+    descripcion = "Sistema operativo"
+    categoria = ""
+    version = "1H25"
+
+    data = {
+        "nombre": nombre,
+        "descripcion": descripcion,
+        "categoria": categoria,
+        "version": version,
+    }
+
+    # When user tries to create a 'item configuracion'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert (
+        details["message"]
+        == "Input should be 'SOFTWARE', 'HARDWARE' or 'DOCUMENTACION'"
+    )
+    assert details["field"] == "categoria"
