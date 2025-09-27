@@ -1,4 +1,5 @@
 .gitignore
+.git
 Dockerfile
 __pycache__
 *.pyc
