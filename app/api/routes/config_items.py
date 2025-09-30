@@ -5,7 +5,10 @@ from fastapi import APIRouter
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.config_items import ItemsConfiguracionService as crud
 from app.models.config_items import (
+    CategoriaItem,
+    EstadoItem,
     ItemConfiguracionCrear,
+    ItemConfiguracionFilter,
     ItemConfiguracionPublico,
 )
 
@@ -30,8 +33,19 @@ async def create_config_item(
 
 
 @router.get("", response_model=list[ItemConfiguracionPublico])
-async def get_config_items(session: SessionDep) -> list[ItemConfiguracionPublico]:
-    return crud.get_items_configuracion(session=session)
+async def get_config_items(
+    session: SessionDep,
+    nombre: str | None = None,
+    version: str | None = None,
+    categoria: CategoriaItem | None = None,
+    estado: EstadoItem | None = None,
+) -> list[ItemConfiguracionPublico]:
+    item_config_filter = ItemConfiguracionFilter(
+        nombre=nombre, version=version, categoria=categoria, estado=estado
+    )
+    return crud.get_items_configuracion(
+        session=session, item_config_filter=item_config_filter
+    )
 
 
 @router.get("/{id_item_config}", response_model=ItemConfiguracionPublico)

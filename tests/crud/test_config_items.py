@@ -8,8 +8,21 @@ from app.models.config_items import (
     EstadoItem,
     ItemConfiguracion,
     ItemConfiguracionCrear,
+    ItemConfiguracionFilter,
 )
 from app.models.users import Usuario
+
+
+def test_get_item_configuracion_by_nombre(session: Session) -> None:
+    item_config_filter = ItemConfiguracionFilter(nombre="Windows")
+    items_config = crud.get_items_configuracion(
+        session=session, item_config_filter=item_config_filter
+    )
+
+    assert len(items_config) == 1
+
+    for item_config in items_config:
+        assert item_config.nombre.lower().find(item_config_filter.nombre)
 
 
 def test_create_item_configuracion(session: Session) -> None:

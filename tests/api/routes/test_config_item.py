@@ -11,6 +11,40 @@ from app.utils.config import settings
 BASE_URL = f"{settings.API_V1_STR}/config-items"
 
 
+def test_get_all_config_item(client: TestClient, session: Session) -> None:
+    # Given some config items
+    # Check db_seed.py to see them
+
+    # When the user gets all config items
+    r = client.get(f"{BASE_URL}")
+
+    # Then it returns a list of config item
+    assert 200 <= r.status_code < 300
+
+    items_config = r.json()
+
+    assert len(items_config) == 3
+
+
+def test_get_config_item_by_nombre(client: TestClient, session: Session) -> None:
+    # Given some config items
+    # Check db_seed.py to see them
+    nombre = "Windows"
+
+    # When the user gets them by nombre
+    r = client.get(f"{BASE_URL}", params={"nombre": nombre})
+
+    # Then it returns a list of config item
+    assert 200 <= r.status_code < 300
+
+    items_config = r.json()
+
+    assert len(items_config) == 1
+
+    for item_config in items_config:
+        assert item_config["nombre"].lower().find(nombre)
+
+
 def test_get_config_item_by_id(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:

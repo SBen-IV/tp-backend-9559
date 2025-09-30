@@ -3,7 +3,11 @@ import uuid
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
-from app.models.config_items import ItemConfiguracion, ItemConfiguracionCrear
+from app.models.config_items import (
+    ItemConfiguracion,
+    ItemConfiguracionCrear,
+    ItemConfiguracionFilter,
+)
 
 
 class ItemsConfiguracionService:
@@ -18,8 +22,15 @@ class ItemsConfiguracionService:
 
         return db_obj
 
-    def get_items_configuracion(*, session: Session) -> list[ItemConfiguracion]:
+    def get_items_configuracion(
+        *, session: Session, item_config_filter: ItemConfiguracionFilter
+    ) -> list[ItemConfiguracion]:
         query = select(ItemConfiguracion)
+
+        if item_config_filter.nombre is not None:
+            query = query.where(
+                ItemConfiguracion.nombre.ilike(f"%{item_config_filter.nombre}")
+            )
 
         items_config = session.exec(query).all()
 

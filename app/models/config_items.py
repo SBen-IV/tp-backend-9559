@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 
@@ -46,3 +47,11 @@ class ItemConfiguracionPublico(ItemConfiguracionBase):
 class ItemConfiguracion(ItemConfiguracionBase, table=True):
     __tablename__: str = "items_configuracion"
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
+
+
+@dataclass
+class ItemConfiguracionFilter:
+    nombre: str | None = None
+    version: str | None = None
+    categoria: CategoriaItem | None = None
+    estado: EstadoItem | None = None
