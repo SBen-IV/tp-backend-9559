@@ -45,6 +45,63 @@ def test_get_config_item_by_nombre(client: TestClient, session: Session) -> None
         assert item_config["nombre"].lower().find(nombre)
 
 
+def test_get_config_item_by_version(client: TestClient, session: Session) -> None:
+    # Given some config items
+    # Check db_seed.py to see them
+    version = "Celeron"
+
+    # When the user gets them by nombre
+    r = client.get(f"{BASE_URL}", params={"version": version})
+
+    # Then it returns a list of config item
+    assert 200 <= r.status_code < 300
+
+    items_config = r.json()
+
+    assert len(items_config) == 1
+
+    for item_config in items_config:
+        assert item_config["version"].lower().find(version)
+
+
+def test_get_config_item_by_categoria(client: TestClient, session: Session) -> None:
+    # Given some config items
+    # Check db_seed.py to see them
+    categoria = "HARDWARE"
+
+    # When the user gets them by categoria
+    r = client.get(f"{BASE_URL}", params={"categoria": categoria})
+
+    # Then it returns a list of config item
+    assert 200 <= r.status_code < 300
+
+    items_config = r.json()
+
+    assert len(items_config) == 1
+
+    for item_config in items_config:
+        assert item_config["categoria"] == categoria
+
+
+def test_get_config_item_by_estado(client: TestClient, session: Session) -> None:
+    # Given some config items
+    # Check db_seed.py to see them
+    estado = "PLANEADO"
+
+    # When the user gets them by estado
+    r = client.get(f"{BASE_URL}", params={"estado": estado})
+
+    # Then it returns a list of config item
+    assert 200 <= r.status_code < 300
+
+    items_config = r.json()
+
+    assert len(items_config) == 3
+
+    for item_config in items_config:
+        assert item_config["estado"] == estado
+
+
 def test_get_config_item_by_id(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:

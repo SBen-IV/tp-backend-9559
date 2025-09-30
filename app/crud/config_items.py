@@ -29,7 +29,17 @@ class ItemsConfiguracionService:
 
         if item_config_filter.nombre is not None:
             query = query.where(
-                ItemConfiguracion.nombre.ilike(f"%{item_config_filter.nombre}")
+                ItemConfiguracion.nombre.ilike(f"%{item_config_filter.nombre}%")
+            )
+
+        if item_config_filter.version is not None:
+            query = query.where(
+                ItemConfiguracion.version.ilike(f"%{item_config_filter.version}%")
+            )
+
+        if item_config_filter.categoria is not None:
+            query = query.where(
+                ItemConfiguracion.categoria == item_config_filter.categoria
             )
 
         items_config = session.exec(query).all()

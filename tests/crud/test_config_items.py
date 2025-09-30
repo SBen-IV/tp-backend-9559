@@ -14,7 +14,7 @@ from app.models.users import Usuario
 
 
 def test_get_item_configuracion_by_nombre(session: Session) -> None:
-    item_config_filter = ItemConfiguracionFilter(nombre="Windows")
+    item_config_filter = ItemConfiguracionFilter(nombre="TV")
     items_config = crud.get_items_configuracion(
         session=session, item_config_filter=item_config_filter
     )
