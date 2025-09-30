@@ -42,6 +42,9 @@ class ItemsConfiguracionService:
                 ItemConfiguracion.categoria == item_config_filter.categoria
             )
 
+        if item_config_filter.estado is not None:
+            query = query.where(ItemConfiguracion.estado == item_config_filter.estado)
+
         items_config = session.exec(query).all()
 
         return items_config
