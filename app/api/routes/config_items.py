@@ -29,9 +29,14 @@ async def create_config_item(
     return item_configuracion
 
 
+@router.get("", response_model=list[ItemConfiguracionPublico])
+async def get_config_items(session: SessionDep) -> list[ItemConfiguracionPublico]:
+    return crud.get_items_configuracion(session=session)
+
+
 @router.get("/{id_item_config}", response_model=ItemConfiguracionPublico)
 async def get_config_item(
-    session: SessionDep, current_user: CurrentUser, id_item_config: uuid.UUID
+    session: SessionDep, id_item_config: uuid.UUID
 ) -> ItemConfiguracionPublico:
     return crud.get_item_configuracion_by_id(
         session=session, id_item_config=id_item_config

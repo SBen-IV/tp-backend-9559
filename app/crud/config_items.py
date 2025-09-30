@@ -18,6 +18,13 @@ class ItemsConfiguracionService:
 
         return db_obj
 
+    def get_items_configuracion(*, session: Session) -> list[ItemConfiguracion]:
+        query = select(ItemConfiguracion)
+
+        items_config = session.exec(query).all()
+
+        return items_config
+
     def get_item_configuracion_by_id(
         *, session: Session, id_item_config: uuid.UUID
     ) -> ItemConfiguracion:
