@@ -12,7 +12,7 @@ from app.models.config_items import (
 router = APIRouter(prefix="/config-items")
 
 
-@router.post("/", response_model=ItemConfiguracionPublico)
+@router.post("", response_model=ItemConfiguracionPublico)
 async def create_config_item(
     session: SessionDep,
     current_user: CurrentUser,
