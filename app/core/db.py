@@ -1,9 +1,11 @@
 import sqlalchemy as sa
 from sqlmodel import Session, create_engine, select
 
+from app.crud.config_items import ItemsConfiguracionService
 from app.crud.users import UsuariosService
-from app.db_seed import seed_usuarios
+from app.db_seed import seed_items_config, seed_usuarios
 from app.models.app_version import AppVersion
+from app.models.config_items import ItemConfiguracion
 from app.models.users import Usuario
 from app.utils.config import settings
 
@@ -21,6 +23,21 @@ def populate_db(session: Session) -> None:
     for usuario in seed_usuarios:
         if usuario.email not in usuarios:
             UsuariosService.create_user(session=session, usuario_registrar=usuario)
+
+    usuario = session.exec(select(Usuario)).first()
+
+    # `nombre` is not unique but it's the only way to check for duplicates
+    items_config = [
+        item_config.nombre
+        for item_config in session.exec(select(ItemConfiguracion)).all()
+    ]
+
+    for item_config in seed_items_config:
+        if item_config.nombre not in items_config:
+            item_config.owner_id = usuario.id
+            ItemsConfiguracionService.create_item_configuracion(
+                session=session, item_config_crear=item_config
+            )
 
 
 def init_db(session: Session) -> None:
