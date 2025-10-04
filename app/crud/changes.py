@@ -1,3 +1,5 @@
+from http.client import HTTPException
+import uuid
 from sqlmodel import Session, select
 
 from app.models.changes import Cambio, CambioCrear, CambioFilter, CambioPublicoConItems
@@ -44,3 +46,15 @@ class CambiosService:
         items_config = session.exec(query).all()
 
         return items_config
+    
+    def get_change_by_id(
+        *, session: Session, id_change: uuid.UUID
+    ) -> CambioPublicoConItems:
+        cambio = session.exec(
+            select(Cambio).where(Cambio.id == id_change)
+        ).first()
+        if not cambio:
+            raise HTTPException(
+                status_code=404, detail="No existe cambio"
+            )
+        return cambio    
