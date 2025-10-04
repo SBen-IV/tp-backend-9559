@@ -173,3 +173,49 @@ def test_get_change_returns_items(client: TestClient, session: Session) -> None:
         assert cambio["descripcion"].lower().find(titulo)
         assert config_item["nombre"] == item_from_change["nombre"]
         assert config_item["owner_id"] == item_from_change["owner_id"]
+        
+def test_get_change_by_id(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    
+    # First we need the id of an item
+    config_items = client.get(f"{settings.API_V1_STR}/config-items")
+    
+    # The change from the seed should have this item linked
+    config_item = config_items.json()[0] 
+    
+    # Given a new change
+    titulo = "Impresora"
+    descripcion = "Reemplazar la impresora"
+    prioridad = Prioridad.BAJA
+    id_config_items = [ config_item['id'] ]
+
+    now = datetime.now(timezone.utc)
+
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "id_config_items": id_config_items,
+    }
+
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+    change_id = r.json()["id"]
+
+    # When the user gets it by id
+    r = client.get(f"{BASE_URL}/{change_id}")
+
+    # Then it returns the same change
+    assert 200 <= r.status_code < 300
+
+    cambio = r.json()
+
+    assert cambio
+    assert cambio["titulo"] == titulo
+    assert cambio["descripcion"] == descripcion
+    assert cambio["prioridad"] == prioridad
+    assert cambio["fecha_creacion"] > str(now)
+    # Just check that `owner_id` is present, maybe if a get user
+    # is implemented we can check if it's equal
+    assert cambio["owner_id"] 
+    assert cambio["config_items"][0]['id'] == config_item['id']    
