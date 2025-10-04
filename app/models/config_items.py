@@ -3,8 +3,15 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 
-from sqlmodel import Field, SQLModel
+from typing import TYPE_CHECKING, List
 
+from sqlmodel import Field, SQLModel, Relationship
+
+from .changes_items_link import CambioItemLink
+
+if TYPE_CHECKING:
+    from .changes import Cambio, CambioPublico
+    
 
 class CategoriaItem(str, Enum):
     SOFTWARE = "SOFTWARE"
@@ -30,6 +37,7 @@ class ItemConfiguracionBase(SQLModel):
     owner_id: None | uuid.UUID = Field(foreign_key="usuarios.id")
     estado: EstadoItem = Field(default=EstadoItem.PLANEADO)
     fecha_creacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
 
 
 class ItemConfiguracionCrear(SQLModel):
@@ -38,15 +46,22 @@ class ItemConfiguracionCrear(SQLModel):
     version: str = Field(min_length=1)
     categoria: CategoriaItem
     owner_id: None | uuid.UUID = Field(default=None)
-
+        
 
 class ItemConfiguracionPublico(ItemConfiguracionBase):
     id: uuid.UUID
-
+    
+    
+class ItemConfiguracionPublicoConCambios(ItemConfiguracionPublico):
+    id: uuid.UUID
+    
+    cambios: List["CambioPublico"]  = []  
 
 class ItemConfiguracion(ItemConfiguracionBase, table=True):
     __tablename__: str = "items_configuracion"
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
+    
+    cambios: List["Cambio"] = Relationship(back_populates="config_items", link_model=CambioItemLink)
 
 
 @dataclass

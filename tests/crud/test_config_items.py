@@ -11,6 +11,7 @@ from app.models.config_items import (
     ItemConfiguracionFilter,
 )
 from app.models.users import Usuario
+from app.models.changes import Cambio, CambioPublico
 
 
 def test_get_item_configuracion_by_nombre(session: Session) -> None:
