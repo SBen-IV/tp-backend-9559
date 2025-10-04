@@ -20,20 +20,6 @@ async def create_change(
 
     return cambio
 
-@router.get("/", response_model=list[CambioPublicoConItems])
-async def get_changes(
-    session: SessionDep,
-    titulo: str | None = None,
-    prioridad: Prioridad | None = None,
-    estado: EstadoCambio | None = None,
-    descripcion: str | None = None
-) -> list[CambioPublicoConItems]:
-    cambio_filter = CambioFilter(
-        titulo=titulo, estado=estado, prioridad=prioridad, descripcion=descripcion
-    )
-    return crud.get_changes(
-        session=session, cambio_filter=cambio_filter
-    )
     
 @router.get("/", response_model=list[CambioPublicoConItems])
 async def get_changes(
@@ -51,7 +37,7 @@ async def get_changes(
     )
     
 @router.get("/{id_change}", response_model=CambioPublicoConItems)
-async def get_config_item(
+async def get_change(
     session: SessionDep, id_change: uuid.UUID
 ) -> CambioPublicoConItems:
     return crud.get_change_by_id(
