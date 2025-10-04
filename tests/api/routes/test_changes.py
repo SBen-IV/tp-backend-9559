@@ -106,3 +106,70 @@ def test_create_cambio_with_empty_description_returns_error(
     assert details
     assert details["message"] == "String should have at least 1 character"
     assert details["field"] == "descripcion"
+
+
+def test_get_change_by_titulo(client: TestClient, session: Session) -> None:
+    # Given some changes
+    # Check db_seed.py to see them
+    titulo = "Nueva television"
+
+    # When the user gets them by titulo
+    r = client.get(f"{BASE_URL}", params={"titulo": titulo})
+
+    # Then it returns a list of changes
+    assert 200 <= r.status_code < 300
+
+    cambios = r.json()
+
+    assert len(cambios) == 1
+
+    for cambio in cambios:
+        assert cambio["titulo"].lower().find(titulo)
+        
+        
+def test_get_change_by_descripcion(client: TestClient, session: Session) -> None:
+    # Given some changes
+    # Check db_seed.py to see them
+    descripcion = "Cambiar la television manual"
+
+    # When the user gets them by description
+    r = client.get(f"{BASE_URL}", params={"descripcion": descripcion})
+
+    # Then it returns a list of changes
+    assert 200 <= r.status_code < 300
+
+    cambios = r.json()
+
+    assert len(cambios) == 1
+
+    for cambio in cambios:
+        assert cambio["descripcion"].lower().find(descripcion)
+        
+        
+def test_get_change_returns_items(client: TestClient, session: Session) -> None:
+    # Given some changes
+    # Check db_seed.py to see them
+    
+    config_items = client.get(f"{settings.API_V1_STR}/config-items")
+    
+    # The change from the seed should have this item linked
+    config_item = config_items.json()[0] 
+
+    titulo = "Nueva television"
+
+    # When the user gets them 
+    r = client.get(f"{BASE_URL}", params={"titulo": titulo})
+
+    # Then it returns a list of changes
+    assert 200 <= r.status_code < 300
+
+    cambios = r.json()
+
+    assert len(cambios) == 1
+
+    # And it includes the items linked
+    for cambio in cambios:
+        item_from_change = cambio["config_items"][0]
+        assert cambio["descripcion"].lower().find(titulo)
+        assert config_item["nombre"] == item_from_change["nombre"]
+        assert config_item["owner_id"] == item_from_change["owner_id"]

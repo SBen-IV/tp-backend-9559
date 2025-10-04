@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.changes import CambiosService as crud
-from app.models.changes import CambioCrear, CambioPublicoConItems
+from app.models.changes import CambioCrear, CambioFilter, CambioPublicoConItems, EstadoCambio, Prioridad
 
 router = APIRouter(prefix="/changes")
 
@@ -18,3 +18,18 @@ async def create_change(
     cambio = crud.create_cambio(session=session, cambio_crear=cambio_crear)
 
     return cambio
+
+@router.get("/", response_model=list[CambioPublicoConItems])
+async def get_changes(
+    session: SessionDep,
+    titulo: str | None = None,
+    prioridad: Prioridad | None = None,
+    estado: EstadoCambio | None = None,
+    descripcion: str | None = None
+) -> list[CambioPublicoConItems]:
+    cambio_filter = CambioFilter(
+        titulo=titulo, estado=estado, prioridad=prioridad, descripcion=descripcion
+    )
+    return crud.get_changes(
+        session=session, cambio_filter=cambio_filter
+    )
