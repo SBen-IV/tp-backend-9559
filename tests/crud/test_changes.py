@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlmodel import Session, select
 
 from app.crud.changes import CambiosService as crud
-from app.models.changes import Cambio, CambioCrear, EstadoCambio, Prioridad
+from app.models.changes import Cambio, CambioCrear, CambioFilter, EstadoCambio, Prioridad
 from app.models.config_items import ItemConfiguracion, ItemConfiguracionPublico
 from app.models.users import Usuario
 
@@ -41,3 +41,15 @@ def test_create_cambio(session: Session) -> None:
     assert cambio_db.estado == EstadoCambio.RECIBIDO
     assert cambio_db.owner_id == usuario.id
     assert cambio_db.fecha_creacion.astimezone(timezone.utc) > now
+
+
+def test_get_change_by_titulo(session: Session) -> None:
+    cambio_filter = CambioFilter(titulo="Nueva television")
+    cambios = crud.get_changes(
+        session=session, cambio_filter=cambio_filter
+    )
+
+    assert len(cambios) == 1
+
+    for cambio in cambios:
+        assert cambio.titulo.lower().find(cambio_filter.titulo)

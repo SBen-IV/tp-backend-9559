@@ -2,8 +2,9 @@ import sqlalchemy as sa
 from sqlmodel import Session, create_engine, select
 
 from app.crud.config_items import ItemsConfiguracionService
+from app.crud.changes import CambiosService
 from app.crud.users import UsuariosService
-from app.db_seed import seed_items_config, seed_usuarios
+from app.db_seed import seed_items_config, seed_usuarios, seed_changes
 from app.models.app_version import AppVersion
 from app.models.changes import Cambio
 from app.models.config_items import ItemConfiguracion
@@ -39,6 +40,24 @@ def populate_db(session: Session) -> None:
             ItemsConfiguracionService.create_item_configuracion(
                 session=session, item_config_crear=item_config
             )
+            
+    id_items_config = [
+        item_config.id
+        for item_config in session.exec(select(ItemConfiguracion)).all()
+    ]
+            
+    changes = [
+        change.titulo
+        for change in session.exec(select(Cambio)).all()
+    ]
+            
+    for change in seed_changes:
+        if change.titulo not in changes:
+            change.owner_id = usuario.id
+            change.id_config_items = [ id_items_config[0] ]
+            CambiosService.create_cambio(
+                session=session, cambio_crear=change
+            )            
 
 
 def init_db(session: Session) -> None:

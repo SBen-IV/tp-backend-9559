@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
@@ -48,7 +49,7 @@ class CambioCrear(SQLModel):
 class CambioPublico(CambioBase):
     id: uuid.UUID
     
-    
+  
 class CambioPublicoConItems(CambioPublico):
     config_items: List["ItemConfiguracionPublico"] = []
     
@@ -59,3 +60,9 @@ class Cambio(CambioBase, table=True):
     
     config_items: List["ItemConfiguracion"] = Relationship(back_populates="cambios", link_model=CambioItemLink)
 
+@dataclass
+class CambioFilter:
+    titulo: str | None = None
+    descripcion: str | None = None
+    prioridad: Prioridad | None = None
+    estado: EstadoCambio | None = None

@@ -1,11 +1,13 @@
 import os
 import uuid
 
+from app.models.changes import CambioCrear
 from app.models.config_items import CategoriaItem, ItemConfiguracionCrear
 from app.models.users import Rol, UsuarioRegistrar
 
 seed_usuarios = []
 seed_items_config = []
+seed_changes = []
 
 id_user = uuid.uuid4()
 
@@ -41,3 +43,12 @@ if os.getenv("TESTS", None):
             categoria=CategoriaItem.DOCUMENTACION,
         ),
     ]
+    
+    seed_changes = [
+        CambioCrear(
+            titulo="Nueva television",
+            descripcion="Television manual",
+            prioridad="BAJA",
+            id_config_items=["1" * 32] # This item ID doesn't exist, it'll be overwritten in core/db.py anyway
+        ),
+    ]    

@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
 
-from app.models.changes import Cambio, CambioCrear
+from app.models.changes import Cambio, CambioCrear, CambioFilter, CambioPublicoConItems
 from app.models.config_items import ItemConfiguracion
 
 
@@ -17,3 +17,30 @@ class CambiosService:
         session.refresh(db_obj)
 
         return db_obj
+
+    def get_changes(
+        *, session: Session, cambio_filter: CambioFilter
+    ) -> list[CambioPublicoConItems]:
+        query = select(Cambio)
+
+        if cambio_filter.titulo is not None:
+            query = query.where(
+                Cambio.titulo.ilike(f"%{cambio_filter.titulo}%")
+            )
+
+        if cambio_filter.descripcion is not None:
+            query = query.where(
+                Cambio.descripcion.ilike(f"%{cambio_filter.descripcion}%")
+            )
+
+        if cambio_filter.prioridad is not None:
+            query = query.where(
+                Cambio.prioridad == cambio_filter.prioridad
+            )
+
+        if cambio_filter.estado is not None:
+            query = query.where(Cambio.estado == cambio_filter.estado)
+
+        items_config = session.exec(query).all()
+
+        return items_config
