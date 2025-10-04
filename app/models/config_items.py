@@ -51,14 +51,17 @@ class ItemConfiguracionCrear(SQLModel):
 class ItemConfiguracionPublico(ItemConfiguracionBase):
     id: uuid.UUID
     
-    cambios: List["CambioPublico"]
     
+class ItemConfiguracionPublicoConCambios(ItemConfiguracionPublico):
+    id: uuid.UUID
+    
+    cambios: List["CambioPublico"]  = []  
 
 class ItemConfiguracion(ItemConfiguracionBase, table=True):
     __tablename__: str = "items_configuracion"
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
     
-    cambios: None | List["Cambio"] = Relationship(back_populates="config_items", link_model=CambioItemLink)
+    cambios: List["Cambio"] = Relationship(back_populates="config_items", link_model=CambioItemLink)
 
 
 @dataclass

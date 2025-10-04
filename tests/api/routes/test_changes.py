@@ -2,9 +2,10 @@
 from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
-from sqlmodel import Session
+from sqlmodel import Session, select
 
-from app.models.changes import EstadoCambio, Prioridad
+from app.models.changes import Cambio, CambioPublico, EstadoCambio, Prioridad
+from app.models.config_items import ItemConfiguracion, ItemConfiguracionPublico
 from app.utils.config import settings
 
 BASE_URL = f"{settings.API_V1_STR}/changes"
@@ -18,8 +19,11 @@ def test_create_new_cambio(
     prioridad = Prioridad.URGENTE
 
     now = datetime.now(timezone.utc)
+    
+    config_items = session.exec(select(ItemConfiguracion))
+    id_config_items = [str(config_item.id) for config_item in config_items]
 
-    data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
+    data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad, "id_config_items": id_config_items}
 
     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
 

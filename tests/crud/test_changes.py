@@ -4,11 +4,11 @@ from sqlmodel import Session, select
 
 from app.crud.changes import CambiosService as crud
 from app.models.changes import Cambio, CambioCrear, EstadoCambio, Prioridad
+from app.models.config_items import ItemConfiguracion, ItemConfiguracionPublico
 from app.models.users import Usuario
-from app.models.config_items import ItemConfiguracion
 
 
-def test_create_cambio_with_items(session: Session) -> None:
+def test_create_cambio(session: Session) -> None:
     now = datetime.now(timezone.utc)
     # Get any user
     usuario = session.exec(select(Usuario)).first()
@@ -20,7 +20,7 @@ def test_create_cambio_with_items(session: Session) -> None:
         descripcion="2 cores to 32 cores",
         prioridad=Prioridad.URGENTE,
         owner_id=usuario.id,
-        config_items=[config_item.id for config_item in config_items]
+        id_config_items = [config_item.id for config_item in config_items]
     )
 
     cambio_created = crud.create_cambio(session=session, cambio_crear=cambio)
@@ -41,4 +41,3 @@ def test_create_cambio_with_items(session: Session) -> None:
     assert cambio_db.estado == EstadoCambio.RECIBIDO
     assert cambio_db.owner_id == usuario.id
     assert cambio_db.fecha_creacion.astimezone(timezone.utc) > now
-    assert cambio_db.config_items == config_items

@@ -42,18 +42,20 @@ class CambioCrear(SQLModel):
     prioridad: Prioridad
     owner_id: None | uuid.UUID = Field(default=None)
         
-    config_items: List[uuid.UUID] = Field(..., min_length=1)
+    id_config_items: List[uuid.UUID]
 
 
 class CambioPublico(CambioBase):
     id: uuid.UUID
     
-    config_items: List["ItemConfiguracionPublico"]
-
+    
+class CambioPublicoConItems(CambioPublico):
+    config_items: List["ItemConfiguracionPublico"] = []
+    
 
 class Cambio(CambioBase, table=True):
     __tablename__: str = "cambios"
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
     
-    config_items: None | List["ItemConfiguracion"] = Relationship(back_populates="cambios", link_model=CambioItemLink)
+    config_items: List["ItemConfiguracion"] = Relationship(back_populates="cambios", link_model=CambioItemLink)
 
