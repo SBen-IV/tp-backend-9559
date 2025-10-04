@@ -42,7 +42,7 @@ class CambioCrear(SQLModel):
     prioridad: Prioridad
     owner_id: None | uuid.UUID = Field(default=None)
         
-    config_items: List[uuid.UUID]
+    config_items: List[uuid.UUID] = Field(..., min_length=1)
 
 
 class CambioPublico(CambioBase):
