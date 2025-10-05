@@ -6,12 +6,13 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.models.changes_items_link import CambioItemLink
+from app.models.incidents_items_link import IncidenteItemLink
 from app.models.problems_items_link import ProblemaItemLink
-
-from .changes_items_link import CambioItemLink
 
 if TYPE_CHECKING:
     from .changes import Cambio, CambioPublico
+    from .incidents import Incidente, IncidentePublico
     from .problems import Problema, ProblemaPublico
 
 
@@ -63,6 +64,10 @@ class ItemConfiguracionPublicoConProblemas(ItemConfiguracionPublico):
     problemas: list["ProblemaPublico"] = []
 
 
+class ItemConfiguracionPublicoConIncidentes(ItemConfiguracionPublico):
+    incidentes: list["IncidentePublico"] = []
+
+
 class ItemConfiguracion(ItemConfiguracionBase, table=True):
     __tablename__: str = "items_configuracion"
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -73,6 +78,10 @@ class ItemConfiguracion(ItemConfiguracionBase, table=True):
 
     problemas: list["Problema"] = Relationship(
         back_populates="config_items", link_model=ProblemaItemLink
+    )
+
+    incidentes: list["Incidente"] = Relationship(
+        back_populates="config_items", link_model=IncidenteItemLink
     )
 
 

@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 
 from app.models.commons import Prioridad
 from app.models.config_items import ItemConfiguracion
-from app.models.problems import EstadoProblema
+from app.models.incidents import CategoriaIncidente, EstadoIncidente
 from app.utils.config import settings
 
 BASE_URL = f"{settings.API_V1_STR}/incidents"
@@ -16,15 +16,12 @@ def test_create_new_incidente(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
     # Given a 'incidente'
-    titulo = "BSOD"
-    descripcion = (
-        "Cuando quiero conectarme a la VPN en Windows me salta la pantalla azul"
-    )
-    prioridad = Prioridad.MEDIA
+    titulo = "Base de datos"
+    descripcion = "Se cayó la base de datos y los clientes no pueden usar la página"
+    categoria = CategoriaIncidente.SOFTWARE
+    prioridad = Prioridad.URGENTE
 
-    id_config_item = session.exec(
-        select(ItemConfiguracion).where(ItemConfiguracion.nombre == "Windows")
-    ).first()
+    id_config_item = session.exec(select(ItemConfiguracion)).first()
 
     # Make sure the config item exists
     assert id_config_item
@@ -36,6 +33,7 @@ def test_create_new_incidente(
     data = {
         "titulo": titulo,
         "descripcion": descripcion,
+        "categoria": categoria,
         "prioridad": prioridad,
         "id_config_items": id_config_items,
     }
@@ -50,9 +48,10 @@ def test_create_new_incidente(
     assert incidente
     assert incidente["titulo"] == titulo
     assert incidente["descripcion"] == descripcion
+    assert incidente["categoria"] == categoria
     assert incidente["prioridad"] == prioridad
     assert incidente["fecha_creacion"] > str(now)
-    assert incidente["estado"] == EstadoProblema.EN_ANALISIS
+    assert incidente["estado"] == EstadoIncidente.NUEVO
     # Just check that `owner_id` is present, maybe if a get user
     # is implemented we can check if it's equal
     assert incidente["owner_id"]
