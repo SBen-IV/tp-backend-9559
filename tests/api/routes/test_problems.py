@@ -2,9 +2,11 @@
 from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.models.commons import Prioridad
+from app.models.config_items import ItemConfiguracion
+from app.models.problems import EstadoProblema
 from app.utils.config import settings
 
 BASE_URL = f"{settings.API_V1_STR}/problems"
@@ -14,49 +16,53 @@ def test_create_new_problema(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
     # Given a 'problema'
-    titulo = "No funciona la impresora"
-    descripcion = "Dice que le falta tinta"
+    titulo = "BSOD"
+    descripcion = (
+        "Cuando quiero conectarme a la VPN en Windows me salta la pantalla azul"
+    )
     prioridad = Prioridad.MEDIA
 
-    # When user tries to create the 'problema'
+    id_config_item = session.exec(
+        select(ItemConfiguracion).where(ItemConfiguracion.nombre == "Windows")
+    ).first()
 
-    # Then the 'problema' is created
+    # Make sure the config item exists
+    assert id_config_item
 
-    #     titulo = "Upgrade CPU of server"
-    #     descripcion = "Change old 2 cores CPU to brand new 32 cores CPU"
-    #     prioridad = Prioridad.URGENTE
-    #
+    id_config_items = [str(id_config_item.id)]
+
     now = datetime.now(timezone.utc)
 
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "id_config_items": id_config_items,
+    }
 
-#
-#     config_items = session.exec(select(ItemConfiguracion))
-#     id_config_items = [str(config_item.id) for config_item in config_items]
-#
-#     data = {
-#         "titulo": titulo,
-#         "descripcion": descripcion,
-#         "prioridad": prioridad,
-#         "id_config_items": id_config_items,
-#     }
-#
-#     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
-#
-#     assert 200 <= r.status_code < 300
-#
-#     cambio = r.json()
-#
-#     assert cambio
-#     assert cambio["titulo"] == titulo
-#     assert cambio["descripcion"] == descripcion
-#     assert cambio["prioridad"] == prioridad
-#     assert cambio["fecha_creacion"] > str(now)
-#     assert cambio["estado"] == EstadoCambio.RECIBIDO
-#     # Just check that `owner_id` is present, maybe if a get user
-#     # is implemented we can check if it's equal
-#     assert cambio["owner_id"]
-#
-#
+    # When user tries to create the 'problema'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    assert 200 <= r.status_code < 300
+
+    problema = r.json()
+
+    assert problema
+    assert problema["titulo"] == titulo
+    assert problema["descripcion"] == descripcion
+    assert problema["prioridad"] == prioridad
+    assert problema["fecha_creacion"] > str(now)
+    assert problema["estado"] == EstadoProblema.EN_ANALISIS
+    # Just check that `owner_id` is present, maybe if a get user
+    # is implemented we can check if it's equal
+    assert problema["owner_id"]
+    assert problema["responsable_id"] is None
+    # And it includes the items linked
+    assert len(problema["config_items"]) == len(id_config_items)
+    for c in problema["config_items"]:
+        assert any([c["id"] == config_item for config_item in id_config_items])
+
+
 # def test_create_cambio_with_empty_title_returns_error(
 #     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 # ) -> None:
