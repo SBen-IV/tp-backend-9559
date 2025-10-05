@@ -62,71 +62,85 @@ def test_create_new_incidente(
         assert any(c["id"] == config_item for config_item in id_config_items)
 
 
-# def test_create_problema_with_empty_title_returns_error(
-#     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
-# ) -> None:
-#     # Given a 'problema' with empty 'titulo'
-#     titulo = ""
-#     descripcion = (
-#         "Cuando quiero conectarme a la VPN en Windows me salta la pantalla azul"
-#     )
-#     prioridad = Prioridad.URGENTE
-#
-#     data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
-#
-#     # When user tries to create a 'problema'
-#     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
-#
-#     # Then it fails returning an error
-#     assert 400 <= r.status_code < 500
-#
-#     details = r.json()["details"][0]
-#     assert details
-#     assert details["message"] == "String should have at least 1 character"
-#     assert details["field"] == "titulo"
-#
-#
-# def test_create_problema_with_titulo_too_long_returns_error(
-#     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
-# ) -> None:
-#     # Given a 'problema' with too long 'titulo' (256 characters)
-#     titulo = "This is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is"
-#     descripcion = (
-#         "Cuando quiero conectarme a la VPN en Windows me salta la pantalla azul"
-#     )
-#     prioridad = Prioridad.URGENTE
-#
-#     data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
-#
-#     # When user tries to create a 'problema'
-#     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
-#
-#     # Then it fails returning an error
-#     assert 400 <= r.status_code < 500
-#
-#     details = r.json()["details"][0]
-#     assert details
-#     assert details["message"] == "String should have at most 255 characters"
-#     assert details["field"] == "titulo"
-#
-#
-# def test_create_problema_with_empty_description_returns_error(
-#     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
-# ) -> None:
-#     # Given a 'problema' with empty 'descripcion'
-#     titulo = "BSOD"
-#     descripcion = ""
-#     prioridad = Prioridad.URGENTE
-#
-#     data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
-#
-#     # When user tries to create a 'problema'
-#     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
-#
-#     # Then it fails returning an error
-#     assert 400 <= r.status_code < 500
-#
-#     details = r.json()["details"][0]
-#     assert details
-#     assert details["message"] == "String should have at least 1 character"
-#     assert details["field"] == "descripcion"
+def test_create_incidente_with_empty_title_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'incidente' with empty 'titulo'
+    titulo = ""
+    descripcion = "Se cayó la base de datos y los clientes no pueden usar la página"
+    categoria = CategoriaIncidente.SOFTWARE
+    prioridad = Prioridad.URGENTE
+
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "categoria": categoria,
+        "prioridad": prioridad,
+    }
+
+    # When user tries to create a 'incidente'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at least 1 character"
+    assert details["field"] == "titulo"
+
+
+def test_create_incidente_with_titulo_too_long_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'incidente' with too long 'titulo' (256 characters)
+    titulo = "This is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is"
+    descripcion = "Se cayó la base de datos y los clientes no pueden usar la página"
+    categoria = CategoriaIncidente.SOFTWARE
+    prioridad = Prioridad.URGENTE
+
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "categoria": categoria,
+        "prioridad": prioridad,
+    }
+
+    # When user tries to create a 'incidente'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at most 255 characters"
+    assert details["field"] == "titulo"
+
+
+def test_create_incidente_with_empty_description_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a 'incidente' with empty 'descripcion'
+    titulo = "Base de datos"
+    descripcion = ""
+    categoria = CategoriaIncidente.SOFTWARE
+    prioridad = Prioridad.URGENTE
+
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "categoria": categoria,
+        "prioridad": prioridad,
+    }
+
+    # When user tries to create a 'incidente'
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+
+    # Then it fails returning an error
+    assert 400 <= r.status_code < 500
+
+    details = r.json()["details"][0]
+    assert details
+    assert details["message"] == "String should have at least 1 character"
+    assert details["field"] == "descripcion"
