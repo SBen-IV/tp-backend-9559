@@ -1,64 +1,53 @@
 import uuid
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from .changes_items_link import CambioItemLink
 from .commons import Prioridad
+from .problems_items_link import ProblemaItemLink
 
 if TYPE_CHECKING:
     from .config_items import ItemConfiguracion, ItemConfiguracionPublico
 
 
-class EstadoCambio(str, Enum):
-    RECIBIDO = "RECIBIDO"
-    ACEPTADO = "ACEPTADO"
-    RECHAZADO = "RECHAZADO"
-    EN_PROGRESO = "EN_PROGRESO"
+class EstadoProblema(str, Enum):
+    EN_ANALISIS = "EN_ANALISIS"
+    DETECTADO = "DETECTADO"
+    RESUELTO = "RESUELTO"
     CERRADO = "CERRADO"
 
 
-class CambioBase(SQLModel):
+class ProblemaBase(SQLModel):
     titulo: str = Field(min_length=1, max_length=255)
     descripcion: str = Field(min_length=1)
-    prioridad: Prioridad
-    estado: EstadoCambio = Field(default=EstadoCambio.RECIBIDO)
     fecha_creacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     owner_id: None | uuid.UUID = Field(foreign_key="usuarios.id")
+    estado: EstadoProblema = Field(default=EstadoProblema.EN_ANALISIS)
+    prioridad: Prioridad
+    responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
 
 
-class CambioCrear(SQLModel):
+class ProblemaCrear(SQLModel):
     titulo: str = Field(min_length=1, max_length=255)
     descripcion: str = Field(min_length=1)
+    owner_id: uuid.UUID | None = Field(default=None)
     prioridad: Prioridad
-    owner_id: None | uuid.UUID = Field(default=None)
-
     id_config_items: list[uuid.UUID]
 
 
-class CambioPublico(CambioBase):
+class ProblemaPublico(ProblemaBase):
     id: uuid.UUID
 
 
-class CambioPublicoConItems(CambioPublico):
+class ProblemaPublicoConItems(ProblemaPublico):
     config_items: list["ItemConfiguracionPublico"] = []
 
 
-class Cambio(CambioBase, table=True):
-    __tablename__: str = "cambios"
+class Problema(ProblemaBase, table=True):
+    __tablename__: str = "problemas"
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
-
     config_items: list["ItemConfiguracion"] = Relationship(
-        back_populates="cambios", link_model=CambioItemLink
+        back_populates="problemas", link_model=ProblemaItemLink
     )
-
-
-@dataclass
-class CambioFilter:
-    titulo: str | None = None
-    descripcion: str | None = None
-    prioridad: Prioridad | None = None
-    estado: EstadoCambio | None = None
