@@ -1,23 +1,16 @@
-from dataclasses import dataclass
 import uuid
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
+from typing import TYPE_CHECKING
 
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
 from .changes_items_link import CambioItemLink
-
-from typing import TYPE_CHECKING, List  
+from .commons import Prioridad
 
 if TYPE_CHECKING:
     from .config_items import ItemConfiguracion, ItemConfiguracionPublico
-
-
-class Prioridad(str, Enum):
-    BAJA = "BAJA"
-    MEDIA = "MEDIA"
-    ALTA = "ALTA"
-    URGENTE = "URGENTE"
 
 
 class EstadoCambio(str, Enum):
@@ -42,23 +35,26 @@ class CambioCrear(SQLModel):
     descripcion: str = Field(min_length=1)
     prioridad: Prioridad
     owner_id: None | uuid.UUID = Field(default=None)
-        
-    id_config_items: List[uuid.UUID]
+
+    id_config_items: list[uuid.UUID]
 
 
 class CambioPublico(CambioBase):
     id: uuid.UUID
-    
-  
+
+
 class CambioPublicoConItems(CambioPublico):
-    config_items: List["ItemConfiguracionPublico"] = []
-    
+    config_items: list["ItemConfiguracionPublico"] = []
+
 
 class Cambio(CambioBase, table=True):
     __tablename__: str = "cambios"
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
-    
-    config_items: List["ItemConfiguracion"] = Relationship(back_populates="cambios", link_model=CambioItemLink)
+
+    config_items: list["ItemConfiguracion"] = Relationship(
+        back_populates="cambios", link_model=CambioItemLink
+    )
+
 
 @dataclass
 class CambioFilter:
