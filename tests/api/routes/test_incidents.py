@@ -46,25 +46,25 @@ def test_get_incidentes_by_titulo(client: TestClient, session: Session) -> None:
         assert incidente["titulo"].lower().find(titulo)
 
 
-#
-#
-# def test_get_config_item_by_version(client: TestClient, session: Session) -> None:
-#     # Given some config items
-#     # Check db_seed.py to see them
-#     version = "Celeron"
-#
-#     # When the user gets them by nombre
-#     r = client.get(f"{BASE_URL}", params={"version": version})
-#
-#     # Then it returns a list of config item
-#     assert 200 <= r.status_code < 300
-#
-#     items_config = r.json()
-#
-#     assert len(items_config) == 1
-#
-#     for item_config in items_config:
-#         assert item_config["version"].lower().find(version)
+def test_get_incidente_by_prioridad(client: TestClient, session: Session) -> None:
+    # Given some incidentes
+    # Check db_seed.py to see them
+    prioridad = "URGENTE"
+
+    # When the user gets them by prioridad
+    r = client.get(f"{BASE_URL}", params={"prioridad": prioridad})
+
+    # Then it returns a list of config item
+    assert 200 <= r.status_code < 300
+
+    incidentes = r.json()
+
+    assert len(incidentes) == 1
+
+    for incidente in incidentes:
+        assert incidente["prioridad"].lower().find(prioridad)
+
+
 #
 #
 # def test_get_config_item_by_categoria(client: TestClient, session: Session) -> None:

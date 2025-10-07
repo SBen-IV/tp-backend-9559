@@ -45,8 +45,8 @@ class IncidentesService:
         #         Incidente.descripcion.ilike(f"%{incidente_filter.descripcion}%")
         #     )
 
-        # if incidente_filter.prioridad is not None:
-        #     query = query.where(Incidente.prioridad == incidente_filter.prioridad)
+        if incidente_filter.prioridad is not None:
+            query = query.where(Incidente.prioridad == incidente_filter.prioridad)
 
         # if incidente_filter.estado is not None:
         #     query = query.where(Incidente.estado == incidente_filter.estado)
