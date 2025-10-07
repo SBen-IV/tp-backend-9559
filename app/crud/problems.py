@@ -32,17 +32,14 @@ class ProblemasService:
     ) -> list[ProblemaPublicoConItems]:
         query = select(Problema)
 
-        # if problema_filter.titulo is not None:
-        #     query = query.where(Problema.titulo.ilike(f"%{problema_filter.titulo}%"))
-        #
-        # if problema_filter.prioridad is not None:
-        #     query = query.where(Problema.prioridad == problema_filter.prioridad)
-        #
-        # if problema_filter.categoria is not None:
-        #     query = query.where(Problema.categoria == problema_filter.categoria)
-        #
-        # if problema_filter.estado is not None:
-        #     query = query.where(Problema.estado == problema_filter.estado)
+        if problema_filter.titulo is not None:
+            query = query.where(Problema.titulo.ilike(f"%{problema_filter.titulo}%"))
+
+        if problema_filter.prioridad is not None:
+            query = query.where(Problema.prioridad == problema_filter.prioridad)
+
+        if problema_filter.estado is not None:
+            query = query.where(Problema.estado == problema_filter.estado)
 
         problemas = session.exec(query).all()
 

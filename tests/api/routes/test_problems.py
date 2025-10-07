@@ -27,96 +27,81 @@ def test_get_all_problemas(client: TestClient, session: Session) -> None:
     assert len(problemas) == 3
 
 
-# def test_get_problemas_by_titulo(client: TestClient, session: Session) -> None:
-#     # Given some problemas
-#     # Check db_seed.py to see them
-#     titulo = "quemada"
-#
-#     # When the user gets them by titulo
-#     r = client.get(f"{BASE_URL}", params={"titulo": titulo})
-#
-#     # Then it returns a list of problemas
-#     assert 200 <= r.status_code < 300
-#
-#     problemas = r.json()
-#
-#     assert len(problemas) == 1
-#
-#     for problema in problemas:
-#         assert problema["titulo"].lower().find(titulo)
-#
-#
-# def test_get_problema_by_prioridad(client: TestClient, session: Session) -> None:
-#     # Given some problemas
-#     # Check db_seed.py to see them
-#     prioridad = "URGENTE"
-#
-#     # When the user gets them by prioridad
-#     r = client.get(f"{BASE_URL}", params={"prioridad": prioridad})
-#
-#     # Then it returns a list of config item
-#     assert 200 <= r.status_code < 300
-#
-#     problemas = r.json()
-#
-#     assert len(problemas) == 1
-#
-#     for problema in problemas:
-#         assert problema["prioridad"].lower().find(prioridad)
-#
-#
-# def test_get_problema_by_categoria(client: TestClient, session: Session) -> None:
-#     # Given some config items
-#     # Check db_seed.py to see them
-#     categoria = "SOLICITUD_DE_SERVICIO"
-#
-#     # When the user gets them by categoria
-#     r = client.get(f"{BASE_URL}", params={"categoria": categoria})
-#
-#     # Then it returns a list of config item
-#     assert 200 <= r.status_code < 300
-#
-#     problemas = r.json()
-#
-#     assert len(problemas) == 1
-#
-#     for problema in problemas:
-#         assert problema["categoria"] == categoria
-#
-#
-# def test_get_problema_by_estado_nuevo(client: TestClient, session: Session) -> None:
-#     # Given some config items
-#     # Check db_seed.py to see them
-#     estado = "NUEVO"
-#
-#     # When the user gets them by estado
-#     r = client.get(f"{BASE_URL}", params={"estado": estado})
-#
-#     # Then it returns a list of config item
-#     assert 200 <= r.status_code < 300
-#
-#     problemas = r.json()
-#
-#     assert len(problemas) == 4
-#
-#     for problema in problemas:
-#         assert problema["estado"] == estado
-#
-#
-# def test_get_problema_by_estado_resuelto(client: TestClient, session: Session) -> None:
-#     # Given some config items
-#     # Check db_seed.py to see them
-#     estado = "RESUELTO"
-#
-#     # When the user gets them by estado
-#     r = client.get(f"{BASE_URL}", params={"estado": estado})
-#
-#     # Then it returns a list of config item
-#     assert 200 <= r.status_code < 300
-#
-#     problemas = r.json()
-#
-#     assert len(problemas) == 0
+def test_get_problemas_by_titulo(client: TestClient, session: Session) -> None:
+    # Given some problemas
+    # Check db_seed.py to see them
+    titulo = "webcam"
+
+    # When the user gets them by titulo
+    r = client.get(f"{BASE_URL}", params={"titulo": titulo})
+
+    # Then it returns a list of problemas
+    assert 200 <= r.status_code < 300
+
+    problemas = r.json()
+
+    assert len(problemas) == 1
+
+    for problema in problemas:
+        assert problema["titulo"].lower().find(titulo)
+
+
+def test_get_problema_by_prioridad(client: TestClient, session: Session) -> None:
+    # Given some problemas
+    # Check db_seed.py to see them
+    prioridad = "ALTA"
+
+    # When the user gets them by prioridad
+    r = client.get(f"{BASE_URL}", params={"prioridad": prioridad})
+
+    # Then it returns a list of config item
+    assert 200 <= r.status_code < 300
+
+    problemas = r.json()
+
+    assert len(problemas) == 1
+
+    for problema in problemas:
+        assert problema["prioridad"].lower().find(prioridad)
+
+
+def test_get_problema_by_estado_en_analisis(
+    client: TestClient, session: Session
+) -> None:
+    # Given some problemas
+    # Check db_seed.py to see them
+    estado = "EN_ANALISIS"
+
+    # When the user gets them by estado
+    r = client.get(f"{BASE_URL}", params={"estado": estado})
+
+    # Then it returns a list of problemas
+    assert 200 <= r.status_code < 300
+
+    problemas = r.json()
+
+    assert len(problemas) == 3
+
+    for problema in problemas:
+        assert problema["estado"] == estado
+
+
+def test_get_problema_by_estado_cerrado(client: TestClient, session: Session) -> None:
+    # Given some problemas
+    # Check db_seed.py to see them
+    estado = "CERRADO"
+
+    # When the user gets them by estado
+    r = client.get(f"{BASE_URL}", params={"estado": estado})
+
+    # Then it returns a list of problemas
+    assert 200 <= r.status_code < 300
+
+    problemas = r.json()
+
+    assert len(problemas) == 0
+
+
 #
 #
 # def test_get_problema_by_id(
