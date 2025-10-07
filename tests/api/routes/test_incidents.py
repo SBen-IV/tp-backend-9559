@@ -84,7 +84,7 @@ def test_get_incidente_by_categoria(client: TestClient, session: Session) -> Non
         assert incidente["categoria"] == categoria
 
 
-def test_get_incidente_by_estado(client: TestClient, session: Session) -> None:
+def test_get_incidente_by_estado_nuevo(client: TestClient, session: Session) -> None:
     # Given some config items
     # Check db_seed.py to see them
     estado = "NUEVO"
@@ -101,6 +101,22 @@ def test_get_incidente_by_estado(client: TestClient, session: Session) -> None:
 
     for incidente in incidentes:
         assert incidente["estado"] == estado
+
+
+def test_get_incidente_by_estado_resuelto(client: TestClient, session: Session) -> None:
+    # Given some config items
+    # Check db_seed.py to see them
+    estado = "RESUELTO"
+
+    # When the user gets them by estado
+    r = client.get(f"{BASE_URL}", params={"estado": estado})
+
+    # Then it returns a list of config item
+    assert 200 <= r.status_code < 300
+
+    incidentes = r.json()
+
+    assert len(incidentes) == 0
 
 
 def test_get_incidente_by_id(
