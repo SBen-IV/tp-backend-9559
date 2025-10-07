@@ -37,8 +37,8 @@ class IncidentesService:
     ) -> list[IncidentePublicoConItems]:
         query = select(Incidente)
 
-        # if incidente_filter.titulo is not None:
-        #     query = query.where(Incidente.titulo.ilike(f"%{incidente_filter.titulo}%"))
+        if incidente_filter.titulo is not None:
+            query = query.where(Incidente.titulo.ilike(f"%{incidente_filter.titulo}%"))
 
         # if incidente_filter.descripcion is not None:
         #     query = query.where(

@@ -27,25 +27,25 @@ def test_get_all_incidentes(client: TestClient, session: Session) -> None:
     assert len(incidentes) == 4
 
 
-#
-#
-# def test_get_config_item_by_nombre(client: TestClient, session: Session) -> None:
-#     # Given some config items
-#     # Check db_seed.py to see them
-#     nombre = "Windows"
-#
-#     # When the user gets them by nombre
-#     r = client.get(f"{BASE_URL}", params={"nombre": nombre})
-#
-#     # Then it returns a list of config item
-#     assert 200 <= r.status_code < 300
-#
-#     items_config = r.json()
-#
-#     assert len(items_config) == 1
-#
-#     for item_config in items_config:
-#         assert item_config["nombre"].lower().find(nombre)
+def test_get_incidentes_by_titulo(client: TestClient, session: Session) -> None:
+    # Given some incidentes
+    # Check db_seed.py to see them
+    titulo = "quemada"
+
+    # When the user gets them by titulo
+    r = client.get(f"{BASE_URL}", params={"titulo": titulo})
+
+    # Then it returns a list of incidentes
+    assert 200 <= r.status_code < 300
+
+    incidentes = r.json()
+
+    assert len(incidentes) == 1
+
+    for incidente in incidentes:
+        assert incidente["titulo"].lower().find(titulo)
+
+
 #
 #
 # def test_get_config_item_by_version(client: TestClient, session: Session) -> None:
