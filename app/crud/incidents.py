@@ -45,8 +45,6 @@ class IncidentesService:
 
         if incidente_filter.categoria is not None:
             query = query.where(Incidente.categoria == incidente_filter.categoria)
-        # if incidente_filter.estado is not None:
-        #     query = query.where(Incidente.estado == incidente_filter.estado)
 
         incidentes = session.exec(query).all()
 

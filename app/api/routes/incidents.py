@@ -46,8 +46,8 @@ async def get_changes(
     return crud.get_incidentes(session=session, incidente_filter=incidente_filter)
 
 
-@router.get("/{id_change}", response_model=IncidentePublicoConItems)
-async def get_change(
-    session: SessionDep, id_change: uuid.UUID
+@router.get("/{id_incidente}", response_model=IncidentePublicoConItems)
+async def get_incidete(
+    session: SessionDep, id_incidente: uuid.UUID
 ) -> IncidentePublicoConItems:
-    return crud.get_incidente_by_id(session=session, id_change=id_change)
+    return crud.get_incidente_by_id(session=session, id_incidente=id_incidente)
