@@ -5,12 +5,14 @@ from app.models.changes import CambioCrear
 from app.models.commons import Prioridad
 from app.models.config_items import CategoriaItem, ItemConfiguracionCrear
 from app.models.incidents import CategoriaIncidente, IncidenteCrear
+from app.models.problems import ProblemaCrear
 from app.models.users import Rol, UsuarioRegistrar
 
 seed_usuarios = []
 seed_items_config = []
 seed_cambios = []
 seed_incidentes = []
+seed_problemas = []
 
 id_user = uuid.uuid4()
 
@@ -85,6 +87,27 @@ if os.getenv("TESTS", None):
             descripcion="Se solicita un método de acceso a los usuarios en AWS para cumplir auditoría",
             prioridad=Prioridad.BAJA,
             categoria=CategoriaIncidente.SOLICITUD_DE_SERVICIO,
+            id_config_items=[],
+        ),
+    ]
+
+    seed_problemas = [
+        ProblemaCrear(
+            titulo="No funciona webcam",
+            descripcion="Al querer usar la webcam en Zoom me sale en negro",
+            prioridad=Prioridad.BAJA,
+            id_config_items=[],
+        ),
+        ProblemaCrear(
+            titulo="CPU sobrecalentada",
+            descripcion="Se sobrecalienta la CPU de mi pc al usar Google Meet",
+            prioridad=Prioridad.MEDIA,
+            id_config_items=[],
+        ),
+        ProblemaCrear(
+            titulo="Servidor lento",
+            descripcion="Se sobrecalienta en horas pico",
+            prioridad=Prioridad.ALTA,
             id_config_items=[],
         ),
     ]

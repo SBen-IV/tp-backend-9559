@@ -30,7 +30,7 @@ async def create_incidente(
 
 
 @router.get("/", response_model=list[IncidentePublicoConItems])
-async def get_changes(
+async def get_incidentes(
     session: SessionDep,
     titulo: str | None = None,
     prioridad: Prioridad | None = None,
@@ -47,7 +47,7 @@ async def get_changes(
 
 
 @router.get("/{id_incidente}", response_model=IncidentePublicoConItems)
-async def get_incidete(
+async def get_incidente(
     session: SessionDep, id_incidente: uuid.UUID
 ) -> IncidentePublicoConItems:
     return crud.get_incidente_by_id(session=session, id_incidente=id_incidente)
