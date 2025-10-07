@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -60,3 +61,11 @@ class Incidente(IncidenteBase, table=True):
     config_items: list["ItemConfiguracion"] = Relationship(
         back_populates="incidentes", link_model=IncidenteItemLink
     )
+
+
+@dataclass
+class IncidenteFilter:
+    titulo: str | None = None
+    prioridad: Prioridad | None = None
+    categoria: CategoriaIncidente | None = None
+    estado: EstadoIncidente | None = None

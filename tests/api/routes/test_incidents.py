@@ -12,6 +12,140 @@ from app.utils.config import settings
 BASE_URL = f"{settings.API_V1_STR}/incidents"
 
 
+def test_get_all_incidentes(client: TestClient, session: Session) -> None:
+    # Given some incidentes
+    # Check db_seed.py to see them
+
+    # When the user gets all incidentes
+    r = client.get(f"{BASE_URL}")
+
+    # Then it returns a list of incidentes
+    assert 200 <= r.status_code < 300
+
+    incidentes = r.json()
+
+    assert len(incidentes) == 4
+
+
+#
+#
+# def test_get_config_item_by_nombre(client: TestClient, session: Session) -> None:
+#     # Given some config items
+#     # Check db_seed.py to see them
+#     nombre = "Windows"
+#
+#     # When the user gets them by nombre
+#     r = client.get(f"{BASE_URL}", params={"nombre": nombre})
+#
+#     # Then it returns a list of config item
+#     assert 200 <= r.status_code < 300
+#
+#     items_config = r.json()
+#
+#     assert len(items_config) == 1
+#
+#     for item_config in items_config:
+#         assert item_config["nombre"].lower().find(nombre)
+#
+#
+# def test_get_config_item_by_version(client: TestClient, session: Session) -> None:
+#     # Given some config items
+#     # Check db_seed.py to see them
+#     version = "Celeron"
+#
+#     # When the user gets them by nombre
+#     r = client.get(f"{BASE_URL}", params={"version": version})
+#
+#     # Then it returns a list of config item
+#     assert 200 <= r.status_code < 300
+#
+#     items_config = r.json()
+#
+#     assert len(items_config) == 1
+#
+#     for item_config in items_config:
+#         assert item_config["version"].lower().find(version)
+#
+#
+# def test_get_config_item_by_categoria(client: TestClient, session: Session) -> None:
+#     # Given some config items
+#     # Check db_seed.py to see them
+#     categoria = "HARDWARE"
+#
+#     # When the user gets them by categoria
+#     r = client.get(f"{BASE_URL}", params={"categoria": categoria})
+#
+#     # Then it returns a list of config item
+#     assert 200 <= r.status_code < 300
+#
+#     items_config = r.json()
+#
+#     assert len(items_config) == 1
+#
+#     for item_config in items_config:
+#         assert item_config["categoria"] == categoria
+#
+#
+# def test_get_config_item_by_estado(client: TestClient, session: Session) -> None:
+#     # Given some config items
+#     # Check db_seed.py to see them
+#     estado = "PLANEADO"
+#
+#     # When the user gets them by estado
+#     r = client.get(f"{BASE_URL}", params={"estado": estado})
+#
+#     # Then it returns a list of config item
+#     assert 200 <= r.status_code < 300
+#
+#     items_config = r.json()
+#
+#     assert len(items_config) == 3
+#
+#     for item_config in items_config:
+#         assert item_config["estado"] == estado
+#
+#
+# def test_get_config_item_by_id(
+#     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+# ) -> None:
+#     # Given a new config item
+#     nombre = "Linux"
+#     descripcion = "Sistema operativo"
+#     categoria = CategoriaItem.SOFTWARE
+#     version = "Ubuntu"
+#
+#     now = datetime.now(timezone.utc)
+#
+#     data = {
+#         "nombre": nombre,
+#         "descripcion": descripcion,
+#         "categoria": categoria,
+#         "version": version,
+#     }
+#
+#     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+#     config_item_id = r.json()["id"]
+#
+#     # When the user gets it by id
+#     r = client.get(f"{BASE_URL}/{config_item_id}")
+#
+#     # Then it returns the same config item
+#     assert 200 <= r.status_code < 300
+#
+#     item_configuracion = r.json()
+#
+#     assert item_configuracion
+#     assert item_configuracion["nombre"] == nombre
+#     assert item_configuracion["descripcion"] == descripcion
+#     assert item_configuracion["categoria"] == categoria
+#     assert item_configuracion["version"] == version
+#     assert item_configuracion["fecha_creacion"] > str(now)
+#     assert item_configuracion["estado"] == EstadoItem.PLANEADO
+#     # Just check that `owner_id` is present, maybe if a get user
+#     # is implemented we can check if it's equal
+#     assert item_configuracion["owner_id"]
+
+
 def test_create_new_incidente(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:

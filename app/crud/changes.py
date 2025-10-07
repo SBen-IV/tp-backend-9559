@@ -44,9 +44,9 @@ class CambiosService:
         if cambio_filter.estado is not None:
             query = query.where(Cambio.estado == cambio_filter.estado)
 
-        items_config = session.exec(query).all()
+        cambios = session.exec(query).all()
 
-        return items_config
+        return cambios
 
     def get_change_by_id(
         *, session: Session, id_change: uuid.UUID
@@ -55,4 +55,3 @@ class CambiosService:
         if not cambio:
             raise HTTPException(status_code=404, detail="No existe cambio")
         return cambio
-

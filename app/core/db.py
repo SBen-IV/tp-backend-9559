@@ -3,11 +3,13 @@ from sqlmodel import Session, create_engine, select
 
 from app.crud.changes import CambiosService
 from app.crud.config_items import ItemsConfiguracionService
+from app.crud.incidents import IncidentesService
 from app.crud.users import UsuariosService
-from app.db_seed import seed_changes, seed_items_config, seed_usuarios
+from app.db_seed import seed_cambios, seed_incidentes, seed_items_config, seed_usuarios
 from app.models.app_version import AppVersion
 from app.models.changes import Cambio
 from app.models.config_items import ItemConfiguracion
+from app.models.incidents import Incidente
 from app.models.users import Usuario
 from app.utils.config import settings
 
@@ -45,13 +47,25 @@ def populate_db(session: Session) -> None:
         item_config.id for item_config in session.exec(select(ItemConfiguracion)).all()
     ]
 
-    changes = [change.titulo for change in session.exec(select(Cambio)).all()]
+    cambios = [cambio.titulo for cambio in session.exec(select(Cambio)).all()]
 
-    for change in seed_changes:
-        if change.titulo not in changes:
-            change.owner_id = usuario.id
-            change.id_config_items = [id_items_config[0]]
-            CambiosService.create_cambio(session=session, cambio_crear=change)
+    for cambio in seed_cambios:
+        if cambio.titulo not in cambios:
+            cambio.owner_id = usuario.id
+            cambio.id_config_items = [id_items_config[0]]
+            CambiosService.create_cambio(session=session, cambio_crear=cambio)
+
+    incidentes = [
+        incidente.titulo for incidente in session.exec(select(Incidente)).all()
+    ]
+
+    for incidente in seed_incidentes:
+        if incidente.titulo not in incidentes:
+            incidente.owner_id = usuario.id
+            incidente.id_config_items = [id_items_config[0]]
+            IncidentesService.create_incidente(
+                session=session, incidente_crear=incidente
+            )
 
 
 def init_db(session: Session) -> None:
