@@ -39,9 +39,9 @@ async def get_changes(
 ) -> list[IncidentePublicoConItems]:
     incidente_filter = IncidenteFilter(
         titulo=titulo,
-        estado=estado,
         prioridad=prioridad,
         categoria=categoria,
+        estado=estado,
     )
     return crud.get_incidentes(session=session, incidente_filter=incidente_filter)
 
