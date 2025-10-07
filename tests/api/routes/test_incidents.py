@@ -65,46 +65,44 @@ def test_get_incidente_by_prioridad(client: TestClient, session: Session) -> Non
         assert incidente["prioridad"].lower().find(prioridad)
 
 
-#
-#
-# def test_get_config_item_by_categoria(client: TestClient, session: Session) -> None:
-#     # Given some config items
-#     # Check db_seed.py to see them
-#     categoria = "HARDWARE"
-#
-#     # When the user gets them by categoria
-#     r = client.get(f"{BASE_URL}", params={"categoria": categoria})
-#
-#     # Then it returns a list of config item
-#     assert 200 <= r.status_code < 300
-#
-#     items_config = r.json()
-#
-#     assert len(items_config) == 1
-#
-#     for item_config in items_config:
-#         assert item_config["categoria"] == categoria
-#
-#
-# def test_get_config_item_by_estado(client: TestClient, session: Session) -> None:
-#     # Given some config items
-#     # Check db_seed.py to see them
-#     estado = "PLANEADO"
-#
-#     # When the user gets them by estado
-#     r = client.get(f"{BASE_URL}", params={"estado": estado})
-#
-#     # Then it returns a list of config item
-#     assert 200 <= r.status_code < 300
-#
-#     items_config = r.json()
-#
-#     assert len(items_config) == 3
-#
-#     for item_config in items_config:
-#         assert item_config["estado"] == estado
-#
-#
+def test_get_incidente_by_categoria(client: TestClient, session: Session) -> None:
+    # Given some config items
+    # Check db_seed.py to see them
+    categoria = "SOLICITUD_DE_SERVICIO"
+
+    # When the user gets them by categoria
+    r = client.get(f"{BASE_URL}", params={"categoria": categoria})
+
+    # Then it returns a list of config item
+    assert 200 <= r.status_code < 300
+
+    incidentes = r.json()
+
+    assert len(incidentes) == 1
+
+    for incidente in incidentes:
+        assert incidente["categoria"] == categoria
+
+
+def test_get_incidente_by_estado(client: TestClient, session: Session) -> None:
+    # Given some config items
+    # Check db_seed.py to see them
+    estado = "NUEVO"
+
+    # When the user gets them by estado
+    r = client.get(f"{BASE_URL}", params={"estado": estado})
+
+    # Then it returns a list of config item
+    assert 200 <= r.status_code < 300
+
+    incidentes = r.json()
+
+    assert len(incidentes) == 4
+
+    for incidente in incidentes:
+        assert incidente["estado"] == estado
+
+
 # def test_get_config_item_by_id(
 #     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 # ) -> None:
