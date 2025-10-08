@@ -165,6 +165,11 @@ def test_get_incidente_by_id(
     # Just check that `owner_id` is present, maybe if a get user
     # is implemented we can check if it's equal
     assert incidente["owner_id"]
+    assert incidente["responsable_id"] is None
+    # And it includes the items linked
+    assert len(incidente["config_items"]) == len(id_config_items)
+    for c in incidente["config_items"]:
+        assert any(c["id"] == config_item for config_item in id_config_items)
 
 
 def test_create_new_incidente(
