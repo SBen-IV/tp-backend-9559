@@ -4,12 +4,20 @@ from sqlmodel import Session, create_engine, select
 from app.crud.changes import CambiosService
 from app.crud.config_items import ItemsConfiguracionService
 from app.crud.incidents import IncidentesService
+from app.crud.problems import ProblemasService
 from app.crud.users import UsuariosService
-from app.db_seed import seed_cambios, seed_incidentes, seed_items_config, seed_usuarios
+from app.db_seed import (
+    seed_cambios,
+    seed_incidentes,
+    seed_items_config,
+    seed_problemas,
+    seed_usuarios,
+)
 from app.models.app_version import AppVersion
 from app.models.changes import Cambio
 from app.models.config_items import ItemConfiguracion
 from app.models.incidents import Incidente
+from app.models.problems import Problema
 from app.models.users import Usuario
 from app.utils.config import settings
 
@@ -66,6 +74,14 @@ def populate_db(session: Session) -> None:
             IncidentesService.create_incidente(
                 session=session, incidente_crear=incidente
             )
+
+    problemas = [problema.titulo for problema in session.exec(select(Problema)).all()]
+
+    for problema in seed_problemas:
+        if problema.titulo not in problemas:
+            problema.owner_id = usuario.id
+            problema.id_config_items = [id_items_config[0]]
+            ProblemasService.create_problema(session=session, problema_crear=problema)
 
 
 def init_db(session: Session) -> None:

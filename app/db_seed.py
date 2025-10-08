@@ -5,12 +5,14 @@ from app.models.changes import CambioCrear
 from app.models.commons import Prioridad
 from app.models.config_items import CategoriaItem, ItemConfiguracionCrear
 from app.models.incidents import CategoriaIncidente, IncidenteCrear
+from app.models.problems import ProblemaCrear
 from app.models.users import Rol, UsuarioRegistrar
 
 seed_usuarios = []
 seed_items_config = []
 seed_cambios = []
 seed_incidentes = []
+seed_problemas = []
 
 id_user = uuid.uuid4()
 
@@ -88,6 +90,27 @@ if os.getenv("TESTS", None):
             id_config_items=[],
         ),
     ]
+
+    seed_problemas = [
+        ProblemaCrear(
+            titulo="No funciona webcam",
+            descripcion="Al querer usar la webcam en Zoom me sale en negro",
+            prioridad=Prioridad.BAJA,
+            id_config_items=[],
+        ),
+        ProblemaCrear(
+            titulo="CPU sobrecalentada",
+            descripcion="Se sobrecalienta la CPU de mi pc al usar Google Meet",
+            prioridad=Prioridad.MEDIA,
+            id_config_items=[],
+        ),
+        ProblemaCrear(
+            titulo="Servidor lento",
+            descripcion="Se sobrecalienta en horas pico",
+            prioridad=Prioridad.ALTA,
+            id_config_items=[],
+        ),
+    ]
 else:
     # Create some basic data in case we need to run reset_db
     seed_usuarios = [
@@ -125,5 +148,57 @@ else:
             descripcion="Manual de impresora HP LaserJet",
             version="1",
             categoria=CategoriaItem.DOCUMENTACION,
+        ),
+    ]
+
+    seed_incidentes = [
+        IncidenteCrear(
+            titulo="CPU quemada",
+            descripcion="Se quemó la CPU del servidor",
+            prioridad=Prioridad.MEDIA,
+            categoria=CategoriaIncidente.HARDWARE,
+            id_config_items=[],
+        ),
+        IncidenteCrear(
+            titulo="Contraseñas visibles",
+            descripcion="Las contraseñas de los usuarios pueden accederse a través de un hack del frontend",
+            prioridad=Prioridad.URGENTE,
+            categoria=CategoriaIncidente.SEGURIDAD,
+            id_config_items=[],
+        ),
+        IncidenteCrear(
+            titulo="No se hacen los backups",
+            descripcion="La nueva base de datos no está generando backups diarios",
+            prioridad=Prioridad.ALTA,
+            categoria=CategoriaIncidente.SOFTWARE,
+            id_config_items=[],
+        ),
+        IncidenteCrear(
+            titulo="Acceso a usuarios",
+            descripcion="Se solicita un método de acceso a los usuarios en AWS para cumplir auditoría",
+            prioridad=Prioridad.BAJA,
+            categoria=CategoriaIncidente.SOLICITUD_DE_SERVICIO,
+            id_config_items=[],
+        ),
+    ]
+
+    seed_problemas = [
+        ProblemaCrear(
+            titulo="No funciona webcam",
+            descripcion="Al querer usar la webcam en Zoom me sale en negro",
+            prioridad=Prioridad.BAJA,
+            id_config_items=[],
+        ),
+        ProblemaCrear(
+            titulo="CPU sobrecalentada",
+            descripcion="Se sobrecalienta la CPU de mi pc al usar Google Meet",
+            prioridad=Prioridad.MEDIA,
+            id_config_items=[],
+        ),
+        ProblemaCrear(
+            titulo="Servidor lento",
+            descripcion="Se sobrecalienta en horas pico",
+            prioridad=Prioridad.ALTA,
+            id_config_items=[],
         ),
     ]

@@ -1,7 +1,15 @@
+import uuid
+
+from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.models.config_items import ItemConfiguracion
-from app.models.problems import Problema, ProblemaCrear
+from app.models.problems import (
+    Problema,
+    ProblemaCrear,
+    ProblemaFilter,
+    ProblemaPublicoConItems,
+)
 
 
 class ProblemasService:
@@ -21,3 +29,31 @@ class ProblemasService:
         session.refresh(db_obj)
 
         return db_obj
+
+    def get_problemas(
+        *, session: Session, problema_filter: ProblemaFilter
+    ) -> list[ProblemaPublicoConItems]:
+        query = select(Problema)
+
+        if problema_filter.titulo is not None:
+            query = query.where(Problema.titulo.ilike(f"%{problema_filter.titulo}%"))
+
+        if problema_filter.prioridad is not None:
+            query = query.where(Problema.prioridad == problema_filter.prioridad)
+
+        if problema_filter.estado is not None:
+            query = query.where(Problema.estado == problema_filter.estado)
+
+        problemas = session.exec(query).all()
+
+        return problemas
+
+    def get_problema_by_id(*, session: Session, id_problema: uuid.UUID) -> Problema:
+        problema = session.exec(
+            select(Problema).where(Problema.id == id_problema)
+        ).first()
+
+        if not problema:
+            raise HTTPException(status_code=404, detail="No existe problema")
+
+        return problema
