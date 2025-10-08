@@ -1,3 +1,6 @@
+import uuid
+
+from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.models.config_items import ItemConfiguracion
@@ -45,13 +48,12 @@ class ProblemasService:
 
         return problemas
 
-    #
-    # def get_problema_by_id(*, session: Session, id_problema: uuid.UUID) -> Problema:
-    #     problema = session.exec(
-    #         select(Problema).where(Problema.id == id_problema)
-    #     ).first()
-    #
-    #     if not problema:
-    #         raise HTTPException(status_code=404, detail="No existe problema")
-    #
-    #     return problema
+    def get_problema_by_id(*, session: Session, id_problema: uuid.UUID) -> Problema:
+        problema = session.exec(
+            select(Problema).where(Problema.id == id_problema)
+        ).first()
+
+        if not problema:
+            raise HTTPException(status_code=404, detail="No existe problema")
+
+        return problema

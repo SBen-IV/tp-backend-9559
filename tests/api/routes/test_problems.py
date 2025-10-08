@@ -102,54 +102,53 @@ def test_get_problema_by_estado_cerrado(client: TestClient, session: Session) ->
     assert len(problemas) == 0
 
 
-#
-#
-# def test_get_problema_by_id(
-#     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
-# ) -> None:
-#     # First we need the id of an item
-#     config_items = client.get(f"{settings.API_V1_STR}/config-items")
-#
-#     config_item = config_items.json()[0]
-#
-#     # Given a new problema
-#     titulo = "Cache falla"
-#     descripcion = "Redis falla al traer artículos nuevos"
-#     prioridad = Prioridad.MEDIA
-#     categoria = Categoriaproblema.SOFTWARE
-#     id_config_items = [config_item["id"]]
-#
-#     now = datetime.now(timezone.utc)
-#
-#     data = {
-#         "titulo": titulo,
-#         "descripcion": descripcion,
-#         "prioridad": prioridad,
-#         "categoria": categoria,
-#         "id_config_items": id_config_items,
-#     }
-#
-#     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
-#     problema_id = r.json()["id"]
-#
-#     # When the user gets it by id
-#     r = client.get(f"{BASE_URL}/{problema_id}")
-#
-#     # Then it returns the same config item
-#     assert 200 <= r.status_code < 300
-#
-#     problema = r.json()
-#
-#     assert problema
-#     assert problema["titulo"] == titulo
-#     assert problema["descripcion"] == descripcion
-#     assert problema["categoria"] == categoria
-#     assert problema["prioridad"] == prioridad
-#     assert problema["fecha_creacion"] > str(now)
-#     assert problema["estado"] == Estadoproblema.NUEVO
-#     # Just check that `owner_id` is present, maybe if a get user
-#     # is implemented we can check if it's equal
-#     assert problema["owner_id"]
+def test_get_problema_by_id(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # First we need the id of an item
+    config_items = client.get(f"{settings.API_V1_STR}/config-items")
+
+    config_item = config_items.json()[0]
+
+    # Given a new problema
+    titulo = "Cache falla"
+    descripcion = "Redis falla al traer artículos nuevos"
+    prioridad = Prioridad.MEDIA
+    id_config_items = [config_item["id"]]
+
+    now = datetime.now(timezone.utc)
+
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "id_config_items": id_config_items,
+    }
+
+    r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
+    problema_id = r.json()["id"]
+
+    # When the user gets it by id
+    r = client.get(f"{BASE_URL}/{problema_id}")
+
+    # Then it returns the same config item
+    assert 200 <= r.status_code < 300
+
+    problema = r.json()
+
+    assert problema
+    assert problema["titulo"] == titulo
+    assert problema["descripcion"] == descripcion
+    assert problema["prioridad"] == prioridad
+    assert problema["fecha_creacion"] > str(now)
+    assert problema["estado"] == EstadoProblema.EN_ANALISIS
+    # Just check that `owner_id` is present, maybe if a get user
+    # is implemented we can check if it's equal
+    assert problema["owner_id"]
+    assert problema["responsable_id"] is None
+    assert len(problema["config_items"]) == len(id_config_items)
+    for c in problema["config_items"]:
+        assert any(c["id"] == config_item for config_item in id_config_items)
 
 
 def test_create_new_problema(
