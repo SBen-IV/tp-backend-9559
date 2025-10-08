@@ -1,8 +1,17 @@
+import uuid
+
 from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.incidents import IncidentesService as crud
-from app.models.incidents import IncidenteCrear, IncidentePublicoConItems
+from app.models.commons import Prioridad
+from app.models.incidents import (
+    CategoriaIncidente,
+    EstadoIncidente,
+    IncidenteCrear,
+    IncidenteFilter,
+    IncidentePublicoConItems,
+)
 
 router = APIRouter(prefix="/incidents")
 
@@ -18,3 +27,27 @@ async def create_incidente(
     incidente = crud.create_incidente(session=session, incidente_crear=incidente_crear)
 
     return incidente
+
+
+@router.get("/", response_model=list[IncidentePublicoConItems])
+async def get_changes(
+    session: SessionDep,
+    titulo: str | None = None,
+    prioridad: Prioridad | None = None,
+    categoria: CategoriaIncidente | None = None,
+    estado: EstadoIncidente | None = None,
+) -> list[IncidentePublicoConItems]:
+    incidente_filter = IncidenteFilter(
+        titulo=titulo,
+        prioridad=prioridad,
+        categoria=categoria,
+        estado=estado,
+    )
+    return crud.get_incidentes(session=session, incidente_filter=incidente_filter)
+
+
+@router.get("/{id_incidente}", response_model=IncidentePublicoConItems)
+async def get_incidete(
+    session: SessionDep, id_incidente: uuid.UUID
+) -> IncidentePublicoConItems:
+    return crud.get_incidente_by_id(session=session, id_incidente=id_incidente)
