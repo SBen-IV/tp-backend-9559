@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.changes import CambiosService as crud
 from app.models.changes import (
+    CambioActualizar,
     CambioCrear,
     CambioFilter,
     CambioPublicoConItems,
@@ -47,3 +48,15 @@ async def get_change(
     session: SessionDep, id_change: uuid.UUID
 ) -> CambioPublicoConItems:
     return crud.get_change_by_id(session=session, id_change=id_change)
+
+
+@router.patch("/{id_change}", response_model=CambioPublicoConItems)
+async def update_change(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id_change: uuid.UUID,
+    cambio_actualizar: CambioActualizar,
+) -> CambioPublicoConItems:
+    return crud.update_change(
+        session=session, id_change=id_change, cambio_actualizar=cambio_actualizar
+    )
