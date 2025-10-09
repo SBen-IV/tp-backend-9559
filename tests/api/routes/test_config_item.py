@@ -377,31 +377,39 @@ def test_update_config_item_nombre(
     assert item_config["owner_id"] == item_config_created["owner_id"]
 
 
-# def test_update_change_descripcion(
-#     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
-# ) -> None:
-#     # Given a cambio
-#     cambio_created = create_random_cambio(client, empleado_token_headers)
-#
-#     data = {"descripcion": "Nueva descripción"}
-#
-#     # When the user edits it
-#     r = client.patch(
-#         f"{BASE_URL}/{cambio_created['id']}", json=data, headers=empleado_token_headers
-#     )
-#
-#     # Then the cambio is persisted
-#     assert 200 <= r.status_code < 300
-#
-#     cambio = r.json()
-#
-#     assert cambio
-#     assert cambio["titulo"] == cambio_created["titulo"]
-#     assert cambio["descripcion"] != cambio_created["descripcion"]
-#     assert cambio["prioridad"] == cambio_created["prioridad"]
-#     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
-#     assert cambio["owner_id"] == cambio_created["owner_id"]
-#     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
+def test_update_config_item_descripcion(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a item_config
+    item_config_created = create_random_item_configuracion(
+        client, empleado_token_headers
+    )
+
+    data = {"descripcion": "Nueva descripción"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{item_config_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
+    )
+
+    # Then the item_config is persisted
+    assert 200 <= r.status_code < 300
+
+    item_config = r.json()
+
+    assert item_config
+    assert item_config["id"] == item_config_created["id"]
+    assert item_config["nombre"] == item_config_created["nombre"]
+    assert item_config["descripcion"] != item_config_created["descripcion"]
+    assert item_config["version"] == item_config_created["version"]
+    assert item_config["estado"] == item_config_created["estado"]
+    assert item_config["categoria"] == item_config_created["categoria"]
+    assert item_config["fecha_creacion"] == item_config_created["fecha_creacion"]
+    assert item_config["owner_id"] == item_config_created["owner_id"]
+
+
 #
 #
 # def test_update_change_prioridad(

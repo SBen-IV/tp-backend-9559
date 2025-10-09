@@ -87,6 +87,7 @@ class ItemConfiguracion(ItemConfiguracionBase, table=True):
 
 class ItemConfiguracionActualizar(SQLModel):
     nombre: str | None = Field(None, min_length=1, max_length=255)
+    descripcion: str | None = Field(None, min_length=1)
 
 
 @dataclass

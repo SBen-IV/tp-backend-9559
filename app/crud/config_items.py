@@ -75,10 +75,10 @@ class ItemsConfiguracionService:
 
         if item_config_actualizar.nombre is not None:
             item_config.nombre = item_config_actualizar.nombre
-        #
-        # if item_config_actualizar.descripcion is not None:
-        #     item_config.descripcion = item_config_actualizar.descripcion
-        #
+
+        if item_config_actualizar.descripcion is not None:
+            item_config.descripcion = item_config_actualizar.descripcion
+
         # if item_config_actualizar.prioridad is not None:
         #     item_config.prioridad = item_config_actualizar.prioridad
         #
