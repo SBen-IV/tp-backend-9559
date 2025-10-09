@@ -76,6 +76,9 @@ class CambiosService:
         if cambio_actualizar.prioridad is not None:
             cambio.prioridad = cambio_actualizar.prioridad
 
+        if cambio_actualizar.estado is not None:
+            cambio.estado = cambio_actualizar.estado
+
         session.add(cambio)
         session.commit()
         session.refresh(cambio)
