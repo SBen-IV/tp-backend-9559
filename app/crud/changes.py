@@ -73,6 +73,9 @@ class CambiosService:
         if cambio_actualizar.descripcion is not None:
             cambio.descripcion = cambio_actualizar.descripcion
 
+        if cambio_actualizar.prioridad is not None:
+            cambio.prioridad = cambio_actualizar.prioridad
+
         session.add(cambio)
         session.commit()
         session.refresh(cambio)
