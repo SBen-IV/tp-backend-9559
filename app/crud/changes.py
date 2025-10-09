@@ -67,8 +67,11 @@ class CambiosService:
     ) -> CambioPublicoConItems:
         cambio = CambiosService.get_change_by_id(session=session, id_change=id_change)
 
-        if cambio_actualizar is not None:
+        if cambio_actualizar.titulo is not None:
             cambio.titulo = cambio_actualizar.titulo
+
+        if cambio_actualizar.descripcion is not None:
+            cambio.descripcion = cambio_actualizar.descripcion
 
         session.add(cambio)
         session.commit()
