@@ -79,9 +79,9 @@ class ItemsConfiguracionService:
         if item_config_actualizar.descripcion is not None:
             item_config.descripcion = item_config_actualizar.descripcion
 
-        # if item_config_actualizar.prioridad is not None:
-        #     item_config.prioridad = item_config_actualizar.prioridad
-        #
+        if item_config_actualizar.categoria is not None:
+            item_config.categoria = item_config_actualizar.categoria
+
         # if item_config_actualizar.estado is not None:
         #     item_config.estado = item_config_actualizar.estado
         #
