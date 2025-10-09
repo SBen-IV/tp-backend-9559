@@ -5,8 +5,10 @@ from sqlmodel import Session, select
 
 from app.models.config_items import (
     ItemConfiguracion,
+    ItemConfiguracionActualizar,
     ItemConfiguracionCrear,
     ItemConfiguracionFilter,
+    ItemConfiguracionPublico,
 )
 
 
@@ -59,4 +61,32 @@ class ItemsConfiguracionService:
             raise HTTPException(
                 status_code=404, detail="No existe item de configuracion"
             )
+        return item_config
+
+    def update_item_configuracion(
+        *,
+        session: Session,
+        id_item_config: uuid.UUID,
+        item_config_actualizar: ItemConfiguracionActualizar,
+    ) -> ItemConfiguracionPublico:
+        item_config = ItemsConfiguracionService.get_item_configuracion_by_id(
+            session=session, id_item_config=id_item_config
+        )
+
+        if item_config_actualizar.nombre is not None:
+            item_config.nombre = item_config_actualizar.nombre
+        #
+        # if item_config_actualizar.descripcion is not None:
+        #     item_config.descripcion = item_config_actualizar.descripcion
+        #
+        # if item_config_actualizar.prioridad is not None:
+        #     item_config.prioridad = item_config_actualizar.prioridad
+        #
+        # if item_config_actualizar.estado is not None:
+        #     item_config.estado = item_config_actualizar.estado
+        #
+        session.add(item_config)
+        session.commit()
+        session.refresh(item_config)
+
         return item_config
