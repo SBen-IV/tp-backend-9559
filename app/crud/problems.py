@@ -66,6 +66,15 @@ class ProblemasService:
 
         if problema_actualizar.titulo is not None:
             problema.titulo = problema_actualizar.titulo
+            
+        if problema_actualizar.descripcion is not None:
+            problema.descripcion = problema_actualizar.descripcion
+
+        if problema_actualizar.estado is not None:
+            problema.estado = problema_actualizar.estado
+
+        if problema_actualizar.responsable_id is not None:
+            problema.responsable_id = problema_actualizar.responsable_id
 
         session.add(problema)
         session.commit()
