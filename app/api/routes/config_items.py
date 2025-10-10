@@ -7,6 +7,7 @@ from app.crud.config_items import ItemsConfiguracionService as crud
 from app.models.config_items import (
     CategoriaItem,
     EstadoItem,
+    ItemConfiguracionActualizar,
     ItemConfiguracionCrear,
     ItemConfiguracionFilter,
     ItemConfiguracionPublico,
@@ -54,4 +55,18 @@ async def get_config_item(
 ) -> ItemConfiguracionPublico:
     return crud.get_item_configuracion_by_id(
         session=session, id_item_config=id_item_config
+    )
+
+
+@router.patch("/{id_item_config}", response_model=ItemConfiguracionPublico)
+async def update_change(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id_item_config: uuid.UUID,
+    item_config_actualizar: ItemConfiguracionActualizar,
+) -> ItemConfiguracionPublico:
+    return crud.update_item_configuracion(
+        session=session,
+        id_item_config=id_item_config,
+        item_config_actualizar=item_config_actualizar,
     )

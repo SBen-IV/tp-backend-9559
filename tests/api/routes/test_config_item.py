@@ -2,11 +2,15 @@
 
 from datetime import datetime, timezone
 
+from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from app.models.config_items import CategoriaItem, EstadoItem
 from app.utils.config import settings
+
+Faker.seed(0)
+fake = Faker()
 
 BASE_URL = f"{settings.API_V1_STR}/config-items"
 
@@ -319,3 +323,154 @@ def test_create_item_configuracion_with_empty_categoria_returns_error(
         == "Input should be 'SOFTWARE', 'HARDWARE' or 'DOCUMENTACION'"
     )
     assert details["field"] == "categoria"
+
+
+def create_random_item_configuracion(
+    client: TestClient, token_headers: dict[str, str]
+) -> dict:
+    nombre = fake.word()
+    descripcion = fake.text(max_nb_chars=100)
+    version = "1.0"
+    categoria = "SOFTWARE"
+
+    data = {
+        "nombre": nombre,
+        "descripcion": descripcion,
+        "version": version,
+        "categoria": categoria,
+    }
+
+    r = client.post(BASE_URL, json=data, headers=token_headers)
+    return r.json()
+
+
+def test_update_config_item_nombre(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a config item
+    item_config_created = create_random_item_configuracion(
+        client, empleado_token_headers
+    )
+
+    data = {"nombre": "Nuevo nombre"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{item_config_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
+    )
+
+    # Then the config item is persisted
+    assert 200 <= r.status_code < 300
+
+    item_config = r.json()
+
+    assert item_config
+    assert item_config["id"] == item_config_created["id"]
+    assert item_config["nombre"] != item_config_created["nombre"]
+    assert item_config["descripcion"] == item_config_created["descripcion"]
+    assert item_config["version"] == item_config_created["version"]
+    assert item_config["estado"] == item_config_created["estado"]
+    assert item_config["categoria"] == item_config_created["categoria"]
+    assert item_config["fecha_creacion"] == item_config_created["fecha_creacion"]
+    assert item_config["owner_id"] == item_config_created["owner_id"]
+
+
+def test_update_config_item_descripcion(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a item_config
+    item_config_created = create_random_item_configuracion(
+        client, empleado_token_headers
+    )
+
+    data = {"descripcion": "Nueva descripción"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{item_config_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
+    )
+
+    # Then the item_config is persisted
+    assert 200 <= r.status_code < 300
+
+    item_config = r.json()
+
+    assert item_config
+    assert item_config["id"] == item_config_created["id"]
+    assert item_config["nombre"] == item_config_created["nombre"]
+    assert item_config["descripcion"] != item_config_created["descripcion"]
+    assert item_config["version"] == item_config_created["version"]
+    assert item_config["estado"] == item_config_created["estado"]
+    assert item_config["categoria"] == item_config_created["categoria"]
+    assert item_config["fecha_creacion"] == item_config_created["fecha_creacion"]
+    assert item_config["owner_id"] == item_config_created["owner_id"]
+
+
+def test_update_config_item_categoria(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a item_config
+    item_config_created = create_random_item_configuracion(
+        client, empleado_token_headers
+    )
+
+    data = {"categoria": "HARDWARE"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{item_config_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
+    )
+
+    # Then the item_config is persisted
+    assert 200 <= r.status_code < 300
+
+    item_config = r.json()
+
+    assert item_config
+    assert item_config["id"] == item_config_created["id"]
+    assert item_config["nombre"] == item_config_created["nombre"]
+    assert item_config["descripcion"] == item_config_created["descripcion"]
+    assert item_config["version"] == item_config_created["version"]
+    assert item_config["estado"] == item_config_created["estado"]
+    assert item_config["categoria"] != item_config_created["categoria"]
+    assert item_config["fecha_creacion"] == item_config_created["fecha_creacion"]
+    assert item_config["owner_id"] == item_config_created["owner_id"]
+
+
+def test_update_change_estado(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a cambio
+    item_config_created = create_random_item_configuracion(
+        client, empleado_token_headers
+    )
+
+    data = {"estado": "EN_PRODUCCION"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{item_config_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    item_config = r.json()
+
+    assert item_config
+    assert item_config["id"] == item_config_created["id"]
+    assert item_config["nombre"] == item_config_created["nombre"]
+    assert item_config["descripcion"] == item_config_created["descripcion"]
+    assert item_config["version"] == item_config_created["version"]
+    assert item_config["estado"] != item_config_created["estado"]
+    assert item_config["categoria"] == item_config_created["categoria"]
+    assert item_config["fecha_creacion"] == item_config_created["fecha_creacion"]
+    assert item_config["owner_id"] == item_config_created["owner_id"]
