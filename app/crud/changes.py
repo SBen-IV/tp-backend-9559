@@ -3,7 +3,13 @@ from http.client import HTTPException
 
 from sqlmodel import Session, select
 
-from app.models.changes import Cambio, CambioCrear, CambioFilter, CambioPublicoConItems
+from app.models.changes import (
+    Cambio,
+    CambioActualizar,
+    CambioCrear,
+    CambioFilter,
+    CambioPublicoConItems,
+)
 from app.models.config_items import ItemConfiguracion
 
 
@@ -54,4 +60,27 @@ class CambiosService:
         cambio = session.exec(select(Cambio).where(Cambio.id == id_change)).first()
         if not cambio:
             raise HTTPException(status_code=404, detail="No existe cambio")
+        return cambio
+
+    def update_change(
+        *, session: Session, id_change: uuid.UUID, cambio_actualizar: CambioActualizar
+    ) -> CambioPublicoConItems:
+        cambio = CambiosService.get_change_by_id(session=session, id_change=id_change)
+
+        if cambio_actualizar.titulo is not None:
+            cambio.titulo = cambio_actualizar.titulo
+
+        if cambio_actualizar.descripcion is not None:
+            cambio.descripcion = cambio_actualizar.descripcion
+
+        if cambio_actualizar.prioridad is not None:
+            cambio.prioridad = cambio_actualizar.prioridad
+
+        if cambio_actualizar.estado is not None:
+            cambio.estado = cambio_actualizar.estado
+
+        session.add(cambio)
+        session.commit()
+        session.refresh(cambio)
+
         return cambio

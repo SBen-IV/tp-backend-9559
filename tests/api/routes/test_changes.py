@@ -1,12 +1,16 @@
 # ruff: noqa: ARG001
 from datetime import datetime, timezone
 
+from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 from app.models.changes import EstadoCambio, Prioridad
 from app.models.config_items import ItemConfiguracion
 from app.utils.config import settings
+
+Faker.seed(0)
+fake = Faker()
 
 BASE_URL = f"{settings.API_V1_STR}/changes"
 
@@ -225,3 +229,131 @@ def test_get_change_by_id(
     assert cambio["owner_id"]
     assert cambio["config_items"][0]["id"] == config_item["id"]
 
+
+def create_random_cambio(client: TestClient, token_headers: dict[str, str]) -> dict:
+    config_items = client.get(f"{settings.API_V1_STR}/config-items")
+    config_item = config_items.json()[0]
+
+    titulo = fake.word()
+    descripcion = fake.text(max_nb_chars=100)
+    prioridad = Prioridad.BAJA
+    id_config_items = [config_item["id"]]
+
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "id_config_items": id_config_items,
+    }
+
+    r = client.post(BASE_URL, json=data, headers=token_headers)
+    return r.json()
+
+
+def test_update_change_titulo(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a cambio
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    data = {"titulo": "Nuevo titulo"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    cambio = r.json()
+
+    assert cambio
+    assert cambio["titulo"] != cambio_created["titulo"]
+    assert cambio["descripcion"] == cambio_created["descripcion"]
+    assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
+    assert cambio["owner_id"] == cambio_created["owner_id"]
+    assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
+
+
+def test_update_change_descripcion(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a cambio
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    data = {"descripcion": "Nueva descripción"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    cambio = r.json()
+
+    assert cambio
+    assert cambio["titulo"] == cambio_created["titulo"]
+    assert cambio["descripcion"] != cambio_created["descripcion"]
+    assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
+    assert cambio["owner_id"] == cambio_created["owner_id"]
+    assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
+
+
+def test_update_change_prioridad(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a cambio
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    data = {"prioridad": "ALTA"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    cambio = r.json()
+
+    assert cambio
+    assert cambio["titulo"] == cambio_created["titulo"]
+    assert cambio["descripcion"] == cambio_created["descripcion"]
+    assert cambio["prioridad"] != cambio_created["prioridad"]
+    assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
+    assert cambio["owner_id"] == cambio_created["owner_id"]
+    assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
+
+
+def test_update_change_estado(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a cambio
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    data = {"estado": "CERRADO"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    cambio = r.json()
+
+    assert cambio
+    assert cambio["titulo"] == cambio_created["titulo"]
+    assert cambio["descripcion"] == cambio_created["descripcion"]
+    assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["estado"] != cambio_created["estado"]
+    assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
+    assert cambio["owner_id"] == cambio_created["owner_id"]
+    assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]

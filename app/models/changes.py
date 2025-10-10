@@ -56,6 +56,13 @@ class Cambio(CambioBase, table=True):
     )
 
 
+class CambioActualizar(SQLModel):
+    titulo: str | None = Field(None, min_length=1)
+    descripcion: str | None = Field(None, min_length=1)
+    prioridad: Prioridad | None = None
+    estado: EstadoCambio | None = None
+
+
 @dataclass
 class CambioFilter:
     titulo: str | None = None
