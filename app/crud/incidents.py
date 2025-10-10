@@ -69,7 +69,7 @@ class IncidentesService:
     ) -> IncidentePublicoConItems:
         incidente = IncidentesService.get_incidente_by_id(session=session, id_incidente=id_incidente)
 
-        if incidente.titulo is not None:
+        if incidente_actualizar.titulo is not None:
             incidente.titulo = incidente_actualizar.titulo
 
         session.add(incidente)
