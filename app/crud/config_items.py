@@ -82,9 +82,9 @@ class ItemsConfiguracionService:
         if item_config_actualizar.categoria is not None:
             item_config.categoria = item_config_actualizar.categoria
 
-        # if item_config_actualizar.estado is not None:
-        #     item_config.estado = item_config_actualizar.estado
-        #
+        if item_config_actualizar.estado is not None:
+            item_config.estado = item_config_actualizar.estado
+
         session.add(item_config)
         session.commit()
         session.refresh(item_config)
