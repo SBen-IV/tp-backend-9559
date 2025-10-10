@@ -1,12 +1,16 @@
 # ruff: noqa: ARG001
 from datetime import datetime, timezone
 
+from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
+Faker.seed(0)
+fake = Faker()
+
 from app.models.commons import Prioridad
 from app.models.config_items import ItemConfiguracion
-from app.models.incidents import CategoriaIncidente, EstadoIncidente
+from app.models.incidents import CategoriaIncidente, EstadoIncidente, CategoriaIncidente
 from app.utils.config import settings
 
 BASE_URL = f"{settings.API_V1_STR}/incidents"
@@ -304,3 +308,51 @@ def test_create_incidente_with_empty_description_returns_error(
     assert details
     assert details["message"] == "String should have at least 1 character"
     assert details["field"] == "descripcion"
+    
+def create_random_incident(client: TestClient, token_headers: dict[str, str]) -> dict:
+    config_items = client.get(f"{settings.API_V1_STR}/config-items")
+    config_item = config_items.json()[0]
+
+    titulo = fake.word()
+    descripcion = fake.text(max_nb_chars=100)
+    prioridad = Prioridad.BAJA
+    categoria = CategoriaIncidente.SOFTWARE
+    id_config_items = [config_item["id"]]
+
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "categoria": categoria,
+        "id_config_items": id_config_items,
+    }
+
+    r = client.post(BASE_URL, json=data, headers=token_headers)
+    return r.json()    
+
+def test_update_incidente_titulo(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given an incident
+    incidente_created = create_random_incident(client, empleado_token_headers)
+
+    data = {"titulo": "Nuevo titulo"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    incident = r.json()
+
+    assert incident
+    assert incident["titulo"] != incidente_created["titulo"]
+    assert incident["descripcion"] == incidente_created["descripcion"]
+    assert incident["prioridad"] == incidente_created["prioridad"]
+    assert incident["fecha_creacion"] == incidente_created["fecha_creacion"]
+    assert incident["categoria"] == incidente_created["categoria"]
+    assert incident["owner_id"] == incidente_created["owner_id"]
+    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
