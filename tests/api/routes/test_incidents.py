@@ -1,6 +1,7 @@
 # ruff: noqa: ARG001
 from datetime import datetime, timezone
 
+from app.models.users import Usuario
 from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -356,3 +357,124 @@ def test_update_incidente_titulo(
     assert incident["categoria"] == incidente_created["categoria"]
     assert incident["owner_id"] == incidente_created["owner_id"]
     assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    
+def test_update_incidente_descripcion(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given an incident
+    incidente_created = create_random_incident(client, empleado_token_headers)
+
+    data = {"descripcion": "Nueva descripcion"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    incident = r.json()
+
+    assert incident
+    assert incident["titulo"] == incidente_created["titulo"]
+    assert incident["descripcion"] != incidente_created["descripcion"]
+    assert incident["prioridad"] == incidente_created["prioridad"]
+    assert incident["fecha_creacion"] == incidente_created["fecha_creacion"]
+    assert incident["categoria"] == incidente_created["categoria"]
+    assert incident["owner_id"] == incidente_created["owner_id"]
+    assert incident["responsable_id"] == incidente_created["responsable_id"]
+    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"] 
+    
+
+def test_update_incidente_categoria(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given an incident
+    incidente_created = create_random_incident(client, empleado_token_headers)
+
+    data = {"categoria": CategoriaIncidente.SOLICITUD_DE_SERVICIO}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    incident = r.json()
+
+    assert incident
+    assert incident["titulo"] == incidente_created["titulo"]
+    assert incident["descripcion"] == incidente_created["descripcion"]
+    assert incident["prioridad"] == incidente_created["prioridad"]
+    assert incident["fecha_creacion"] == incidente_created["fecha_creacion"]
+    assert incident["categoria"] != incidente_created["categoria"]
+    assert incident["owner_id"] == incidente_created["owner_id"]
+    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]     
+    
+def test_update_incidente_estado(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given an incident
+    incidente_created = create_random_incident(client, empleado_token_headers)
+
+    data = {"estado": EstadoIncidente.RESUELTO}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    incident = r.json()
+    
+    # Newly created incident has no employee assigned to it
+    assert incident["responsable_id"] is None
+
+    assert incident
+    assert incident["titulo"] == incidente_created["titulo"]
+    assert incident["descripcion"] == incidente_created["descripcion"]
+    assert incident["prioridad"] == incidente_created["prioridad"]
+    assert incident["fecha_creacion"] == incidente_created["fecha_creacion"]
+    assert incident["categoria"] == incidente_created["categoria"]
+    assert incident["estado"] != incidente_created["estado"]
+    assert incident["owner_id"] == incidente_created["owner_id"]
+    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]     
+    
+def test_update_incidente_responsable(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Get any user
+    usuario = session.exec(select(Usuario)).first()
+    
+    # Given an incident
+    incidente_created = create_random_incident(client, empleado_token_headers)
+
+    data = {"responsable_id": str(usuario.id)}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    incident = r.json()
+        
+    assert incident["responsable_id"] is not None
+    assert incident["responsable_id"] != incidente_created["responsable_id"]
+
+    assert incident
+    assert incident["titulo"] == incidente_created["titulo"]
+    assert incident["descripcion"] == incidente_created["descripcion"]
+    assert incident["prioridad"] == incidente_created["prioridad"]
+    assert incident["fecha_creacion"] == incidente_created["fecha_creacion"]
+    assert incident["categoria"] == incidente_created["categoria"]
+    assert incident["estado"] == incidente_created["estado"]
+    assert incident["owner_id"] == incidente_created["owner_id"]
+    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]        

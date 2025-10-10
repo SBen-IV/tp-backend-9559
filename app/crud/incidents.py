@@ -71,6 +71,18 @@ class IncidentesService:
 
         if incidente_actualizar.titulo is not None:
             incidente.titulo = incidente_actualizar.titulo
+            
+        if incidente_actualizar.descripcion is not None:
+            incidente.descripcion = incidente_actualizar.descripcion
+            
+        if incidente_actualizar.categoria is not None:
+            incidente.categoria = incidente_actualizar.categoria
+            
+        if incidente_actualizar.estado is not None:
+            incidente.estado = incidente_actualizar.estado
+            
+        if incidente_actualizar.responsable_id is not None:
+            incidente.responsable_id = incidente_actualizar.responsable_id
 
         session.add(incidente)
         session.commit()
