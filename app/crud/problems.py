@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from app.models.config_items import ItemConfiguracion
 from app.models.problems import (
     Problema,
+    ProblemaActualizar,
     ProblemaCrear,
     ProblemaFilter,
     ProblemaPublicoConItems,
@@ -55,5 +56,28 @@ class ProblemasService:
 
         if not problema:
             raise HTTPException(status_code=404, detail="No existe problema")
+
+        return problema
+
+    def update_problema(
+        *, session: Session, id_problema: uuid.UUID, problema_actualizar: ProblemaActualizar
+    ) -> ProblemaPublicoConItems:
+        problema = ProblemasService.get_problema_by_id(session=session, id_problema=id_problema)
+
+        if problema_actualizar.titulo is not None:
+            problema.titulo = problema_actualizar.titulo
+            
+        if problema_actualizar.descripcion is not None:
+            problema.descripcion = problema_actualizar.descripcion
+
+        if problema_actualizar.estado is not None:
+            problema.estado = problema_actualizar.estado
+
+        if problema_actualizar.responsable_id is not None:
+            problema.responsable_id = problema_actualizar.responsable_id
+
+        session.add(problema)
+        session.commit()
+        session.refresh(problema)
 
         return problema

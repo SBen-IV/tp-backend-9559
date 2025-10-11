@@ -53,6 +53,12 @@ class Problema(ProblemaBase, table=True):
         back_populates="problemas", link_model=ProblemaItemLink
     )
 
+class ProblemaActualizar(SQLModel):
+    titulo: str | None = Field(None, min_length=1)
+    descripcion: str | None = Field(None, min_length=1)
+    prioridad: Prioridad | None = None
+    estado: EstadoProblema | None = None
+    responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
 
 @dataclass
 class ProblemaFilter:

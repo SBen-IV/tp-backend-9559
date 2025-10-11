@@ -7,6 +7,7 @@ from app.crud.problems import ProblemasService as crud
 from app.models.commons import Prioridad
 from app.models.problems import (
     EstadoProblema,
+    ProblemaActualizar,
     ProblemaCrear,
     ProblemaFilter,
     ProblemaPublicoConItems,
@@ -48,3 +49,15 @@ async def get_problema(
     session: SessionDep, id_problema: uuid.UUID
 ) -> ProblemaPublicoConItems:
     return crud.get_problema_by_id(session=session, id_problema=id_problema)
+
+
+@router.patch("/{id_problema}", response_model=ProblemaPublicoConItems)
+async def update_problema(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id_problema: uuid.UUID,
+    problema_actualizar: ProblemaActualizar,
+) -> ProblemaPublicoConItems:
+    return crud.update_problema(
+        session=session, id_problema=id_problema, problema_actualizar=problema_actualizar
+    )
