@@ -62,6 +62,13 @@ class Incidente(IncidenteBase, table=True):
         back_populates="incidentes", link_model=IncidenteItemLink
     )
 
+class IncidenteActualizar(SQLModel):
+    titulo: str | None = Field(None, min_length=1)
+    descripcion: str | None = Field(None, min_length=1)
+    prioridad: Prioridad | None = None
+    estado: EstadoIncidente | None = None
+    categoria: CategoriaIncidente | None = None
+    responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
 
 @dataclass
 class IncidenteFilter:

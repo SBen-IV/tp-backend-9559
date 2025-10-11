@@ -8,6 +8,7 @@ from app.models.commons import Prioridad
 from app.models.incidents import (
     CategoriaIncidente,
     EstadoIncidente,
+    IncidenteActualizar,
     IncidenteCrear,
     IncidenteFilter,
     IncidentePublicoConItems,
@@ -51,3 +52,14 @@ async def get_incidente(
     session: SessionDep, id_incidente: uuid.UUID
 ) -> IncidentePublicoConItems:
     return crud.get_incidente_by_id(session=session, id_incidente=id_incidente)
+
+@router.patch("/{id_incidente}", response_model=IncidentePublicoConItems)
+async def update_incidente(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id_incidente: uuid.UUID,
+    incidente_actualizar: IncidenteActualizar,
+) -> IncidentePublicoConItems:
+    return crud.update_incidente(
+        session=session, id_incidente=id_incidente, incidente_actualizar=incidente_actualizar
+    )

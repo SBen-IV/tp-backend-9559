@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from app.models.config_items import ItemConfiguracion
 from app.models.incidents import (
     Incidente,
+    IncidenteActualizar,
     IncidenteCrear,
     IncidenteFilter,
     IncidentePublicoConItems,
@@ -60,5 +61,31 @@ class IncidentesService:
 
         if not incidente:
             raise HTTPException(status_code=404, detail="No existe incidente")
+
+        return incidente
+
+    def update_incidente(
+        *, session: Session, id_incidente: uuid.UUID, incidente_actualizar: IncidenteActualizar
+    ) -> IncidentePublicoConItems:
+        incidente = IncidentesService.get_incidente_by_id(session=session, id_incidente=id_incidente)
+
+        if incidente_actualizar.titulo is not None:
+            incidente.titulo = incidente_actualizar.titulo
+            
+        if incidente_actualizar.descripcion is not None:
+            incidente.descripcion = incidente_actualizar.descripcion
+            
+        if incidente_actualizar.categoria is not None:
+            incidente.categoria = incidente_actualizar.categoria
+            
+        if incidente_actualizar.estado is not None:
+            incidente.estado = incidente_actualizar.estado
+            
+        if incidente_actualizar.responsable_id is not None:
+            incidente.responsable_id = incidente_actualizar.responsable_id
+
+        session.add(incidente)
+        session.commit()
+        session.refresh(incidente)
 
         return incidente
