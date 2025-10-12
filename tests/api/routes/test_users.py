@@ -80,11 +80,13 @@ def test_get_user_by_id(
         headers=empleado_token_headers,
     )
 
-    usuario_id = r.json()[0]["id"]
+    usuario_original = r.json()[0]
 
     # When a user asks for all users
 
-    r = client.get(f"{BASE_URL}/{usuario_id}", headers=empleado_token_headers)
+    r = client.get(
+        f"{BASE_URL}/{usuario_original['id']}", headers=empleado_token_headers
+    )
 
     # Then all users are returned
 
@@ -93,11 +95,11 @@ def test_get_user_by_id(
     usuario = r.json()
 
     assert usuario
-    assert usuario["nombre"]
-    assert usuario["apellido"]
-    assert usuario["email"]
-    assert usuario["id"]
-    assert usuario["rol"] == Rol.EMPLEADO
+    assert usuario["nombre"] == usuario_original["nombre"]
+    assert usuario["apellido"] == usuario_original["apellido"]
+    assert usuario["email"] == usuario_original["email"]
+    assert usuario["id"] == usuario_original["id"]
+    assert usuario["rol"] == usuario_original["rol"]
     # Assert that password is NOT part of usuario
     assert "contraseña" not in usuario
 
