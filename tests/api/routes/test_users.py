@@ -69,6 +69,37 @@ def test_get_users_by_rol(
         assert "contraseña" not in usuario
 
 
+def test_get_user_by_id(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given some users (on db_seed)
+    r = client.get(
+        f"{BASE_URL}",
+        headers=empleado_token_headers,
+    )
+
+    usuario_id = r.json()[0]["id"]
+
+    # When a user asks for all users
+
+    r = client.get(f"{BASE_URL}/{usuario_id}", headers=empleado_token_headers)
+
+    # Then all users are returned
+
+    assert 200 <= r.status_code < 300
+
+    usuario = r.json()
+
+    assert usuario
+    assert usuario["nombre"]
+    assert usuario["apellido"]
+    assert usuario["email"]
+    assert usuario["id"]
+    assert usuario["rol"] == Rol.EMPLEADO
+    # Assert that password is NOT part of usuario
+    assert "contraseña" not in usuario
+
+
 def test_create_new_user(client: TestClient, session: Session) -> None:
     nombre = "Bob"
     apellido = "Bib"

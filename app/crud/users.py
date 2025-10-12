@@ -1,3 +1,5 @@
+import uuid
+
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
@@ -42,3 +44,6 @@ class UsuariosService:
             query = query.where(Usuario.rol == usuario_filter.rol)
 
         return session.exec(query).all()
+
+    def get_usuario_by_id(*, session: Session, id_usuario: uuid.UUID) -> Usuario:
+        return session.exec(select(Usuario).where(Usuario.id == id_usuario)).first()

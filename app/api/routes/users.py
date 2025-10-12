@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, HTTPException
 
 from app.api.deps import CurrentUser, SessionDep
@@ -33,8 +35,8 @@ async def get_usuarios(
     return crud.get_usuarios(session=session, usuario_filter=usuario_filter)
 
 
-# @router.get("/{id_problema}", response_model=ProblemaPublicoConItems)
-# async def get_problema(
-#     session: SessionDep, id_problema: uuid.UUID
-# ) -> ProblemaPublicoConItems:
-#     return crud.get_problema_by_id(session=session, id_problema=id_problema)
+@router.get("/{id_usuario}", response_model=UsuarioPublico)
+async def get_problema(
+    session: SessionDep, current_user: CurrentUser, id_usuario: uuid.UUID
+) -> UsuarioPublico:
+    return crud.get_usuario_by_id(session=session, id_usuario=id_usuario)
