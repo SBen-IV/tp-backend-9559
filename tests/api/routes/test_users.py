@@ -47,12 +47,12 @@ def test_get_users_by_rol(
 ) -> None:
     # Given some users (on db_seed)
 
-    # When a user asks for all users
+    # When a user asks for all users of rol 'EMPLEADO'
     r = client.get(
         f"{BASE_URL}", headers=empleado_token_headers, params={"rol": "EMPLEADO"}
     )
 
-    # Then all users are returned
+    # Then all users of that rol are returned
 
     assert 200 <= r.status_code < 300
 
@@ -82,13 +82,13 @@ def test_get_user_by_id(
 
     usuario_original = r.json()[0]
 
-    # When a user asks for all users
+    # When a user asks for a specific user
 
     r = client.get(
         f"{BASE_URL}/{usuario_original['id']}", headers=empleado_token_headers
     )
 
-    # Then all users are returned
+    # Then the user data is returned
 
     assert 200 <= r.status_code < 300
 
