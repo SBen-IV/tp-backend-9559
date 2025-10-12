@@ -60,13 +60,18 @@ class ProblemasService:
         return problema
 
     def update_problema(
-        *, session: Session, id_problema: uuid.UUID, problema_actualizar: ProblemaActualizar
+        *,
+        session: Session,
+        id_problema: uuid.UUID,
+        problema_actualizar: ProblemaActualizar,
     ) -> ProblemaPublicoConItems:
-        problema = ProblemasService.get_problema_by_id(session=session, id_problema=id_problema)
+        problema = ProblemasService.get_problema_by_id(
+            session=session, id_problema=id_problema
+        )
 
         if problema_actualizar.titulo is not None:
             problema.titulo = problema_actualizar.titulo
-            
+
         if problema_actualizar.descripcion is not None:
             problema.descripcion = problema_actualizar.descripcion
 
@@ -76,8 +81,12 @@ class ProblemasService:
         if problema_actualizar.responsable_id is not None:
             problema.responsable_id = problema_actualizar.responsable_id
 
+        if problema_actualizar.prioridad is not None:
+            problema.prioridad = problema_actualizar.prioridad
+
         session.add(problema)
         session.commit()
         session.refresh(problema)
 
         return problema
+
