@@ -23,3 +23,17 @@ async def register_user(
         usuario_registrar=UsuarioRegistrar.model_validate(usuario_registrar),
     )
     return usuario
+
+
+@router.get("", response_model=list[UsuarioPublico])
+async def get_usuarios(
+    session: SessionDep,
+) -> list[UsuarioPublico]:
+    return crud.get_usuarios(session=session)
+
+
+# @router.get("/{id_problema}", response_model=ProblemaPublicoConItems)
+# async def get_problema(
+#     session: SessionDep, id_problema: uuid.UUID
+# ) -> ProblemaPublicoConItems:
+#     return crud.get_problema_by_id(session=session, id_problema=id_problema)

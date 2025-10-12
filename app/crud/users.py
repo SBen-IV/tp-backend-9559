@@ -32,3 +32,8 @@ class UsuariosService:
         if not verify_password(password, db_user.contraseña_hasheada):
             return None
         return db_user
+
+    def get_usuarios(*, session: Session) -> list[Usuario]:
+        query = select(Usuario)
+
+        return session.exec(query).all()
