@@ -1,4 +1,6 @@
 # ruff: noqa: ARG001
+import uuid
+
 from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -98,6 +100,21 @@ def test_get_user_by_id(
     assert usuario["rol"] == Rol.EMPLEADO
     # Assert that password is NOT part of usuario
     assert "contraseña" not in usuario
+
+
+def test_get_user_by_id_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a non-existent user id (on db_seed)
+    usuario_id = uuid.uuid4()  # Take a random id
+
+    # When a user asks for the user of that id
+    r = client.get(f"{BASE_URL}/{usuario_id}", headers=empleado_token_headers)
+
+    # Then returns error
+    assert 400 <= r.status_code < 500
+
+    assert r.json()["detail"] == "No existe usuario con ese id"
 
 
 def test_create_new_user(client: TestClient, session: Session) -> None:

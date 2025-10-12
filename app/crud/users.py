@@ -1,5 +1,6 @@
 import uuid
 
+from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
@@ -46,4 +47,9 @@ class UsuariosService:
         return session.exec(query).all()
 
     def get_usuario_by_id(*, session: Session, id_usuario: uuid.UUID) -> Usuario:
-        return session.exec(select(Usuario).where(Usuario.id == id_usuario)).first()
+        usuario = session.exec(select(Usuario).where(Usuario.id == id_usuario)).first()
+
+        if not usuario:
+            raise HTTPException(status_code=404, detail="No existe usuario con ese id")
+
+        return usuario
