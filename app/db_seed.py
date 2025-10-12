@@ -25,7 +25,14 @@ if os.getenv("TESTS", None):
             email="alice@company.com",
             rol=Rol.EMPLEADO,
             contraseña="12345678",
-        )
+        ),
+        UsuarioRegistrar(
+            nombre="Carl",
+            apellido="Johnson",
+            email="carl@company.com",
+            rol=Rol.CLIENTE,
+            contraseña="12345678",
+        ),
     ]
 
     seed_items_config = [
@@ -123,7 +130,7 @@ else:
         ),
         UsuarioRegistrar(
             nombre="Bob",
-            apellido="Smith",
+            apellido="Johnson",
             email="bob@client.com",
             rol=Rol.CLIENTE,
             contraseña="12345678",

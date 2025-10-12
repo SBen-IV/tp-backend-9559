@@ -1,12 +1,122 @@
 # ruff: noqa: ARG001
+import uuid
+
+from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 from app.core.security import verify_password
-from app.models.users import Usuario
+from app.models.users import Rol, Usuario
 from app.utils.config import settings
 
+Faker.seed(0)
+fake = Faker()
+
 BASE_URL = f"{settings.API_V1_STR}/users"
+
+
+def test_get_users(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given some users (on db_seed)
+
+    # When a user asks for all users
+    r = client.get(f"{BASE_URL}", headers=empleado_token_headers)
+
+    # Then all users are returned
+
+    assert 200 <= r.status_code < 300
+
+    usuarios = r.json()
+
+    assert usuarios
+    assert len(usuarios) == 2
+    for usuario in usuarios:
+        # Assert all fields are in the json
+        assert usuario["nombre"]
+        assert usuario["apellido"]
+        assert usuario["email"]
+        assert usuario["id"]
+        assert usuario["rol"]
+        # Assert that password is NOT part of usuario
+        assert "contraseña" not in usuario
+
+
+def test_get_users_by_rol(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given some users (on db_seed)
+
+    # When a user asks for all users of rol 'EMPLEADO'
+    r = client.get(
+        f"{BASE_URL}", headers=empleado_token_headers, params={"rol": "EMPLEADO"}
+    )
+
+    # Then all users of that rol are returned
+
+    assert 200 <= r.status_code < 300
+
+    usuarios = r.json()
+
+    assert usuarios
+    assert len(usuarios) == 1
+    for usuario in usuarios:
+        # Assert all fields are in the json
+        assert usuario["nombre"]
+        assert usuario["apellido"]
+        assert usuario["email"]
+        assert usuario["id"]
+        assert usuario["rol"] == Rol.EMPLEADO
+        # Assert that password is NOT part of usuario
+        assert "contraseña" not in usuario
+
+
+def test_get_user_by_id(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given some users (on db_seed)
+    r = client.get(
+        f"{BASE_URL}",
+        headers=empleado_token_headers,
+    )
+
+    usuario_original = r.json()[0]
+
+    # When a user asks for a specific user
+
+    r = client.get(
+        f"{BASE_URL}/{usuario_original['id']}", headers=empleado_token_headers
+    )
+
+    # Then the user data is returned
+
+    assert 200 <= r.status_code < 300
+
+    usuario = r.json()
+
+    assert usuario
+    assert usuario["nombre"] == usuario_original["nombre"]
+    assert usuario["apellido"] == usuario_original["apellido"]
+    assert usuario["email"] == usuario_original["email"]
+    assert usuario["id"] == usuario_original["id"]
+    assert usuario["rol"] == usuario_original["rol"]
+    # Assert that password is NOT part of usuario
+    assert "contraseña" not in usuario
+
+
+def test_get_user_by_id_returns_error(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a non-existent user id (on db_seed)
+    usuario_id = uuid.uuid4()  # Take a random id
+
+    # When a user asks for the user of that id
+    r = client.get(f"{BASE_URL}/{usuario_id}", headers=empleado_token_headers)
+
+    # Then returns error
+    assert 400 <= r.status_code < 500
+
+    assert r.json()["detail"] == "No existe usuario con ese id"
 
 
 def test_create_new_user(client: TestClient, session: Session) -> None:

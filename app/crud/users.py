@@ -1,7 +1,10 @@
+import uuid
+
+from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models.users import Usuario, UsuarioRegistrar
+from app.models.users import Usuario, UsuarioFilter, UsuarioRegistrar
 
 
 class UsuariosService:
@@ -32,3 +35,21 @@ class UsuariosService:
         if not verify_password(password, db_user.contraseña_hasheada):
             return None
         return db_user
+
+    def get_usuarios(
+        *, session: Session, usuario_filter: UsuarioFilter
+    ) -> list[Usuario]:
+        query = select(Usuario)
+
+        if usuario_filter.rol is not None:
+            query = query.where(Usuario.rol == usuario_filter.rol)
+
+        return session.exec(query).all()
+
+    def get_usuario_by_id(*, session: Session, id_usuario: uuid.UUID) -> Usuario:
+        usuario = session.exec(select(Usuario).where(Usuario.id == id_usuario)).first()
+
+        if not usuario:
+            raise HTTPException(status_code=404, detail="No existe usuario con ese id")
+
+        return usuario

@@ -1,8 +1,10 @@
+import uuid
+
 from fastapi import APIRouter, HTTPException
 
-from app.api.deps import SessionDep
+from app.api.deps import CurrentUser, SessionDep
 from app.crud.users import UsuariosService as crud
-from app.models.users import UsuarioPublico, UsuarioRegistrar
+from app.models.users import Rol, UsuarioFilter, UsuarioPublico, UsuarioRegistrar
 
 router = APIRouter(prefix="/users")
 
@@ -23,3 +25,18 @@ async def register_user(
         usuario_registrar=UsuarioRegistrar.model_validate(usuario_registrar),
     )
     return usuario
+
+
+@router.get("", response_model=list[UsuarioPublico])
+async def get_usuarios(
+    session: SessionDep, current_user: CurrentUser, rol: Rol | None = None
+) -> list[UsuarioPublico]:
+    usuario_filter = UsuarioFilter(rol=rol)
+    return crud.get_usuarios(session=session, usuario_filter=usuario_filter)
+
+
+@router.get("/{id_usuario}", response_model=UsuarioPublico)
+async def get_problema(
+    session: SessionDep, current_user: CurrentUser, id_usuario: uuid.UUID
+) -> UsuarioPublico:
+    return crud.get_usuario_by_id(session=session, id_usuario=id_usuario)
