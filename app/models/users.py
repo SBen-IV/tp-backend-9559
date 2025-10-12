@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import dataclass
 from enum import Enum
 
 from pydantic import EmailStr
@@ -34,3 +35,8 @@ class Usuario(UsuarioBase, table=True):
 class UsuarioLogin(SQLModel):
     email: EmailStr
     contraseña: str
+
+
+@dataclass
+class UsuarioFilter:
+    rol: Rol | None = None

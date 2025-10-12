@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
-from app.api.deps import SessionDep
+from app.api.deps import CurrentUser, SessionDep
 from app.crud.users import UsuariosService as crud
-from app.models.users import UsuarioPublico, UsuarioRegistrar
+from app.models.users import Rol, UsuarioFilter, UsuarioPublico, UsuarioRegistrar
 
 router = APIRouter(prefix="/users")
 
@@ -27,9 +27,10 @@ async def register_user(
 
 @router.get("", response_model=list[UsuarioPublico])
 async def get_usuarios(
-    session: SessionDep,
+    session: SessionDep, current_user: CurrentUser, rol: Rol | None = None
 ) -> list[UsuarioPublico]:
-    return crud.get_usuarios(session=session)
+    usuario_filter = UsuarioFilter(rol=rol)
+    return crud.get_usuarios(session=session, usuario_filter=usuario_filter)
 
 
 # @router.get("/{id_problema}", response_model=ProblemaPublicoConItems)
