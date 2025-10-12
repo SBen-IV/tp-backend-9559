@@ -1,20 +1,21 @@
 # ruff: noqa: ARG001
 from datetime import datetime, timezone
 
-from app.models.users import Usuario
+from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
-from faker import Faker
 
 from app.models.commons import Prioridad
 from app.models.config_items import ItemConfiguracion
 from app.models.problems import EstadoProblema
+from app.models.users import Usuario
 from app.utils.config import settings
 
 BASE_URL = f"{settings.API_V1_STR}/problems"
 
 Faker.seed(0)
 fake = Faker()
+
 
 def test_get_all_problemas(client: TestClient, session: Session) -> None:
     # Given some problemas
@@ -275,6 +276,7 @@ def test_create_problema_with_empty_description_returns_error(
     assert details["message"] == "String should have at least 1 character"
     assert details["field"] == "descripcion"
 
+
 def create_random_problem(client: TestClient, token_headers: dict[str, str]) -> dict:
     config_items = client.get(f"{settings.API_V1_STR}/config-items")
     config_item = config_items.json()[0]
@@ -292,7 +294,8 @@ def create_random_problem(client: TestClient, token_headers: dict[str, str]) -> 
     }
 
     r = client.post(BASE_URL, json=data, headers=token_headers)
-    return r.json()    
+    return r.json()
+
 
 def test_update_problema_titulo(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
@@ -304,7 +307,9 @@ def test_update_problema_titulo(
 
     # When the user edits it
     r = client.patch(
-        f"{BASE_URL}/{problema_created['id']}", json=data, headers=empleado_token_headers
+        f"{BASE_URL}/{problema_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
     )
 
     # Then the cambio is persisted
@@ -319,32 +324,7 @@ def test_update_problema_titulo(
     assert problem["fecha_creacion"] == problema_created["fecha_creacion"]
     assert problem["owner_id"] == problema_created["owner_id"]
     assert problem["config_items"][0]["id"] == problema_created["config_items"][0]["id"]
-    
-def test_update_problema_titulo(
-    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
-) -> None:
-    # Given an problem
-    problem_created = create_random_problem(client, empleado_token_headers)
 
-    data = {"titulo": "Nuevo titulo"}
-
-    # When the user edits it
-    r = client.patch(
-        f"{BASE_URL}/{problem_created['id']}", json=data, headers=empleado_token_headers
-    )
-
-    # Then the cambio is persisted
-    assert 200 <= r.status_code < 300
-
-    problem = r.json()
-
-    assert problem
-    assert problem["titulo"] != problem_created["titulo"]
-    assert problem["descripcion"] == problem_created["descripcion"]
-    assert problem["prioridad"] == problem_created["prioridad"]
-    assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
-    assert problem["owner_id"] == problem_created["owner_id"]
-    assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
 
 def test_update_problema_descripcion(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
@@ -371,8 +351,8 @@ def test_update_problema_descripcion(
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["responsable_id"] == problem_created["responsable_id"]
-    assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"] 
-   
+    assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+
 
 def test_update_problema_estado(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
@@ -402,7 +382,8 @@ def test_update_problema_estado(
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["estado"] != problem_created["estado"]
     assert problem["owner_id"] == problem_created["owner_id"]
-    assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]     
+    assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+
 
 def test_update_problema_responsable(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
@@ -435,4 +416,31 @@ def test_update_problema_responsable(
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["estado"] == problem_created["estado"]
     assert problem["owner_id"] == problem_created["owner_id"]
-    assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]            
+    assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+
+
+def test_update_problema_prioridad(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given an problem
+    problem_created = create_random_problem(client, empleado_token_headers)
+
+    data = {"prioridad": Prioridad.URGENTE}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{problem_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    problem = r.json()
+
+    assert problem
+    assert problem["titulo"] == problem_created["titulo"]
+    assert problem["descripcion"] == problem_created["descripcion"]
+    assert problem["prioridad"] != problem_created["prioridad"]
+    assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
+    assert problem["owner_id"] == problem_created["owner_id"]
+    assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
