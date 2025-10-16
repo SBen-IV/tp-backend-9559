@@ -1,7 +1,6 @@
 import uuid
 from http.client import HTTPException
 
-from app.api.deps import CurrentUser
 from sqlmodel import Session, select
 
 from app.models.auditoria import AuditoriaBase, Auditoria
