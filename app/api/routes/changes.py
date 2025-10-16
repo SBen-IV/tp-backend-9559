@@ -60,3 +60,10 @@ async def update_change(
     return crud.update_change(
         session=session, id_change=id_change, cambio_actualizar=cambio_actualizar
     )
+
+
+@router.delete("/{id_change}", response_model=CambioPublicoConItems)
+async def delete_change(
+    session: SessionDep, current_user: CurrentUser, id_change: uuid.UUID
+) -> CambioPublicoConItems:
+    return crud.delete_change(session=session, id_change=id_change)

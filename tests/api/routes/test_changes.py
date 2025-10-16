@@ -357,3 +357,33 @@ def test_update_change_estado(
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
+
+
+def test_delete_change(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a cambio
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    # When the user deletes it
+    r = client.delete(
+        f"{BASE_URL}/{cambio_created['id']}", headers=empleado_token_headers
+    )
+
+    # Then the cambio is deleted and returned
+    assert 200 <= r.status_code < 300
+
+    cambio = r.json()
+
+    assert cambio
+    assert cambio["titulo"] == cambio_created["titulo"]
+    assert cambio["descripcion"] == cambio_created["descripcion"]
+    assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["estado"] == cambio_created["estado"]
+    assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
+    assert cambio["owner_id"] == cambio_created["owner_id"]
+    assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
+
+    r = client.get(f"{BASE_URL}/{cambio['id']}", headers=empleado_token_headers)
+
+    assert r.status_code == 404
