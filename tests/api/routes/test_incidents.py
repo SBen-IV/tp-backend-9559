@@ -574,19 +574,19 @@ def test_delete_incident(
     assert r.status_code == 404
 
 
-#
-#
-# def test_delete_incident_invalid_uuid(
-#     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
-# ) -> None:
-#     # Given a uuid that's not linked to any incident
-#     id_incident = "1c6f2b84-25f2-4032-b37b-eabca65a4fb3"
-#
-#     # When the user uses it to delete a incident
-#     r = client.delete(f"{BASE_URL}/{id_incident}", headers=empleado_token_headers)
-#
-#     # Then not found is returned
-#     assert r.status_code == 404
+def test_delete_incident_invalid_uuid(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a uuid that's not linked to any incident
+    id_incident = "b9809f61-ba46-40ea-b7bc-5a7f67031e6b"
+
+    # When the user uses it to delete a incident
+    r = client.delete(f"{BASE_URL}/{id_incident}", headers=empleado_token_headers)
+
+    # Then not found is returned
+    assert r.status_code == 404
+
+
 #
 #
 # def test_delete_incident_invalid_if_not_empleado(
