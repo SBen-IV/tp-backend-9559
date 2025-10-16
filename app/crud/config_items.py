@@ -11,7 +11,6 @@ from app.models.config_items import (
     ItemConfiguracionPublico,
 )
 
-
 class ItemsConfiguracionService:
     def create_item_configuracion(
         *, session: Session, item_config_crear: ItemConfiguracionCrear

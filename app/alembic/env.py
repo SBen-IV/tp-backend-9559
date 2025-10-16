@@ -26,6 +26,7 @@ from app.models.users import Usuario
 from app.models.changes import Cambio
 from app.models.config_items import ItemConfiguracion
 from app.models.changes_items_link import CambioItemLink
+from app.models.auditoria import Auditoria
 
 target_metadata = SQLModel.metadata
 
