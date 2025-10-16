@@ -1,6 +1,6 @@
 import uuid
-from http.client import HTTPException
 
+from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.models.changes import (
@@ -58,8 +58,10 @@ class CambiosService:
         *, session: Session, id_change: uuid.UUID
     ) -> CambioPublicoConItems:
         cambio = session.exec(select(Cambio).where(Cambio.id == id_change)).first()
+
         if not cambio:
             raise HTTPException(status_code=404, detail="No existe cambio")
+
         return cambio
 
     def update_change(
@@ -82,5 +84,15 @@ class CambiosService:
         session.add(cambio)
         session.commit()
         session.refresh(cambio)
+
+        return cambio
+
+    def delete_change(
+        *, session: Session, id_change: uuid.UUID
+    ) -> CambioPublicoConItems:
+        cambio = CambiosService.get_change_by_id(session=session, id_change=id_change)
+
+        session.delete(cambio)
+        session.commit()
 
         return cambio

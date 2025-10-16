@@ -17,3 +17,9 @@ def get_empleado_token_headers(client: TestClient) -> dict[str, str]:
     login_data = {"username": "alice@company.com", "password": "12345678"}
 
     return get_user_token_header(client, login_data)
+
+
+def get_cliente_token_headers(client: TestClient) -> dict[str, str]:
+    login_data = {"username": "carl@company.com", "password": "12345678"}
+
+    return get_user_token_header(client, login_data)

@@ -8,7 +8,7 @@ from sqlmodel.pool import StaticPool
 from app.api.deps import get_db
 from app.core.db import init_db
 from app.main import app
-from tests.utils.utils import get_empleado_token_headers
+from tests.utils.utils import get_cliente_token_headers, get_empleado_token_headers
 
 
 @pytest.fixture(scope="session", name="session", autouse=True)
@@ -40,3 +40,8 @@ def client_fixture(session: Session):
 @pytest.fixture(scope="module", name="empleado_token_headers")
 def empleado_token_headers(client: TestClient) -> dict[str, str]:
     return get_empleado_token_headers(client)
+
+
+@pytest.fixture(scope="module", name="cliente_token_headers")
+def cliente_token_headers(client: TestClient) -> dict[str, str]:
+    return get_cliente_token_headers(client)
