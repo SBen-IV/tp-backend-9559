@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime, timezone
-from commons import TipoEntidad, Accion
+from .commons import TipoEntidad, Accion
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, JSON
 
   
 class AuditoriaCrear(SQLModel):
@@ -10,7 +10,7 @@ class AuditoriaCrear(SQLModel):
   id_entidad: uuid.UUID
   operacion: Accion
   actualizado_por: uuid.UUID = Field(foreign_key="usuarios.id")
-  estado_nuevo: dict
+  estado_nuevo: dict = Field(sa_type=JSON, default=None)
 
 
 class Auditoria(AuditoriaCrear, table=True):

@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter
+from fastapi.encoders import jsonable_encoder
 
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.config_items import ItemsConfiguracionService as crud
@@ -33,14 +34,14 @@ async def create_config_item(
         session=session, item_config_crear=item_config_crear
     )
     
-    auditoria_crear = AuditoriaCrear(
+    auditoria_crear = AuditoriaCrear( 
         tipo_entidad = TipoEntidad.CONFIG_ITEM,
-        id_entidad = item_configuracion.id
+        id_entidad = item_configuracion.id,
         operacion = Accion.CREAR,
-        estado_nuevo = item_configuracion.dict(),
+        estado_nuevo = jsonable_encoder(item_configuracion),
         actualizado_por = current_user.id
     )
-    AuditoriaService.registrar_accion(auditoria_crear=auditoria_crear)
+    AuditoriaService.registrar_accion(session=session, auditoria_crear=auditoria_crear)
 
     return item_configuracion
 

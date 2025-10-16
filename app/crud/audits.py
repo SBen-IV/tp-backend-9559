@@ -3,11 +3,11 @@ from http.client import HTTPException
 
 from sqlmodel import Session, select
 
-from app.models.auditoria import AuditoriaBase, Auditoria
+from app.models.auditoria import AuditoriaCrear, Auditoria
 
 class AuditoriaService:
-  def registrar_accion(*, session: Session, auditoria_crear: AuditoriaBase) -> Auditoria:
-    auditoria_obj = AuditoriaBase.model_validate(auditoria_crear)
+  def registrar_accion(*, session: Session, auditoria_crear: AuditoriaCrear) -> Auditoria:
+    auditoria_obj = Auditoria.model_validate(auditoria_crear)
     
     session.add(auditoria_obj)
     session.commit()
