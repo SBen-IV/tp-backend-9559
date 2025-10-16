@@ -587,36 +587,39 @@ def test_delete_incident_invalid_uuid(
     assert r.status_code == 404
 
 
-#
-#
-# def test_delete_incident_invalid_if_not_empleado(
-#     client: TestClient,
-#     session: Session,
-#     empleado_token_headers: dict[str, str],
-#     cliente_token_headers: dict[str, str],
-# ) -> None:
-#     # Given a incidente
-#     incidente_created = create_random_incidente(client, empleado_token_headers)
-#
-#     # When the cliente deletes it
-#     r = client.delete(
-#         f"{BASE_URL}/{incidente_created['id']}", headers=cliente_token_headers
-#     )
-#
-#     # Then the incidente is not deleted and an error is returned
-#     assert 400 <= r.status_code < 500
-#
-#     r = client.get(f"{BASE_URL}/{incidente_created['id']}", headers=empleado_token_headers)
-#
-#     assert 200 <= r.status_code < 300
-#
-#     incidente = r.json()
-#
-#     assert incidente
-#     assert incidente["titulo"] == incidente_created["titulo"]
-#     assert incidente["descripcion"] == incidente_created["descripcion"]
-#     assert incidente["prioridad"] == incidente_created["prioridad"]
-#     assert incidente["estado"] == incidente_created["estado"]
-#     assert incidente["fecha_creacion"] == incidente_created["fecha_creacion"]
-#     assert incidente["owner_id"] == incidente_created["owner_id"]
-#     assert incidente["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+def test_delete_incident_invalid_if_not_empleado(
+    client: TestClient,
+    session: Session,
+    empleado_token_headers: dict[str, str],
+    cliente_token_headers: dict[str, str],
+) -> None:
+    # Given a incidente
+    incidente_created = create_random_incident(client, empleado_token_headers)
+
+    # When the cliente deletes it
+    r = client.delete(
+        f"{BASE_URL}/{incidente_created['id']}", headers=cliente_token_headers
+    )
+
+    # Then the incidente is not deleted and an error is returned
+    assert 400 <= r.status_code < 500
+
+    r = client.get(
+        f"{BASE_URL}/{incidente_created['id']}", headers=empleado_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+
+    incidente = r.json()
+
+    assert incidente
+    assert incidente["titulo"] == incidente_created["titulo"]
+    assert incidente["descripcion"] == incidente_created["descripcion"]
+    assert incidente["prioridad"] == incidente_created["prioridad"]
+    assert incidente["estado"] == incidente_created["estado"]
+    assert incidente["categoria"] == incidente_created["categoria"]
+    assert incidente["fecha_creacion"] == incidente_created["fecha_creacion"]
+    assert incidente["owner_id"] == incidente_created["owner_id"]
+    assert (
+        incidente["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    )
