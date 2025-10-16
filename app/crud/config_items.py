@@ -10,7 +10,9 @@ from app.models.config_items import (
     ItemConfiguracionFilter,
     ItemConfiguracionPublico,
 )
-
+from app.crud.audits import AuditoriaService
+from app.models.auditoria import AuditoriaBase
+from app.models.commons import TipoEntidad, Accion
 
 class ItemsConfiguracionService:
     def create_item_configuracion(
@@ -21,6 +23,13 @@ class ItemsConfiguracionService:
         session.add(db_obj)
         session.commit()
         session.refresh(db_obj)
+        
+        auditoria_crear = AuditoriaBase(
+            tipo_entidad = TipoEntidad.CONFIG_ITEM,
+            operacion = Accion.CREAR,
+            estado_nuevo = db_obj.dict()
+        )
+        AuditoriaService.registrar_accion(auditoria_crear=auditoria_crear)
 
         return db_obj
 
