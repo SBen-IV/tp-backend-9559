@@ -1,18 +1,18 @@
 # ruff: noqa: ARG001
 from datetime import datetime, timezone
 
-from app.models.users import Usuario
 from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-Faker.seed(0)
-fake = Faker()
-
 from app.models.commons import Prioridad
 from app.models.config_items import ItemConfiguracion
-from app.models.incidents import CategoriaIncidente, EstadoIncidente, CategoriaIncidente
+from app.models.incidents import CategoriaIncidente, EstadoIncidente
+from app.models.users import Usuario
 from app.utils.config import settings
+
+Faker.seed(0)
+fake = Faker()
 
 BASE_URL = f"{settings.API_V1_STR}/incidents"
 
@@ -309,7 +309,8 @@ def test_create_incidente_with_empty_description_returns_error(
     assert details
     assert details["message"] == "String should have at least 1 character"
     assert details["field"] == "descripcion"
-    
+
+
 def create_random_incident(client: TestClient, token_headers: dict[str, str]) -> dict:
     config_items = client.get(f"{settings.API_V1_STR}/config-items")
     config_item = config_items.json()[0]
@@ -329,7 +330,8 @@ def create_random_incident(client: TestClient, token_headers: dict[str, str]) ->
     }
 
     r = client.post(BASE_URL, json=data, headers=token_headers)
-    return r.json()    
+    return r.json()
+
 
 def test_update_incidente_titulo(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
@@ -341,7 +343,9 @@ def test_update_incidente_titulo(
 
     # When the user edits it
     r = client.patch(
-        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+        f"{BASE_URL}/{incidente_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
     )
 
     # Then the cambio is persisted
@@ -356,8 +360,11 @@ def test_update_incidente_titulo(
     assert incident["fecha_creacion"] == incidente_created["fecha_creacion"]
     assert incident["categoria"] == incidente_created["categoria"]
     assert incident["owner_id"] == incidente_created["owner_id"]
-    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
-    
+    assert (
+        incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    )
+
+
 def test_update_incidente_descripcion(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
@@ -368,7 +375,9 @@ def test_update_incidente_descripcion(
 
     # When the user edits it
     r = client.patch(
-        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+        f"{BASE_URL}/{incidente_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
     )
 
     # Then the cambio is persisted
@@ -384,8 +393,10 @@ def test_update_incidente_descripcion(
     assert incident["categoria"] == incidente_created["categoria"]
     assert incident["owner_id"] == incidente_created["owner_id"]
     assert incident["responsable_id"] == incidente_created["responsable_id"]
-    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"] 
-    
+    assert (
+        incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    )
+
 
 def test_update_incidente_categoria(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
@@ -397,7 +408,9 @@ def test_update_incidente_categoria(
 
     # When the user edits it
     r = client.patch(
-        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+        f"{BASE_URL}/{incidente_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
     )
 
     # Then the cambio is persisted
@@ -412,8 +425,11 @@ def test_update_incidente_categoria(
     assert incident["fecha_creacion"] == incidente_created["fecha_creacion"]
     assert incident["categoria"] != incidente_created["categoria"]
     assert incident["owner_id"] == incidente_created["owner_id"]
-    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]     
-    
+    assert (
+        incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    )
+
+
 def test_update_incidente_estado(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
@@ -424,14 +440,16 @@ def test_update_incidente_estado(
 
     # When the user edits it
     r = client.patch(
-        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+        f"{BASE_URL}/{incidente_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
     )
 
     # Then the cambio is persisted
     assert 200 <= r.status_code < 300
 
     incident = r.json()
-    
+
     # Newly created incident has no employee assigned to it
     assert incident["responsable_id"] is None
 
@@ -443,8 +461,11 @@ def test_update_incidente_estado(
     assert incident["categoria"] == incidente_created["categoria"]
     assert incident["estado"] != incidente_created["estado"]
     assert incident["owner_id"] == incidente_created["owner_id"]
-    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]     
-    
+    assert (
+        incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    )
+
+
 def test_update_incidente_prioridad(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
@@ -455,14 +476,16 @@ def test_update_incidente_prioridad(
 
     # When the user edits it
     r = client.patch(
-        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+        f"{BASE_URL}/{incidente_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
     )
 
     # Then the cambio is persisted
     assert 200 <= r.status_code < 300
 
     incident = r.json()
-    
+
     # Newly created incident has no employee assigned to it
     assert incident["responsable_id"] is None
 
@@ -474,14 +497,17 @@ def test_update_incidente_prioridad(
     assert incident["estado"] == incidente_created["estado"]
     assert incident["prioridad"] != incidente_created["prioridad"]
     assert incident["owner_id"] == incidente_created["owner_id"]
-    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]        
-    
+    assert (
+        incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    )
+
+
 def test_update_incidente_responsable(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
     # Get any user
     usuario = session.exec(select(Usuario)).first()
-    
+
     # Given an incident
     incidente_created = create_random_incident(client, empleado_token_headers)
 
@@ -489,14 +515,16 @@ def test_update_incidente_responsable(
 
     # When the user edits it
     r = client.patch(
-        f"{BASE_URL}/{incidente_created['id']}", json=data, headers=empleado_token_headers
+        f"{BASE_URL}/{incidente_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
     )
 
     # Then the cambio is persisted
     assert 200 <= r.status_code < 300
 
     incident = r.json()
-        
+
     assert incident["responsable_id"] is not None
     assert incident["responsable_id"] != incidente_created["responsable_id"]
 
@@ -508,4 +536,90 @@ def test_update_incidente_responsable(
     assert incident["categoria"] == incidente_created["categoria"]
     assert incident["estado"] == incidente_created["estado"]
     assert incident["owner_id"] == incidente_created["owner_id"]
-    assert incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]        
+    assert (
+        incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    )
+
+
+def test_delete_incident(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a incidente
+    incidente_created = create_random_incident(client, empleado_token_headers)
+
+    # When the user deletes it
+    r = client.delete(
+        f"{BASE_URL}/{incidente_created['id']}", headers=empleado_token_headers
+    )
+
+    # Then the incidente is deleted and returned
+    assert 200 <= r.status_code < 300
+
+    incidente = r.json()
+
+    assert incidente
+    assert incidente["titulo"] == incidente_created["titulo"]
+    assert incidente["descripcion"] == incidente_created["descripcion"]
+    assert incidente["prioridad"] == incidente_created["prioridad"]
+    assert incidente["fecha_creacion"] == incidente_created["fecha_creacion"]
+    assert incidente["categoria"] == incidente_created["categoria"]
+    assert incidente["estado"] == incidente_created["estado"]
+    assert incidente["owner_id"] == incidente_created["owner_id"]
+    assert (
+        incidente["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    )
+
+    r = client.get(f"{BASE_URL}/{incidente['id']}", headers=empleado_token_headers)
+
+    assert r.status_code == 404
+
+
+def test_delete_incident_invalid_uuid(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a uuid that's not linked to any incident
+    id_incident = "b9809f61-ba46-40ea-b7bc-5a7f67031e6b"
+
+    # When the user uses it to delete a incident
+    r = client.delete(f"{BASE_URL}/{id_incident}", headers=empleado_token_headers)
+
+    # Then not found is returned
+    assert r.status_code == 404
+
+
+def test_delete_incident_invalid_if_not_empleado(
+    client: TestClient,
+    session: Session,
+    empleado_token_headers: dict[str, str],
+    cliente_token_headers: dict[str, str],
+) -> None:
+    # Given a incidente
+    incidente_created = create_random_incident(client, empleado_token_headers)
+
+    # When the cliente deletes it
+    r = client.delete(
+        f"{BASE_URL}/{incidente_created['id']}", headers=cliente_token_headers
+    )
+
+    # Then the incidente is not deleted and an error is returned
+    assert 400 <= r.status_code < 500
+
+    r = client.get(
+        f"{BASE_URL}/{incidente_created['id']}", headers=empleado_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+
+    incidente = r.json()
+
+    assert incidente
+    assert incidente["titulo"] == incidente_created["titulo"]
+    assert incidente["descripcion"] == incidente_created["descripcion"]
+    assert incidente["prioridad"] == incidente_created["prioridad"]
+    assert incidente["estado"] == incidente_created["estado"]
+    assert incidente["categoria"] == incidente_created["categoria"]
+    assert incidente["fecha_creacion"] == incidente_created["fecha_creacion"]
+    assert incidente["owner_id"] == incidente_created["owner_id"]
+    assert (
+        incidente["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    )
