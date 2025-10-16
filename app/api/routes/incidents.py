@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.incidents import IncidentesService as crud
@@ -13,6 +13,7 @@ from app.models.incidents import (
     IncidenteFilter,
     IncidentePublicoConItems,
 )
+from app.models.users import Rol
 
 router = APIRouter(prefix="/incidents")
 
@@ -53,6 +54,7 @@ async def get_incidente(
 ) -> IncidentePublicoConItems:
     return crud.get_incidente_by_id(session=session, id_incidente=id_incidente)
 
+
 @router.patch("/{id_incidente}", response_model=IncidentePublicoConItems)
 async def update_incidente(
     session: SessionDep,
@@ -61,5 +63,20 @@ async def update_incidente(
     incidente_actualizar: IncidenteActualizar,
 ) -> IncidentePublicoConItems:
     return crud.update_incidente(
-        session=session, id_incidente=id_incidente, incidente_actualizar=incidente_actualizar
+        session=session,
+        id_incidente=id_incidente,
+        incidente_actualizar=incidente_actualizar,
     )
+
+
+@router.delete("/{id_incidente}", response_model=IncidentePublicoConItems)
+async def delete_incidente(
+    session: SessionDep, current_user: CurrentUser, id_incidente: uuid.UUID
+) -> IncidentePublicoConItems:
+    if current_user.rol != Rol.EMPLEADO:
+        raise HTTPException(
+            status_code=401, detail="Sólo empleados pueden eliminar un cambio"
+        )
+
+    return crud.delete_incidente(session=session, id_incidente=id_incidente)
+

@@ -65,30 +65,47 @@ class IncidentesService:
         return incidente
 
     def update_incidente(
-        *, session: Session, id_incidente: uuid.UUID, incidente_actualizar: IncidenteActualizar
+        *,
+        session: Session,
+        id_incidente: uuid.UUID,
+        incidente_actualizar: IncidenteActualizar,
     ) -> IncidentePublicoConItems:
-        incidente = IncidentesService.get_incidente_by_id(session=session, id_incidente=id_incidente)
+        incidente = IncidentesService.get_incidente_by_id(
+            session=session, id_incidente=id_incidente
+        )
 
         if incidente_actualizar.titulo is not None:
             incidente.titulo = incidente_actualizar.titulo
-            
+
         if incidente_actualizar.descripcion is not None:
             incidente.descripcion = incidente_actualizar.descripcion
-            
+
         if incidente_actualizar.categoria is not None:
             incidente.categoria = incidente_actualizar.categoria
-            
+
         if incidente_actualizar.estado is not None:
             incidente.estado = incidente_actualizar.estado
-            
+
         if incidente_actualizar.prioridad is not None:
             incidente.prioridad = incidente_actualizar.prioridad
-            
+
         if incidente_actualizar.responsable_id is not None:
             incidente.responsable_id = incidente_actualizar.responsable_id
 
         session.add(incidente)
         session.commit()
         session.refresh(incidente)
+
+        return incidente
+
+    def delete_incidente(
+        *, session: Session, id_incidente: uuid.UUID
+    ) -> IncidentePublicoConItems:
+        incidente = IncidentesService.get_incidente_by_id(
+            session=session, id_incidente=id_incidente
+        )
+
+        session.delete(incidente)
+        session.commit()
 
         return incidente
