@@ -15,7 +15,7 @@ class TipoEntidad(str, Enum):
   PROBLEMA = "PROBLEMA"
   
   
-class Accion(str, Enum):
+class Operacion(str, Enum):
   CREAR = "CREAR"
   ACTUALIZAR = "ACTUALIZAR"
   ELIMINAR = "ELIMINAR"

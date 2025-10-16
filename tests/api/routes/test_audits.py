@@ -8,7 +8,7 @@ from sqlmodel import Session
 from app.models.config_items import CategoriaItem, EstadoItem
 from app.models.auditoria import Auditoria
 from app.utils.config import settings
-from app.models.commons import TipoEntidad, Accion
+from app.models.commons import TipoEntidad, Operacion
 
 Faker.seed(0)
 fake = Faker()
@@ -40,11 +40,13 @@ def test_creating_item_creates_audit(client: TestClient, session: Session, emple
     
     assert 200 <= r.status_code < 300
     
+    assert len(r.json()) >= 1
+    
     auditoria = r.json()[0]
     
     assert auditoria
     assert auditoria["tipo_entidad"] == TipoEntidad.CONFIG_ITEM
-    assert auditoria["operacion"] == Accion.CREAR
+    assert auditoria["operacion"] == Operacion.CREAR
     assert auditoria["estado_nuevo"]["nombre"] == nombre
     assert auditoria["estado_nuevo"]["descripcion"] == descripcion
     assert auditoria["estado_nuevo"]["version"] == version

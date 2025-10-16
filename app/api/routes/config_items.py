@@ -15,7 +15,7 @@ from app.models.config_items import (
 )
 from app.models.auditoria import AuditoriaCrear
 from app.crud.audits import AuditoriaService
-from app.models.commons import TipoEntidad, Accion
+from app.models.commons import TipoEntidad, Operacion
 
 router = APIRouter(prefix="/config-items")
 
@@ -37,11 +37,11 @@ async def create_config_item(
     auditoria_crear = AuditoriaCrear( 
         tipo_entidad = TipoEntidad.CONFIG_ITEM,
         id_entidad = item_configuracion.id,
-        operacion = Accion.CREAR,
+        operacion = Operacion.CREAR,
         estado_nuevo = jsonable_encoder(item_configuracion),
         actualizado_por = current_user.id
     )
-    AuditoriaService.registrar_accion(session=session, auditoria_crear=auditoria_crear)
+    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
 
     return item_configuracion
 

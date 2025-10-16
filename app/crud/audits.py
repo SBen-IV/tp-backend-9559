@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 from app.models.auditoria import AuditoriaCrear, Auditoria
 
 class AuditoriaService:
-  def registrar_accion(*, session: Session, auditoria_crear: AuditoriaCrear) -> Auditoria:
+  def registrar_operacion(*, session: Session, auditoria_crear: AuditoriaCrear) -> Auditoria:
     auditoria_obj = Auditoria.model_validate(auditoria_crear)
     
     session.add(auditoria_obj)
