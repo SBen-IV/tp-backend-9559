@@ -15,3 +15,8 @@ class AuditoriaService:
     session.refresh(auditoria_obj)
     
     return auditoria_obj
+  
+  def get_audits(*, session: Session) -> list[Auditoria]:
+    auditorias = session.exec(select(Auditoria)).all()
+    
+    return auditorias
