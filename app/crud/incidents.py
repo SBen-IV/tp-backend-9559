@@ -81,6 +81,9 @@ class IncidentesService:
         if incidente_actualizar.estado is not None:
             incidente.estado = incidente_actualizar.estado
             
+        if incidente_actualizar.prioridad is not None:
+            incidente.prioridad = incidente_actualizar.prioridad
+            
         if incidente_actualizar.responsable_id is not None:
             incidente.responsable_id = incidente_actualizar.responsable_id
 
