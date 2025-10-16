@@ -387,3 +387,16 @@ def test_delete_change(
     r = client.get(f"{BASE_URL}/{cambio['id']}", headers=empleado_token_headers)
 
     assert r.status_code == 404
+
+
+def test_delete_change_invalid_uuid(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a uuid that's not linked to any change
+    id_change = "1c6f2b84-25f2-4032-b37b-eabca65a4fb3"
+
+    # When the user uses it to delete a change
+    r = client.delete(f"{BASE_URL}/{id_change}", headers=empleado_token_headers)
+
+    # Then not found is returned
+    assert r.status_code == 404
