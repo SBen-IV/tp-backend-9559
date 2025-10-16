@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.changes import CambiosService as crud
@@ -12,6 +12,7 @@ from app.models.changes import (
     EstadoCambio,
     Prioridad,
 )
+from app.models.users import Rol
 
 router = APIRouter(prefix="/changes")
 
@@ -66,4 +67,9 @@ async def update_change(
 async def delete_change(
     session: SessionDep, current_user: CurrentUser, id_change: uuid.UUID
 ) -> CambioPublicoConItems:
+    if current_user.rol != Rol.EMPLEADO:
+        raise HTTPException(
+            status_code=401, detail="Sólo empleados pueden eliminar un cambio"
+        )
+
     return crud.delete_change(session=session, id_change=id_change)
