@@ -491,41 +491,38 @@ def test_delete_problem_invalid_uuid(
     assert r.status_code == 404
 
 
-#
-#
-# def test_delete_problem_invalid_if_not_empleado(
-#     client: TestClient,
-#     session: Session,
-#     empleado_token_headers: dict[str, str],
-#     cliente_token_headers: dict[str, str],
-# ) -> None:
-#     # Given a problema
-#     problema_created = create_random_problem(client, empleado_token_headers)
-#
-#     # When the cliente deletes it
-#     r = client.delete(
-#         f"{BASE_URL}/{problema_created['id']}", headers=cliente_token_headers
-#     )
-#
-#     # Then the problema is not deleted and an error is returned
-#     assert 400 <= r.status_code < 500
-#
-#     r = client.get(
-#         f"{BASE_URL}/{problema_created['id']}", headers=empleado_token_headers
-#     )
-#
-#     assert 200 <= r.status_code < 300
-#
-#     problema = r.json()
-#
-#     assert problema
-#     assert problema["titulo"] == problema_created["titulo"]
-#     assert problema["descripcion"] == problema_created["descripcion"]
-#     assert problema["prioridad"] == problema_created["prioridad"]
-#     assert problema["estado"] == problema_created["estado"]
-#     assert problema["categoria"] == problema_created["categoria"]
-#     assert problema["fecha_creacion"] == problema_created["fecha_creacion"]
-#     assert problema["owner_id"] == problema_created["owner_id"]
-#     assert (
-#         problema["config_items"][0]["id"] == problema_created["config_items"][0]["id"]
-#     )
+def test_delete_problem_invalid_if_not_empleado(
+    client: TestClient,
+    session: Session,
+    empleado_token_headers: dict[str, str],
+    cliente_token_headers: dict[str, str],
+) -> None:
+    # Given a problema
+    problema_created = create_random_problem(client, empleado_token_headers)
+
+    # When the cliente deletes it
+    r = client.delete(
+        f"{BASE_URL}/{problema_created['id']}", headers=cliente_token_headers
+    )
+
+    # Then the problema is not deleted and an error is returned
+    assert 400 <= r.status_code < 500
+
+    r = client.get(
+        f"{BASE_URL}/{problema_created['id']}", headers=empleado_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+
+    problema = r.json()
+
+    assert problema
+    assert problema["titulo"] == problema_created["titulo"]
+    assert problema["descripcion"] == problema_created["descripcion"]
+    assert problema["fecha_creacion"] == problema_created["fecha_creacion"]
+    assert problema["owner_id"] == problema_created["owner_id"]
+    assert problema["estado"] == problema_created["estado"]
+    assert problema["prioridad"] == problema_created["prioridad"]
+    assert (
+        problema["config_items"][0]["id"] == problema_created["config_items"][0]["id"]
+    )
