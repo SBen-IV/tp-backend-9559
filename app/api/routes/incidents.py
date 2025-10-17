@@ -1,10 +1,13 @@
 import uuid
 
+from app.crud.audits import AuditoriaService
+from app.models.auditoria import AuditoriaCrear
 from fastapi import APIRouter, HTTPException
+from fastapi.encoders import jsonable_encoder
 
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.incidents import IncidentesService as crud
-from app.models.commons import Prioridad
+from app.models.commons import Operacion, Prioridad, TipoEntidad
 from app.models.incidents import (
     CategoriaIncidente,
     EstadoIncidente,
@@ -27,6 +30,15 @@ async def create_incidente(
     )
 
     incidente = crud.create_incidente(session=session, incidente_crear=incidente_crear)
+    
+    auditoria_crear = AuditoriaCrear( 
+        tipo_entidad = TipoEntidad.INCIDENTE,
+        id_entidad = incidente.id,
+        operacion = Operacion.CREAR,
+        estado_nuevo = jsonable_encoder(incidente),
+        actualizado_por = current_user.id
+    )
+    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
 
     return incidente
 
