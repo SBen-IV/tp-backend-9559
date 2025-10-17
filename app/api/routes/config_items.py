@@ -1,10 +1,13 @@
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.encoders import jsonable_encoder
 
 from app.api.deps import CurrentUser, SessionDep
+from app.crud.audits import AuditoriaService
 from app.crud.config_items import ItemsConfiguracionService as crud
+from app.models.auditoria import AuditoriaCrear
+from app.models.commons import Operacion, TipoEntidad
 from app.models.config_items import (
     CategoriaItem,
     EstadoItem,
@@ -13,9 +16,7 @@ from app.models.config_items import (
     ItemConfiguracionFilter,
     ItemConfiguracionPublico,
 )
-from app.models.auditoria import AuditoriaCrear
-from app.crud.audits import AuditoriaService
-from app.models.commons import TipoEntidad, Operacion
+from app.models.users import Rol
 
 router = APIRouter(prefix="/config-items")
 
@@ -33,15 +34,17 @@ async def create_config_item(
     item_configuracion = crud.create_item_configuracion(
         session=session, item_config_crear=item_config_crear
     )
-    
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.CONFIG_ITEM,
-        id_entidad = item_configuracion.id,
-        operacion = Operacion.CREAR,
-        estado_nuevo = jsonable_encoder(item_configuracion),
-        actualizado_por = current_user.id
+
+    auditoria_crear = AuditoriaCrear(
+        tipo_entidad=TipoEntidad.CONFIG_ITEM,
+        id_entidad=item_configuracion.id,
+        operacion=Operacion.CREAR,
+        estado_nuevo=jsonable_encoder(item_configuracion),
+        actualizado_por=current_user.id,
     )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+    AuditoriaService.registrar_operacion(
+        session=session, auditoria_crear=auditoria_crear
+    )
 
     return item_configuracion
 
@@ -82,4 +85,19 @@ async def update_change(
         session=session,
         id_item_config=id_item_config,
         item_config_actualizar=item_config_actualizar,
+    )
+
+
+@router.delete("/{id_item_config}", response_model=ItemConfiguracionPublico)
+async def delete_item_config(
+    session: SessionDep, current_user: CurrentUser, id_item_config: uuid.UUID
+) -> ItemConfiguracionPublico:
+    if current_user.rol != Rol.EMPLEADO:
+        raise HTTPException(
+            status_code=401,
+            detail="Sólo empleados pueden eliminar un ítem de configuracion",
+        )
+
+    return crud.delete_item_configuracion(
+        session=session, id_item_config=id_item_config
     )
