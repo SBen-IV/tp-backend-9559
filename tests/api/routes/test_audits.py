@@ -1,6 +1,8 @@
 
 from datetime import datetime, timezone
 
+import pytest
+
 from app.models.incidents import CategoriaIncidente
 from faker import Faker
 from fastapi.testclient import TestClient
@@ -17,6 +19,8 @@ fake = Faker()
 CONFIG_ITEMS_URL = f"{settings.API_V1_STR}/config-items"
 AUDITS_URL = f"{settings.API_V1_STR}/audits"
 INCIDENTS_URL = f"{settings.API_V1_STR}/incidents"
+PROBLEMS_URL = f"{settings.API_V1_STR}/problems"
+CHANGES_URL = f"{settings.API_V1_STR}/changes"
 
 
 def test_creating_item_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
@@ -92,6 +96,90 @@ def test_creating_incident_creates_audit(client: TestClient, session: Session, e
     
     assert auditoria
     assert auditoria["tipo_entidad"] == TipoEntidad.INCIDENTE
+    assert auditoria["operacion"] == Operacion.CREAR
+    assert auditoria["estado_nuevo"]["titulo"] == titulo
+    assert auditoria["estado_nuevo"]["descripcion"] == descripcion
+    assert auditoria["estado_nuevo"]["prioridad"] == prioridad
+
+
+def test_creating_problem_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
+    config_items = client.get(CONFIG_ITEMS_URL)
+    config_item = config_items.json()[0]
+
+    titulo = fake.word()
+    descripcion = fake.text(max_nb_chars=100)
+    prioridad = Prioridad.BAJA
+    id_config_items = [config_item["id"]]
+
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "id_config_items": id_config_items,
+    }
+
+    r = client.post(PROBLEMS_URL, json=data, headers=empleado_token_headers)
+
+    assert 200 <= r.status_code < 300
+    
+    incidente = r.json()
+    
+    r = client.get(AUDITS_URL, headers=empleado_token_headers, params={"tipo_entidad": TipoEntidad.PROBLEMA.value, "id_entidad": incidente["id"]})
+    
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    auditoria = next(
+        (audit for audit in auditorias if audit["id_entidad"] == incidente["id"]),
+        None
+    )
+    
+    assert auditoria
+    assert auditoria["tipo_entidad"] == TipoEntidad.PROBLEMA.value
+    assert auditoria["operacion"] == Operacion.CREAR
+    assert auditoria["estado_nuevo"]["titulo"] == titulo
+    assert auditoria["estado_nuevo"]["descripcion"] == descripcion
+    assert auditoria["estado_nuevo"]["prioridad"] == prioridad
+    
+    
+def test_creating_change_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
+    config_items = client.get(CONFIG_ITEMS_URL)
+    config_item = config_items.json()[0]
+
+    titulo = fake.word()
+    descripcion = fake.text(max_nb_chars=100)
+    prioridad = Prioridad.BAJA
+    id_config_items = [config_item["id"]]
+
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "id_config_items": id_config_items,
+    }
+
+    r = client.post(CHANGES_URL, json=data, headers=empleado_token_headers)
+
+    assert 200 <= r.status_code < 300
+    
+    incidente = r.json()
+    
+    r = client.get(AUDITS_URL, headers=empleado_token_headers, params={"tipo_entidad": TipoEntidad.CAMBIO.value, "id_entidad": incidente["id"]})
+    
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    auditoria = next(
+        (audit for audit in auditorias if audit["id_entidad"] == incidente["id"]),
+        None
+    )
+    
+    assert auditoria
+    assert auditoria["tipo_entidad"] == TipoEntidad.CAMBIO.value
     assert auditoria["operacion"] == Operacion.CREAR
     assert auditoria["estado_nuevo"]["titulo"] == titulo
     assert auditoria["estado_nuevo"]["descripcion"] == descripcion
