@@ -478,17 +478,19 @@ def test_delete_problem(
     assert r.status_code == 404
 
 
-# def test_delete_problem_invalid_uuid(
-#     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
-# ) -> None:
-#     # Given a uuid that's not linked to any problem
-#     id_problem = "b9809f61-ba46-40ea-b7bc-5a7f67031e6b"
-#
-#     # When the user uses it to delete a problem
-#     r = client.delete(f"{BASE_URL}/{id_problem}", headers=empleado_token_headers)
-#
-#     # Then not found is returned
-#     assert r.status_code == 404
+def test_delete_problem_invalid_uuid(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a uuid that's not linked to any problem
+    id_problem = "b9809f61-ba46-40ea-b7bc-5a7f67031e6b"
+
+    # When the user uses it to delete a problem
+    r = client.delete(f"{BASE_URL}/{id_problem}", headers=empleado_token_headers)
+
+    # Then not found is returned
+    assert r.status_code == 404
+
+
 #
 #
 # def test_delete_problem_invalid_if_not_empleado(
