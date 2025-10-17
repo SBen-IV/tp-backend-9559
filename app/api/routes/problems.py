@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.problems import ProblemasService as crud
@@ -12,6 +12,7 @@ from app.models.problems import (
     ProblemaFilter,
     ProblemaPublicoConItems,
 )
+from app.models.users import Rol
 
 router = APIRouter(prefix="/problems")
 
@@ -59,5 +60,19 @@ async def update_problema(
     problema_actualizar: ProblemaActualizar,
 ) -> ProblemaPublicoConItems:
     return crud.update_problema(
-        session=session, id_problema=id_problema, problema_actualizar=problema_actualizar
+        session=session,
+        id_problema=id_problema,
+        problema_actualizar=problema_actualizar,
     )
+
+
+@router.delete("/{id_problema}", response_model=ProblemaPublicoConItems)
+async def delete_problema(
+    session: SessionDep, current_user: CurrentUser, id_problema: uuid.UUID
+) -> ProblemaPublicoConItems:
+    if current_user.rol != Rol.EMPLEADO:
+        raise HTTPException(
+            status_code=401, detail="Sólo empleados pueden eliminar un cambio"
+        )
+
+    return crud.delete_problema(session=session, id_problema=id_problema)
