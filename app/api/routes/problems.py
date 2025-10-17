@@ -72,7 +72,7 @@ async def delete_problema(
 ) -> ProblemaPublicoConItems:
     if current_user.rol != Rol.EMPLEADO:
         raise HTTPException(
-            status_code=401, detail="Sólo empleados pueden eliminar un cambio"
+            status_code=401, detail="Sólo empleados pueden eliminar un problema"
         )
 
     return crud.delete_problema(session=session, id_problema=id_problema)
