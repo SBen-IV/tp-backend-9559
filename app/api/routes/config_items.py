@@ -95,7 +95,7 @@ async def delete_item_config(
     if current_user.rol != Rol.EMPLEADO:
         raise HTTPException(
             status_code=401,
-            detail="Sólo empleados pueden eliminar un ítem de configuracion",
+            detail="Sólo empleados pueden eliminar un ítem de configuración",
         )
 
     return crud.delete_item_configuracion(
