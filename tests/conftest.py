@@ -19,10 +19,17 @@ def session_fixture() -> Generator[Session, None, None]:
     # This creates all models for tests even if there is no version/revision created
     # for a particular class
     SQLModel.metadata.create_all(engine)
-
-    with Session(engine) as session:
-        init_db(session)
-        yield session
+    
+    connection = engine.connect()
+    transaction = connection.begin()
+    session = Session(bind=connection)
+    
+    init_db(session)
+    yield session
+    
+    session.close()
+    transaction.rollback()
+    connection.close()
 
 
 @pytest.fixture(scope="module", name="client")
