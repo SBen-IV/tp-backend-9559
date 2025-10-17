@@ -20,16 +20,9 @@ def session_fixture() -> Generator[Session, None, None]:
     # for a particular class
     SQLModel.metadata.create_all(engine)
     
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
-    
-    init_db(session)
-    yield session
-    
-    session.close()
-    transaction.rollback()
-    connection.close()
+    with Session(engine) as session:
+        init_db(session)
+        yield session
 
 
 @pytest.fixture(scope="module", name="client")
