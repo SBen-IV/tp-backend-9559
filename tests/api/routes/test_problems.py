@@ -507,6 +507,7 @@ def test_delete_problem_invalid_if_not_empleado(
 
     # Then the problema is not deleted and an error is returned
     assert 400 <= r.status_code < 500
+    assert r.json()["detail"] == "Sólo empleados pueden eliminar un problema"
 
     r = client.get(
         f"{BASE_URL}/{problema_created['id']}", headers=empleado_token_headers

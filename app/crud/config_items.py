@@ -11,6 +11,7 @@ from app.models.config_items import (
     ItemConfiguracionPublico,
 )
 
+
 class ItemsConfiguracionService:
     def create_item_configuracion(
         *, session: Session, item_config_crear: ItemConfiguracionCrear
@@ -87,5 +88,17 @@ class ItemsConfiguracionService:
         session.add(item_config)
         session.commit()
         session.refresh(item_config)
+
+        return item_config
+
+    def delete_item_configuracion(
+        *, session: Session, id_item_config: uuid.UUID
+    ) -> ItemConfiguracionPublico:
+        item_config = ItemsConfiguracionService.get_item_configuracion_by_id(
+            session=session, id_item_config=id_item_config
+        )
+
+        session.delete(item_config)
+        session.commit()
 
         return item_config
