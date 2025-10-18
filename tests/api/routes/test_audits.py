@@ -83,6 +83,26 @@ def create_random_incident(client: TestClient, token_headers: dict[str, str]) ->
     return r.json()
 
 
+def create_random_problem(client: TestClient, token_headers: dict[str, str]) -> dict:
+    config_items = client.get(f"{settings.API_V1_STR}/config-items")
+    config_item = config_items.json()[0]
+
+    titulo = fake.word()
+    descripcion = fake.text(max_nb_chars=100)
+    prioridad = Prioridad.BAJA
+    id_config_items = [config_item["id"]]
+
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "id_config_items": id_config_items,
+    }
+
+    r = client.post(PROBLEMS_URL, json=data, headers=token_headers)
+    return r.json()
+
+
 def test_creating_item_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
     nombre = "Ubuntu"
     descripcion = "Sistema operativo"
@@ -346,3 +366,38 @@ def test_updating_incident_creates_audit(client: TestClient, session: Session, e
     assert auditoria['tipo_entidad'] == TipoEntidad.INCIDENTE.value
     assert auditoria['operacion'] == Operacion.ACTUALIZAR.value
     assert auditoria['estado_nuevo']['titulo'] != item_created['titulo'] 
+    
+    
+def test_updating_problem_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
+    item_created = create_random_problem(client, empleado_token_headers)
+    
+    data = {"titulo": "Nuevo titulo"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{PROBLEMS_URL}/{item_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    item = r.json()
+    
+    r = client.get(AUDITS_URL, params={"tipo_entidad": TipoEntidad.PROBLEMA.value, "id_entidad": item["id"]})
+
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    auditoria = next(
+        (audit for audit in auditorias if audit["id_entidad"] == item["id"]),
+        None
+    )
+    
+    assert auditoria
+    assert auditoria['id_entidad'] == item['id']
+    assert auditoria['tipo_entidad'] == TipoEntidad.PROBLEMA.value
+    assert auditoria['operacion'] == Operacion.ACTUALIZAR.value
+    assert auditoria['estado_nuevo']['titulo'] != item_created['titulo'] 
+    
