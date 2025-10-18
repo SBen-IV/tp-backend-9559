@@ -29,7 +29,7 @@ def test_get_all_incidentes(client: TestClient, session: Session) -> None:
 
     incidentes = r.json()
 
-    assert len(incidentes) == 5
+    assert len(incidentes) == 6
 
 
 def test_get_incidentes_by_titulo(client: TestClient, session: Session) -> None:
@@ -102,7 +102,7 @@ def test_get_incidente_by_estado_nuevo(client: TestClient, session: Session) -> 
 
     incidentes = r.json()
 
-    assert len(incidentes) == 5
+    assert len(incidentes) == 6
 
     for incidente in incidentes:
         assert incidente["estado"] == estado

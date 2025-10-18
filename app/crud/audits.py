@@ -16,18 +16,19 @@ class AuditoriaService:
     return auditoria_obj
   
   def get_audits(*, session: Session, auditoria_filter: AuditoriaFilter) -> list[Auditoria]:
-      query = select(Auditoria)
+    query = select(Auditoria)
 
-      if auditoria_filter.tipo_entidad is not None:
-          query = query.where(Auditoria.tipo_entidad == auditoria_filter.tipo_entidad)
+    if auditoria_filter.tipo_entidad is not None:
+        query = query.where(Auditoria.tipo_entidad == auditoria_filter.tipo_entidad)
 
-      if auditoria_filter.id_entidad is not None:
-          query = query.where(Auditoria.id_entidad == auditoria_filter.id_entidad)
+    if auditoria_filter.id_entidad is not None:
+        query = query.where(Auditoria.id_entidad == auditoria_filter.id_entidad)
 
-      if auditoria_filter.operacion is not None:
-          query = query.where(Auditoria.operacion == auditoria_filter.operacion)
-          
+    if auditoria_filter.operacion is not None:
+        query = query.where(Auditoria.operacion == auditoria_filter.operacion)
+        
+    query = query.order_by(Auditoria.fecha_actualizacion.desc())
 
-      auditorias = session.exec(query).all()
+    auditorias = session.exec(query).all()
 
-      return auditorias
+    return auditorias

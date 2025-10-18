@@ -71,11 +71,23 @@ async def update_problema(
     id_problema: uuid.UUID,
     problema_actualizar: ProblemaActualizar,
 ) -> ProblemaPublicoConItems:
-    return crud.update_problema(
+    
+    problema =  crud.update_problema(
         session=session,
         id_problema=id_problema,
         problema_actualizar=problema_actualizar,
     )
+    
+    auditoria_crear = AuditoriaCrear( 
+        tipo_entidad = TipoEntidad.PROBLEMA,
+        id_entidad = problema.id,
+        operacion = Operacion.ACTUALIZAR,
+        estado_nuevo = jsonable_encoder(problema),
+        actualizado_por = current_user.id
+    )
+    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+    
+    return problema
 
 
 @router.delete("/{id_problema}", response_model=ProblemaPublicoConItems)

@@ -71,9 +71,20 @@ async def update_change(
     id_change: uuid.UUID,
     cambio_actualizar: CambioActualizar,
 ) -> CambioPublicoConItems:
-    return crud.update_change(
+    cambio = crud.update_change(
         session=session, id_change=id_change, cambio_actualizar=cambio_actualizar
     )
+    
+    auditoria_crear = AuditoriaCrear( 
+        tipo_entidad = TipoEntidad.CAMBIO,
+        id_entidad = cambio.id,
+        operacion = Operacion.ACTUALIZAR,
+        estado_nuevo = jsonable_encoder(cambio),
+        actualizado_por = current_user.id
+    )
+    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+    
+    return cambio
 
 
 @router.delete("/{id_change}", response_model=CambioPublicoConItems)

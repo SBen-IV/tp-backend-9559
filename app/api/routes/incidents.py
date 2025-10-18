@@ -74,11 +74,23 @@ async def update_incidente(
     id_incidente: uuid.UUID,
     incidente_actualizar: IncidenteActualizar,
 ) -> IncidentePublicoConItems:
-    return crud.update_incidente(
+    
+    incidente =  crud.update_incidente(
         session=session,
         id_incidente=id_incidente,
         incidente_actualizar=incidente_actualizar,
     )
+        
+    auditoria_crear = AuditoriaCrear( 
+        tipo_entidad = TipoEntidad.INCIDENTE,
+        id_entidad = incidente.id,
+        operacion = Operacion.ACTUALIZAR,
+        estado_nuevo = jsonable_encoder(incidente),
+        actualizado_por = current_user.id
+    )
+    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+    
+    return incidente
 
 
 @router.delete("/{id_incidente}", response_model=IncidentePublicoConItems)
