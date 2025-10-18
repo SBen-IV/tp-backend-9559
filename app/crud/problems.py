@@ -90,3 +90,14 @@ class ProblemasService:
 
         return problema
 
+    def delete_problema(
+        *, session: Session, id_problema: uuid.UUID
+    ) -> ProblemaPublicoConItems:
+        problema = ProblemasService.get_problema_by_id(
+            session=session, id_problema=id_problema
+        )
+
+        session.delete(problema)
+        session.commit()
+
+        return problema
