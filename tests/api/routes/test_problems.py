@@ -29,7 +29,7 @@ def test_get_all_problemas(client: TestClient, session: Session) -> None:
 
     problemas = r.json()
 
-    assert len(problemas) == 3
+    assert len(problemas) == 4
 
 
 def test_get_problemas_by_titulo(client: TestClient, session: Session) -> None:
@@ -85,7 +85,7 @@ def test_get_problema_by_estado_en_analisis(
 
     problemas = r.json()
 
-    assert len(problemas) == 3
+    assert len(problemas) == 4
 
     for problema in problemas:
         assert problema["estado"] == estado

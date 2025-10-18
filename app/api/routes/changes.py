@@ -1,6 +1,10 @@
 import uuid
 
+from app.crud.audits import AuditoriaService
+from app.models.auditoria import AuditoriaCrear
+from app.models.commons import Operacion, TipoEntidad
 from fastapi import APIRouter, HTTPException
+from fastapi.encoders import jsonable_encoder
 
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.changes import CambiosService as crud
@@ -26,6 +30,15 @@ async def create_change(
     )
 
     cambio = crud.create_cambio(session=session, cambio_crear=cambio_crear)
+    
+    auditoria_crear = AuditoriaCrear( 
+        tipo_entidad = TipoEntidad.CAMBIO,
+        id_entidad = cambio.id,
+        operacion = Operacion.CREAR,
+        estado_nuevo = jsonable_encoder(cambio),
+        actualizado_por = current_user.id
+    )
+    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
 
     return cambio
 

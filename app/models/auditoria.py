@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import uuid
 from datetime import datetime, timezone
 from .commons import TipoEntidad, Operacion
@@ -18,3 +19,10 @@ class Auditoria(AuditoriaCrear, table=True):
     fecha_actualizacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
     
+      
+@dataclass
+class AuditoriaFilter:
+  tipo_entidad: TipoEntidad | None = None
+  id_entidad: uuid.UUID | None = None
+  operacion: Operacion | None = None
+  
