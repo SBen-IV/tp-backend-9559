@@ -42,6 +42,25 @@ def create_random_cambio(client: TestClient, token_headers: dict[str, str]) -> d
     return r.json()
 
 
+def create_random_item_configuracion(
+    client: TestClient, token_headers: dict[str, str]
+) -> dict:
+    nombre = fake.word()
+    descripcion = fake.text(max_nb_chars=100)
+    version = "1.0"
+    categoria = "SOFTWARE"
+
+    data = {
+        "nombre": nombre,
+        "descripcion": descripcion,
+        "version": version,
+        "categoria": categoria,
+    }
+
+    r = client.post(CONFIG_ITEMS_URL, json=data, headers=token_headers)
+    return r.json()
+
+
 def test_creating_item_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
     nombre = "Ubuntu"
     descripcion = "Sistema operativo"
@@ -238,3 +257,36 @@ def test_updating_change_creates_audit(client: TestClient, session: Session, emp
     assert auditoria['operacion'] == Operacion.ACTUALIZAR.value
     assert auditoria['estado_nuevo']['titulo'] != cambio_created['titulo'] 
     
+    
+def test_updating_item_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
+    item_created = create_random_item_configuracion(client, empleado_token_headers)
+    
+    data = {"nombre": "Nuevo nombre"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{CONFIG_ITEMS_URL}/{item_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    item = r.json()
+    
+    r = client.get(AUDITS_URL, params={"tipo_entidad": TipoEntidad.CONFIG_ITEM.value, "id_entidad": item["id"]})
+
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    auditoria = next(
+        (audit for audit in auditorias if audit["id_entidad"] == item["id"]),
+        None
+    )
+    
+    assert auditoria
+    assert auditoria['id_entidad'] == item['id']
+    assert auditoria['tipo_entidad'] == TipoEntidad.CONFIG_ITEM.value
+    assert auditoria['operacion'] == Operacion.ACTUALIZAR.value
+    assert auditoria['estado_nuevo']['nombre'] != item_created['nombre'] 

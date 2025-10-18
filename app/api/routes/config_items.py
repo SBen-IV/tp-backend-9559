@@ -78,8 +78,22 @@ async def update_change(
     id_item_config: uuid.UUID,
     item_config_actualizar: ItemConfiguracionActualizar,
 ) -> ItemConfiguracionPublico:
-    return crud.update_item_configuracion(
+    
+    item_configuracion = crud.update_item_configuracion(
         session=session,
         id_item_config=id_item_config,
         item_config_actualizar=item_config_actualizar,
     )
+    
+    auditoria_crear = AuditoriaCrear( 
+        tipo_entidad = TipoEntidad.CONFIG_ITEM,
+        id_entidad = item_configuracion.id,
+        operacion = Operacion.ACTUALIZAR,
+        estado_nuevo = jsonable_encoder(item_configuracion),
+        actualizado_por = current_user.id
+    )
+    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+    
+    return item_configuracion
+    
+    

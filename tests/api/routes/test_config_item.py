@@ -27,7 +27,7 @@ def test_get_all_config_item(client: TestClient, session: Session) -> None:
 
     items_config = r.json()
 
-    assert len(items_config) == 4
+    assert len(items_config) == 5
 
 
 def test_get_config_item_by_nombre(client: TestClient, session: Session) -> None:
@@ -100,7 +100,7 @@ def test_get_config_item_by_estado(client: TestClient, session: Session) -> None
 
     items_config = r.json()
 
-    assert len(items_config) == 4
+    assert len(items_config) == 5
 
     for item_config in items_config:
         assert item_config["estado"] == estado
