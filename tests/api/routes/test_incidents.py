@@ -603,6 +603,7 @@ def test_delete_incident_invalid_if_not_empleado(
 
     # Then the incidente is not deleted and an error is returned
     assert 400 <= r.status_code < 500
+    assert r.json()["detail"] == "Sólo empleados pueden eliminar un incidente"
 
     r = client.get(
         f"{BASE_URL}/{incidente_created['id']}", headers=empleado_token_headers

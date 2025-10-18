@@ -418,6 +418,7 @@ def test_delete_change_invalid_if_not_empleado(
 
     # Then the cambio is not deleted and an error is returned
     assert 400 <= r.status_code < 500
+    assert r.json()["detail"] == "Sólo empleados pueden eliminar un cambio"
 
     r = client.get(f"{BASE_URL}/{cambio_created['id']}", headers=empleado_token_headers)
 

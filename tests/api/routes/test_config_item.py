@@ -443,10 +443,10 @@ def test_update_config_item_categoria(
     assert item_config["owner_id"] == item_config_created["owner_id"]
 
 
-def test_update_change_estado(
+def test_update_config_item_estado(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
-    # Given a cambio
+    # Given a ítem de configuración
     item_config_created = create_random_item_configuracion(
         client, empleado_token_headers
     )
@@ -460,7 +460,7 @@ def test_update_change_estado(
         headers=empleado_token_headers,
     )
 
-    # Then the cambio is persisted
+    # Then the ítem de configuración is persisted
     assert 200 <= r.status_code < 300
 
     item_config = r.json()
@@ -472,5 +472,90 @@ def test_update_change_estado(
     assert item_config["version"] == item_config_created["version"]
     assert item_config["estado"] != item_config_created["estado"]
     assert item_config["categoria"] == item_config_created["categoria"]
+    assert item_config["fecha_creacion"] == item_config_created["fecha_creacion"]
+    assert item_config["owner_id"] == item_config_created["owner_id"]
+
+
+def test_delete_config_item(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a ítem de configuración
+    item_config_created = create_random_item_configuracion(
+        client, empleado_token_headers
+    )
+
+    # When the user deletes it
+    r = client.delete(
+        f"{BASE_URL}/{item_config_created['id']}", headers=empleado_token_headers
+    )
+
+    # Then the ítem de configuración is deleted and returned
+    assert 200 <= r.status_code < 300
+
+    item_config = r.json()
+
+    assert item_config
+    assert item_config["nombre"] == item_config_created["nombre"]
+    assert item_config["descripcion"] == item_config_created["descripcion"]
+    assert item_config["version"] == item_config_created["version"]
+    assert item_config["categoria"] == item_config_created["categoria"]
+    assert item_config["estado"] == item_config_created["estado"]
+    assert item_config["fecha_creacion"] == item_config_created["fecha_creacion"]
+    assert item_config["owner_id"] == item_config_created["owner_id"]
+
+    r = client.get(f"{BASE_URL}/{item_config['id']}", headers=empleado_token_headers)
+
+    assert r.status_code == 404
+
+
+def test_delete_config_item_invalid_uuid(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a uuid that's not linked to any ítem de configuración
+    id_config_item = "1c6f2b84-25f2-4032-b37b-eabca65a4fb3"
+
+    # When the user uses it to delete a ítem de configuración
+    r = client.delete(f"{BASE_URL}/{id_config_item}", headers=empleado_token_headers)
+
+    # Then not found is returned
+    assert r.status_code == 404
+
+
+def test_delete_config_item_invalid_if_not_empleado(
+    client: TestClient,
+    session: Session,
+    empleado_token_headers: dict[str, str],
+    cliente_token_headers: dict[str, str],
+) -> None:
+    # Given a item_config
+    item_config_created = create_random_item_configuracion(
+        client, empleado_token_headers
+    )
+
+    # When the cliente deletes it
+    r = client.delete(
+        f"{BASE_URL}/{item_config_created['id']}", headers=cliente_token_headers
+    )
+
+    # Then the item_config is not deleted and an error is returned
+    assert 400 <= r.status_code < 500
+    assert (
+        r.json()["detail"] == "Sólo empleados pueden eliminar un ítem de configuración"
+    )
+
+    r = client.get(
+        f"{BASE_URL}/{item_config_created['id']}", headers=empleado_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+
+    item_config = r.json()
+
+    assert item_config
+    assert item_config["nombre"] == item_config_created["nombre"]
+    assert item_config["descripcion"] == item_config_created["descripcion"]
+    assert item_config["version"] == item_config_created["version"]
+    assert item_config["categoria"] == item_config_created["categoria"]
+    assert item_config["estado"] == item_config_created["estado"]
     assert item_config["fecha_creacion"] == item_config_created["fecha_creacion"]
     assert item_config["owner_id"] == item_config_created["owner_id"]

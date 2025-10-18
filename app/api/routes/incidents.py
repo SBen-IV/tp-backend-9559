@@ -87,8 +87,7 @@ async def delete_incidente(
 ) -> IncidentePublicoConItems:
     if current_user.rol != Rol.EMPLEADO:
         raise HTTPException(
-            status_code=401, detail="Sólo empleados pueden eliminar un cambio"
+            status_code=401, detail="Sólo empleados pueden eliminar un incidente"
         )
 
     return crud.delete_incidente(session=session, id_incidente=id_incidente)
-
