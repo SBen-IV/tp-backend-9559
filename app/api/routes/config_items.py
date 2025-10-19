@@ -112,6 +112,17 @@ async def delete_item_config(
             detail="Sólo empleados pueden eliminar un ítem de configuración",
         )
 
-    return crud.delete_item_configuracion(
+    item =  crud.delete_item_configuracion(
         session=session, id_item_config=id_item_config
+    )
+    
+    auditoria_crear = AuditoriaCrear(
+        tipo_entidad=TipoEntidad.CONFIG_ITEM,
+        id_entidad=item.id,
+        operacion=Operacion.ELIMINAR,
+        estado_nuevo=jsonable_encoder(item),
+        actualizado_por=current_user.id,
+    )
+    AuditoriaService.registrar_operacion(
+        session=session, auditoria_crear=auditoria_crear
     )
