@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import uuid
 
 from fastapi import HTTPException
@@ -5,6 +6,7 @@ from sqlmodel import Session, select
 
 from app.models.config_items import ItemConfiguracion
 from app.models.incidents import (
+    EstadoIncidente,
     Incidente,
     IncidenteActualizar,
     IncidenteCrear,
@@ -85,6 +87,8 @@ class IncidentesService:
 
         if incidente_actualizar.estado is not None:
             incidente.estado = incidente_actualizar.estado
+            if incidente_actualizar.estado == EstadoIncidente.CERRADO.value:
+                    incidente.fecha_cierre = datetime.now(timezone.utc)
 
         if incidente_actualizar.prioridad is not None:
             incidente.prioridad = incidente_actualizar.prioridad

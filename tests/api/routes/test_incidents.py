@@ -624,3 +624,37 @@ def test_delete_incident_invalid_if_not_empleado(
     assert (
         incidente["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
     )
+    
+    
+def test_closing_incidente_sets_closing_date(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given an incident
+    incidente_created = create_random_incident(client, empleado_token_headers)
+    
+    assert incidente_created["fecha_cierre"] is None
+
+    data = {"estado": EstadoIncidente.CERRADO}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{incidente_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    incident = r.json()
+
+    assert incident
+    assert incident["descripcion"] == incidente_created["descripcion"]
+    assert incident["prioridad"] == incidente_created["prioridad"]
+    assert incident["fecha_creacion"] == incidente_created["fecha_creacion"]
+    assert incident["categoria"] == incidente_created["categoria"]
+    assert incident["owner_id"] == incidente_created["owner_id"]
+    assert (
+        incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
+    )
+    assert incident["fecha_cierre"] is not None
