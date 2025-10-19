@@ -102,4 +102,13 @@ async def delete_incidente(
             status_code=401, detail="Sólo empleados pueden eliminar un incidente"
         )
 
-    return crud.delete_incidente(session=session, id_incidente=id_incidente)
+    incident =  crud.delete_incidente(session=session, id_incidente=id_incidente)
+    
+    auditoria_crear = AuditoriaCrear( 
+        tipo_entidad = TipoEntidad.INCIDENTE,
+        id_entidad = incident.id,
+        operacion = Operacion.ELIMINAR,
+        estado_nuevo = jsonable_encoder(incident),
+        actualizado_por = current_user.id
+    )
+    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)    
