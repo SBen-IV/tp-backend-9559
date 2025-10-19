@@ -112,3 +112,5 @@ async def delete_incidente(
         actualizado_por = current_user.id
     )
     AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)    
+
+    return incident

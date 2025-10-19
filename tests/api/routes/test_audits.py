@@ -485,7 +485,7 @@ def test_deleting_problem_creates_audit(client: TestClient, session: Session, em
     problem_created = create_random_problem(client, empleado_token_headers)
     
     r = client.delete(
-        f"{PROBLEMS_URL}/{problem_created['id']}", json=data, headers=empleado_token_headers
+        f"{PROBLEMS_URL}/{problem_created['id']}", headers=empleado_token_headers
     )
 
     assert 200 <= r.status_code < 300

@@ -126,3 +126,5 @@ async def delete_item_config(
     AuditoriaService.registrar_operacion(
         session=session, auditoria_crear=auditoria_crear
     )
+    
+    return item

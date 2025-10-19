@@ -109,3 +109,5 @@ async def delete_problema(
         actualizado_por = current_user.id
     )
     AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)    
+
+    return problema
