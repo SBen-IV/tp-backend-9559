@@ -36,6 +36,7 @@ class IncidenteBase(SQLModel):
     prioridad: Prioridad
     categoria: CategoriaIncidente
     responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
+    fecha_cierre: datetime | None = Field(default=None)
 
 
 class IncidenteCrear(SQLModel):
