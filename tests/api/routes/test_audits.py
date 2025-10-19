@@ -401,3 +401,27 @@ def test_updating_problem_creates_audit(client: TestClient, session: Session, em
     assert auditoria['operacion'] == Operacion.ACTUALIZAR.value
     assert auditoria['estado_nuevo']['titulo'] != item_created['titulo'] 
     
+    
+def test_eliminating_change_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+    
+    r = client.delete(f"{CHANGES_URL}/{cambio_created['id']}", headers=empleado_token_headers)
+
+    assert 200 <= r.status_code < 300
+    
+    r = client.get(AUDITS_URL, params={"tipo_entidad": TipoEntidad.CAMBIO.value, "id_entidad": cambio_created["id"]})
+
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    auditoria = next(
+        (audit for audit in auditorias if audit["id_entidad"] == cambio_created["id"]),
+        None
+    )
+    
+    assert auditoria
+    assert auditoria['id_entidad'] == cambio_created['id']
+    assert auditoria['tipo_entidad'] == TipoEntidad.CAMBIO.value
+    assert auditoria['operacion'] == Operacion.ELIMINAR.value

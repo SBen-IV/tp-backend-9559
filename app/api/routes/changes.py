@@ -96,4 +96,15 @@ async def delete_change(
             status_code=401, detail="Sólo empleados pueden eliminar un cambio"
         )
 
-    return crud.delete_change(session=session, id_change=id_change)
+    cambio =  crud.delete_change(session=session, id_change=id_change)
+    
+    auditoria_crear = AuditoriaCrear( 
+        tipo_entidad = TipoEntidad.CAMBIO,
+        id_entidad = cambio.id,
+        operacion = Operacion.ELIMINAR,
+        estado_nuevo = jsonable_encoder(cambio),
+        actualizado_por = current_user.id
+    )
+    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+    
+    return cambio
