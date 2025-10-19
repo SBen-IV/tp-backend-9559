@@ -401,3 +401,108 @@ def test_updating_problem_creates_audit(client: TestClient, session: Session, em
     assert auditoria['operacion'] == Operacion.ACTUALIZAR.value
     assert auditoria['estado_nuevo']['titulo'] != item_created['titulo'] 
     
+    
+def test_eliminating_change_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+    
+    r = client.delete(f"{CHANGES_URL}/{cambio_created['id']}", headers=empleado_token_headers)
+
+    assert 200 <= r.status_code < 300
+    
+    r = client.get(AUDITS_URL, params={"tipo_entidad": TipoEntidad.CAMBIO.value, "id_entidad": cambio_created["id"]})
+
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    auditoria = next(
+        (audit for audit in auditorias if audit["id_entidad"] == cambio_created["id"]),
+        None
+    )
+    
+    assert auditoria
+    assert auditoria['id_entidad'] == cambio_created['id']
+    assert auditoria['tipo_entidad'] == TipoEntidad.CAMBIO.value
+    assert auditoria['operacion'] == Operacion.ELIMINAR.value
+
+
+def test_deleting_item_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
+    item_created = create_random_item_configuracion(client, empleado_token_headers)
+    
+    r = client.delete(
+        f"{CONFIG_ITEMS_URL}/{item_created['id']}", headers=empleado_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+    
+    r = client.get(AUDITS_URL, params={"tipo_entidad": TipoEntidad.CONFIG_ITEM.value, "id_entidad": item_created["id"]})
+
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    auditoria = next(
+        (audit for audit in auditorias if audit["id_entidad"] == item_created["id"]),
+        None
+    )
+    
+    assert auditoria
+    assert auditoria['id_entidad'] == item_created['id']
+    assert auditoria['tipo_entidad'] == TipoEntidad.CONFIG_ITEM.value
+    assert auditoria['operacion'] == Operacion.ELIMINAR.value
+    
+    
+def test_deleting_incident_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
+    incident_created = create_random_incident(client, empleado_token_headers)
+    
+    r = client.delete(
+        f"{INCIDENTS_URL}/{incident_created['id']}", headers=empleado_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+    
+    r = client.get(AUDITS_URL, params={"tipo_entidad": TipoEntidad.INCIDENTE.value, "id_entidad": incident_created["id"]})
+
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    auditoria = next(
+        (audit for audit in auditorias if audit["id_entidad"] == incident_created["id"]),
+        None
+    )
+    
+    assert auditoria
+    assert auditoria['id_entidad'] == incident_created['id']
+    assert auditoria['tipo_entidad'] == TipoEntidad.INCIDENTE.value
+    assert auditoria['operacion'] == Operacion.ELIMINAR.value
+
+
+def test_deleting_problem_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
+    problem_created = create_random_problem(client, empleado_token_headers)
+    
+    r = client.delete(
+        f"{PROBLEMS_URL}/{problem_created['id']}", headers=empleado_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+    
+    r = client.get(AUDITS_URL, params={"tipo_entidad": TipoEntidad.PROBLEMA.value, "id_entidad": problem_created["id"]})
+
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    auditoria = next(
+        (audit for audit in auditorias if audit["id_entidad"] == problem_created["id"]),
+        None
+    )
+    
+    assert auditoria
+    assert auditoria['id_entidad'] == problem_created['id']
+    assert auditoria['tipo_entidad'] == TipoEntidad.PROBLEMA.value
+    assert auditoria['operacion'] == Operacion.ELIMINAR.value
