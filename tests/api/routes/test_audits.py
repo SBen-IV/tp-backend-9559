@@ -462,8 +462,6 @@ def test_deleting_incident_creates_audit(client: TestClient, session: Session, e
     )
 
     assert 200 <= r.status_code < 300
-
-    incident_created = r.json()
     
     r = client.get(AUDITS_URL, params={"tipo_entidad": TipoEntidad.INCIDENTE.value, "id_entidad": incident_created["id"]})
 
@@ -480,4 +478,31 @@ def test_deleting_incident_creates_audit(client: TestClient, session: Session, e
     assert auditoria
     assert auditoria['id_entidad'] == incident_created['id']
     assert auditoria['tipo_entidad'] == TipoEntidad.INCIDENTE.value
+    assert auditoria['operacion'] == Operacion.ELIMINAR.value
+
+
+def test_deleting_problem_creates_audit(client: TestClient, session: Session, empleado_token_headers: dict[str, str]) -> None:
+    problem_created = create_random_problem(client, empleado_token_headers)
+    
+    r = client.delete(
+        f"{PROBLEMS_URL}/{problem_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+    
+    r = client.get(AUDITS_URL, params={"tipo_entidad": TipoEntidad.PROBLEMA.value, "id_entidad": problem_created["id"]})
+
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    auditoria = next(
+        (audit for audit in auditorias if audit["id_entidad"] == problem_created["id"]),
+        None
+    )
+    
+    assert auditoria
+    assert auditoria['id_entidad'] == problem_created['id']
+    assert auditoria['tipo_entidad'] == TipoEntidad.PROBLEMA.value
     assert auditoria['operacion'] == Operacion.ELIMINAR.value

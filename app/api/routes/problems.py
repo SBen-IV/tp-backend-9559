@@ -99,4 +99,13 @@ async def delete_problema(
             status_code=401, detail="Sólo empleados pueden eliminar un problema"
         )
 
-    return crud.delete_problema(session=session, id_problema=id_problema)
+    problema =  crud.delete_problema(session=session, id_problema=id_problema)
+    
+    auditoria_crear = AuditoriaCrear( 
+        tipo_entidad = TipoEntidad.PROBLEMA,
+        id_entidad = problema.id,
+        operacion = Operacion.ELIMINAR,
+        estado_nuevo = jsonable_encoder(problema),
+        actualizado_por = current_user.id
+    )
+    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)    
