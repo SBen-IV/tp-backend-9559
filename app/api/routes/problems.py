@@ -13,7 +13,6 @@ from app.models.problems import (
     ProblemaActualizar,
     ProblemaCrear,
     ProblemaFilter,
-    ProblemaPublicoConItems,
     ProblemaPublicoConRelaciones,
 )
 from app.models.users import Rol
@@ -45,13 +44,13 @@ async def create_problema(
     return problema
 
 
-@router.get("/", response_model=list[ProblemaPublicoConItems])
+@router.get("/", response_model=list[ProblemaPublicoConRelaciones])
 async def get_problemas(
     session: SessionDep,
     titulo: str | None = None,
     prioridad: Prioridad | None = None,
     estado: EstadoProblema | None = None,
-) -> list[ProblemaPublicoConItems]:
+) -> list[ProblemaPublicoConRelaciones]:
     problema_filter = ProblemaFilter(
         titulo=titulo,
         prioridad=prioridad,
@@ -94,10 +93,10 @@ async def update_problema(
     return problema
 
 
-@router.delete("/{id_problema}", response_model=ProblemaPublicoConItems)
+@router.delete("/{id_problema}", response_model=ProblemaPublicoConRelaciones)
 async def delete_problema(
     session: SessionDep, current_user: CurrentUser, id_problema: uuid.UUID
-) -> ProblemaPublicoConItems:
+) -> ProblemaPublicoConRelaciones:
     if current_user.rol != Rol.EMPLEADO:
         raise HTTPException(
             status_code=401, detail="Sólo empleados pueden eliminar un problema"

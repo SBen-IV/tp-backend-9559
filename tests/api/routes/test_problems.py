@@ -380,6 +380,7 @@ def test_update_problema_descripcion(
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["responsable_id"] == problem_created["responsable_id"]
     assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
 
 
 def test_update_problema_estado(
@@ -411,6 +412,7 @@ def test_update_problema_estado(
     assert problem["estado"] != problem_created["estado"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
 
 
 def test_update_problema_responsable(
@@ -445,6 +447,7 @@ def test_update_problema_responsable(
     assert problem["estado"] == problem_created["estado"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
 
 
 def test_update_problema_prioridad(
@@ -472,6 +475,7 @@ def test_update_problema_prioridad(
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
 
 
 def test_delete_problem(
@@ -500,6 +504,7 @@ def test_delete_problem(
     assert (
         problema["config_items"][0]["id"] == problema_created["config_items"][0]["id"]
     )
+    assert problema["incidentes"][0]["id"] == problema_created["incidentes"][0]["id"]
 
     r = client.get(f"{BASE_URL}/{problema['id']}", headers=empleado_token_headers)
 
@@ -555,3 +560,4 @@ def test_delete_problem_invalid_if_not_empleado(
     assert (
         problema["config_items"][0]["id"] == problema_created["config_items"][0]["id"]
     )
+    assert problema["incidentes"][0]["id"] == problema_created["incidentes"][0]["id"]
