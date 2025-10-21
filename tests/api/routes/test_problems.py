@@ -351,6 +351,7 @@ def test_update_problema_titulo(
     assert problem["fecha_creacion"] == problema_created["fecha_creacion"]
     assert problem["owner_id"] == problema_created["owner_id"]
     assert problem["config_items"][0]["id"] == problema_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problema_created["incidentes"][0]["id"]
 
 
 def test_update_problema_descripcion(

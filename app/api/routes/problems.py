@@ -67,13 +67,13 @@ async def get_problema(
     return crud.get_problema_by_id(session=session, id_problema=id_problema)
 
 
-@router.patch("/{id_problema}", response_model=ProblemaPublicoConItems)
+@router.patch("/{id_problema}", response_model=ProblemaPublicoConRelaciones)
 async def update_problema(
     session: SessionDep,
     current_user: CurrentUser,
     id_problema: uuid.UUID,
     problema_actualizar: ProblemaActualizar,
-) -> ProblemaPublicoConItems:
+) -> ProblemaPublicoConRelaciones:
     problema = crud.update_problema(
         session=session,
         id_problema=id_problema,
