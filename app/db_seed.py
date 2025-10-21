@@ -104,18 +104,21 @@ if os.getenv("TESTS", None):
             descripcion="Al querer usar la webcam en Zoom me sale en negro",
             prioridad=Prioridad.BAJA,
             id_config_items=[],
+            id_incidentes=[],
         ),
         ProblemaCrear(
             titulo="CPU sobrecalentada",
             descripcion="Se sobrecalienta la CPU de mi pc al usar Google Meet",
             prioridad=Prioridad.MEDIA,
             id_config_items=[],
+            id_incidentes=[],
         ),
         ProblemaCrear(
             titulo="Servidor lento",
             descripcion="Se sobrecalienta en horas pico",
             prioridad=Prioridad.ALTA,
             id_config_items=[],
+            id_incidentes=[],
         ),
     ]
 else:
@@ -195,17 +198,20 @@ else:
             descripcion="Al querer usar la webcam en Zoom me sale en negro",
             prioridad=Prioridad.BAJA,
             id_config_items=[],
+            id_incidentes=[],
         ),
         ProblemaCrear(
             titulo="CPU sobrecalentada",
             descripcion="Se sobrecalienta la CPU de mi pc al usar Google Meet",
             prioridad=Prioridad.MEDIA,
             id_config_items=[],
+            id_incidentes=[],
         ),
         ProblemaCrear(
             titulo="Servidor lento",
             descripcion="Se sobrecalienta en horas pico",
             prioridad=Prioridad.ALTA,
             id_config_items=[],
+            id_incidentes=[],
         ),
     ]

@@ -38,7 +38,7 @@ class ProblemaCrear(SQLModel):
     owner_id: uuid.UUID | None = Field(default=None)
     prioridad: Prioridad
     id_config_items: list[uuid.UUID]
-    id_incidentes: list[uuid.UUID] = Field(default=[])
+    id_incidentes: list[uuid.UUID]
 
 
 class ProblemaPublico(ProblemaBase):

@@ -60,10 +60,10 @@ async def get_problemas(
     return crud.get_problemas(session=session, problema_filter=problema_filter)
 
 
-@router.get("/{id_problema}", response_model=ProblemaPublicoConItems)
+@router.get("/{id_problema}", response_model=ProblemaPublicoConIncidentes)
 async def get_problema(
     session: SessionDep, id_problema: uuid.UUID
-) -> ProblemaPublicoConItems:
+) -> ProblemaPublicoConIncidentes:
     return crud.get_problema_by_id(session=session, id_problema=id_problema)
 
 
