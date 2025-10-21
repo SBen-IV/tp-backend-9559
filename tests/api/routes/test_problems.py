@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 
 from app.models.commons import Prioridad
 from app.models.config_items import ItemConfiguracion
+from app.models.incidents import Incidente
 from app.models.problems import EstadoProblema
 from app.models.users import Usuario
 from app.utils.config import settings
@@ -175,6 +176,12 @@ def test_create_new_problema(
 
     id_config_items = [str(id_config_item.id)]
 
+    incidente = session.exec(select(Incidente)).first()
+
+    assert incidente
+
+    id_incidentes = [str(incidente.id)]
+
     now = datetime.now(timezone.utc)
 
     data = {
@@ -182,6 +189,7 @@ def test_create_new_problema(
         "descripcion": descripcion,
         "prioridad": prioridad,
         "id_config_items": id_config_items,
+        "id_incidentes": id_incidentes,
     }
 
     # When user tries to create the 'problema'
@@ -201,10 +209,15 @@ def test_create_new_problema(
     # is implemented we can check if it's equal
     assert problema["owner_id"]
     assert problema["responsable_id"] is None
+
     # And it includes the items linked
     assert len(problema["config_items"]) == len(id_config_items)
     for c in problema["config_items"]:
         assert any(c["id"] == config_item for config_item in id_config_items)
+
+    assert len(problema["incidentes"]) == len(id_incidentes)
+    for i in problema["incidentes"]:
+        assert any(i["id"] == id_incidente for id_incidente in id_incidentes)
 
 
 def test_create_problema_with_empty_title_returns_error(

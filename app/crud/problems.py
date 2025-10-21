@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.models.config_items import ItemConfiguracion
+from app.models.incidents import Incidente
 from app.models.problems import (
     Problema,
     ProblemaActualizar,
@@ -23,7 +24,12 @@ class ProblemasService:
             )
         ).all()
 
+        incidentes = session.exec(
+            select(Incidente).where(Incidente.id.in_(problema_crear.id_incidentes))
+        ).all()
+
         db_obj.config_items = config_items
+        db_obj.incidentes = incidentes
 
         session.add(db_obj)
         session.commit()

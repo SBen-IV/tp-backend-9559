@@ -6,11 +6,15 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.models.problems import Problema
+from app.models.problems_incidents_link import ProblemaIncidenteLink
+
 from .commons import Prioridad
 from .incidents_items_link import IncidenteItemLink
 
 if TYPE_CHECKING:
     from .config_items import ItemConfiguracion, ItemConfiguracionPublico
+    from .problems import Problema, ProblemaPublico
 
 
 class EstadoIncidente(str, Enum):
@@ -56,12 +60,20 @@ class IncidentePublicoConItems(IncidentePublico):
     config_items: list["ItemConfiguracionPublico"] = []
 
 
+class IncidentePulicoConProblemas(IncidentePublicoConItems):
+    problemas: list["ProblemaPublico"] = []
+
+
 class Incidente(IncidenteBase, table=True):
     __tablename__: str = "incidentes"
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
     config_items: list["ItemConfiguracion"] = Relationship(
         back_populates="incidentes", link_model=IncidenteItemLink
     )
+    problemas: list["Problema"] = Relationship(
+        back_populates="incidentes", link_model=ProblemaIncidenteLink
+    )
+
 
 class IncidenteActualizar(SQLModel):
     titulo: str | None = Field(None, min_length=1)
@@ -70,6 +82,7 @@ class IncidenteActualizar(SQLModel):
     estado: EstadoIncidente | None = None
     categoria: CategoriaIncidente | None = None
     responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
+
 
 @dataclass
 class IncidenteFilter:

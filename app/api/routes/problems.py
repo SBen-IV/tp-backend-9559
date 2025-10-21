@@ -1,18 +1,19 @@
 import uuid
 
-from app.crud.audits import AuditoriaService
-from app.models.auditoria import AuditoriaCrear
-from fastapi.encoders import jsonable_encoder
 from fastapi import APIRouter, HTTPException
+from fastapi.encoders import jsonable_encoder
 
 from app.api.deps import CurrentUser, SessionDep
+from app.crud.audits import AuditoriaService
 from app.crud.problems import ProblemasService as crud
+from app.models.auditoria import AuditoriaCrear
 from app.models.commons import Operacion, Prioridad, TipoEntidad
 from app.models.problems import (
     EstadoProblema,
     ProblemaActualizar,
     ProblemaCrear,
     ProblemaFilter,
+    ProblemaPublicoConIncidentes,
     ProblemaPublicoConItems,
 )
 from app.models.users import Rol
@@ -20,24 +21,26 @@ from app.models.users import Rol
 router = APIRouter(prefix="/problems")
 
 
-@router.post("/", response_model=ProblemaPublicoConItems)
+@router.post("/", response_model=ProblemaPublicoConIncidentes)
 async def create_problema(
     session: SessionDep, current_user: CurrentUser, problema_in: ProblemaCrear
-) -> ProblemaPublicoConItems:
+) -> ProblemaPublicoConIncidentes:
     problema_crear = ProblemaCrear.model_validate(
         problema_in, update={"owner_id": current_user.id}
     )
 
     problema = crud.create_problema(session=session, problema_crear=problema_crear)
-    
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.PROBLEMA,
-        id_entidad = problema.id,
-        operacion = Operacion.CREAR,
-        estado_nuevo = jsonable_encoder(problema),
-        actualizado_por = current_user.id
+
+    auditoria_crear = AuditoriaCrear(
+        tipo_entidad=TipoEntidad.PROBLEMA,
+        id_entidad=problema.id,
+        operacion=Operacion.CREAR,
+        estado_nuevo=jsonable_encoder(problema),
+        actualizado_por=current_user.id,
     )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+    AuditoriaService.registrar_operacion(
+        session=session, auditoria_crear=auditoria_crear
+    )
 
     return problema
 
@@ -71,22 +74,23 @@ async def update_problema(
     id_problema: uuid.UUID,
     problema_actualizar: ProblemaActualizar,
 ) -> ProblemaPublicoConItems:
-    
-    problema =  crud.update_problema(
+    problema = crud.update_problema(
         session=session,
         id_problema=id_problema,
         problema_actualizar=problema_actualizar,
     )
-    
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.PROBLEMA,
-        id_entidad = problema.id,
-        operacion = Operacion.ACTUALIZAR,
-        estado_nuevo = jsonable_encoder(problema),
-        actualizado_por = current_user.id
+
+    auditoria_crear = AuditoriaCrear(
+        tipo_entidad=TipoEntidad.PROBLEMA,
+        id_entidad=problema.id,
+        operacion=Operacion.ACTUALIZAR,
+        estado_nuevo=jsonable_encoder(problema),
+        actualizado_por=current_user.id,
     )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
-    
+    AuditoriaService.registrar_operacion(
+        session=session, auditoria_crear=auditoria_crear
+    )
+
     return problema
 
 
@@ -99,15 +103,17 @@ async def delete_problema(
             status_code=401, detail="Sólo empleados pueden eliminar un problema"
         )
 
-    problema =  crud.delete_problema(session=session, id_problema=id_problema)
-    
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.PROBLEMA,
-        id_entidad = problema.id,
-        operacion = Operacion.ELIMINAR,
-        estado_nuevo = jsonable_encoder(problema),
-        actualizado_por = current_user.id
+    problema = crud.delete_problema(session=session, id_problema=id_problema)
+
+    auditoria_crear = AuditoriaCrear(
+        tipo_entidad=TipoEntidad.PROBLEMA,
+        id_entidad=problema.id,
+        operacion=Operacion.ELIMINAR,
+        estado_nuevo=jsonable_encoder(problema),
+        actualizado_por=current_user.id,
     )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)    
+    AuditoriaService.registrar_operacion(
+        session=session, auditoria_crear=auditoria_crear
+    )
 
     return problema
