@@ -15,6 +15,7 @@ from .problems import (
     ProblemaPublico,
     ProblemaPublicoConIncidentes,
     ProblemaPublicoConItems,
+    ProblemaPublicoConRelaciones,
 )
 from .users import UsuarioPublico
 
@@ -26,6 +27,7 @@ CambioPublicoConItems.model_rebuild()
 CambioPublico.model_rebuild()
 ProblemaPublicoConIncidentes.model_rebuild()
 ProblemaPublicoConItems.model_rebuild()
+ProblemaPublicoConRelaciones.model_rebuild()
 ProblemaPublico.model_rebuild()
 IncidentePulicoConProblemas.model_rebuild()
 IncidentePublicoConItems.model_rebuild()

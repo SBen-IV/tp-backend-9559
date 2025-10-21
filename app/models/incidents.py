@@ -60,7 +60,7 @@ class IncidentePublicoConItems(IncidentePublico):
     config_items: list["ItemConfiguracionPublico"] = []
 
 
-class IncidentePulicoConProblemas(IncidentePublicoConItems):
+class IncidentePulicoConProblemas(IncidentePublico):
     problemas: list["ProblemaPublico"] = []
 
 

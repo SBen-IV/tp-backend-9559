@@ -13,18 +13,18 @@ from app.models.problems import (
     ProblemaActualizar,
     ProblemaCrear,
     ProblemaFilter,
-    ProblemaPublicoConIncidentes,
     ProblemaPublicoConItems,
+    ProblemaPublicoConRelaciones,
 )
 from app.models.users import Rol
 
 router = APIRouter(prefix="/problems")
 
 
-@router.post("/", response_model=ProblemaPublicoConIncidentes)
+@router.post("/", response_model=ProblemaPublicoConRelaciones)
 async def create_problema(
     session: SessionDep, current_user: CurrentUser, problema_in: ProblemaCrear
-) -> ProblemaPublicoConIncidentes:
+) -> ProblemaPublicoConRelaciones:
     problema_crear = ProblemaCrear.model_validate(
         problema_in, update={"owner_id": current_user.id}
     )
@@ -60,10 +60,10 @@ async def get_problemas(
     return crud.get_problemas(session=session, problema_filter=problema_filter)
 
 
-@router.get("/{id_problema}", response_model=ProblemaPublicoConIncidentes)
+@router.get("/{id_problema}", response_model=ProblemaPublicoConRelaciones)
 async def get_problema(
     session: SessionDep, id_problema: uuid.UUID
-) -> ProblemaPublicoConIncidentes:
+) -> ProblemaPublicoConRelaciones:
     return crud.get_problema_by_id(session=session, id_problema=id_problema)
 
 

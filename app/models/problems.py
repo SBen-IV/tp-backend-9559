@@ -49,8 +49,15 @@ class ProblemaPublicoConItems(ProblemaPublico):
     config_items: list["ItemConfiguracionPublico"] = []
 
 
-class ProblemaPublicoConIncidentes(ProblemaPublicoConItems):
+class ProblemaPublicoConIncidentes(ProblemaPublico):
     incidentes: list["IncidentePublico"] = []
+
+
+# Python can handle multiple inheritance from same base class
+class ProblemaPublicoConRelaciones(
+    ProblemaPublicoConItems, ProblemaPublicoConIncidentes
+):
+    pass
 
 
 class Problema(ProblemaBase, table=True):
