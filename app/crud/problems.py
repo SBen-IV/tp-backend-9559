@@ -90,6 +90,15 @@ class ProblemasService:
         if problema_actualizar.prioridad is not None:
             problema.prioridad = problema_actualizar.prioridad
 
+        if problema_actualizar.id_incidentes is not None:
+            incidentes = session.exec(
+                select(Incidente).where(
+                    Incidente.id.in_(problema_actualizar.id_incidentes)
+                )
+            ).all()
+
+            problema.incidentes = incidentes
+
         session.add(problema)
         session.commit()
         session.refresh(problema)
