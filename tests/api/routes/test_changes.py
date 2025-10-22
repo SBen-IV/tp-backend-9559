@@ -359,6 +359,41 @@ def test_update_change_estado(
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
 
 
+def test_update_change_config_items(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a cambio
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    r = client.get(f"{settings.API_V1_STR}/config-items")
+
+    # Pick the last one so that it's different from the original attached
+    config_item = r.json()[-1]
+
+    id_config_items = [str(config_item["id"])]
+
+    data = {"id_config_items": id_config_items}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    change = r.json()
+
+    assert change
+    assert change["titulo"] == cambio_created["titulo"]
+    assert change["descripcion"] == cambio_created["descripcion"]
+    assert change["prioridad"] == cambio_created["prioridad"]
+    assert change["fecha_creacion"] == cambio_created["fecha_creacion"]
+    assert change["owner_id"] == cambio_created["owner_id"]
+    assert change["config_items"][0]["id"] != cambio_created["config_items"][0]["id"]
+    assert change["config_items"][0]["id"] == id_config_items[0]
+    
+
 def test_delete_change(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
