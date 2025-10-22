@@ -76,11 +76,15 @@ def populate_db(session: Session) -> None:
             )
 
     problemas = [problema.titulo for problema in session.exec(select(Problema)).all()]
+    id_incidentes = [
+        incidente.id for incidente in session.exec(select(Incidente)).all()
+    ]
 
     for problema in seed_problemas:
         if problema.titulo not in problemas:
             problema.owner_id = usuario.id
             problema.id_config_items = [id_items_config[0]]
+            problema.id_incidentes = [id_incidentes[0]]
             ProblemasService.create_problema(session=session, problema_crear=problema)
 
 

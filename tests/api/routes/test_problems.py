@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 
 from app.models.commons import Prioridad
 from app.models.config_items import ItemConfiguracion
+from app.models.incidents import Incidente
 from app.models.problems import EstadoProblema
 from app.models.users import Usuario
 from app.utils.config import settings
@@ -115,11 +116,17 @@ def test_get_problema_by_id(
 
     config_item = config_items.json()[0]
 
+    # And the id of an incidente
+    incidents = client.get(f"{settings.API_V1_STR}/incidents")
+
+    incidente = incidents.json()[0]
+
     # Given a new problema
     titulo = "Cache falla"
     descripcion = "Redis falla al traer artículos nuevos"
     prioridad = Prioridad.MEDIA
     id_config_items = [config_item["id"]]
+    id_incidentes = [incidente["id"]]
 
     now = datetime.now(timezone.utc)
 
@@ -128,6 +135,7 @@ def test_get_problema_by_id(
         "descripcion": descripcion,
         "prioridad": prioridad,
         "id_config_items": id_config_items,
+        "id_incidentes": id_incidentes,
     }
 
     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
@@ -154,6 +162,9 @@ def test_get_problema_by_id(
     assert len(problema["config_items"]) == len(id_config_items)
     for c in problema["config_items"]:
         assert any(c["id"] == config_item for config_item in id_config_items)
+    assert len(problema["incidentes"]) == len(id_incidentes)
+    for i in problema["incidentes"]:
+        assert any(i["id"] == id_incidente for id_incidente in id_incidentes)
 
 
 def test_create_new_problema(
@@ -175,6 +186,12 @@ def test_create_new_problema(
 
     id_config_items = [str(id_config_item.id)]
 
+    incidente = session.exec(select(Incidente)).first()
+
+    assert incidente
+
+    id_incidentes = [str(incidente.id)]
+
     now = datetime.now(timezone.utc)
 
     data = {
@@ -182,6 +199,7 @@ def test_create_new_problema(
         "descripcion": descripcion,
         "prioridad": prioridad,
         "id_config_items": id_config_items,
+        "id_incidentes": id_incidentes,
     }
 
     # When user tries to create the 'problema'
@@ -201,10 +219,15 @@ def test_create_new_problema(
     # is implemented we can check if it's equal
     assert problema["owner_id"]
     assert problema["responsable_id"] is None
+
     # And it includes the items linked
     assert len(problema["config_items"]) == len(id_config_items)
     for c in problema["config_items"]:
         assert any(c["id"] == config_item for config_item in id_config_items)
+    # and the incidentes too
+    assert len(problema["incidentes"]) == len(id_incidentes)
+    for i in problema["incidentes"]:
+        assert any(i["id"] == id_incidente for id_incidente in id_incidentes)
 
 
 def test_create_problema_with_empty_title_returns_error(
@@ -280,17 +303,21 @@ def test_create_problema_with_empty_description_returns_error(
 def create_random_problem(client: TestClient, token_headers: dict[str, str]) -> dict:
     config_items = client.get(f"{settings.API_V1_STR}/config-items")
     config_item = config_items.json()[0]
+    incidentes = client.get(f"{settings.API_V1_STR}/incidents")
+    incidente = incidentes.json()[0]
 
     titulo = fake.word()
     descripcion = fake.text(max_nb_chars=100)
     prioridad = Prioridad.BAJA
     id_config_items = [config_item["id"]]
+    id_incidentes = [incidente["id"]]
 
     data = {
         "titulo": titulo,
         "descripcion": descripcion,
         "prioridad": prioridad,
         "id_config_items": id_config_items,
+        "id_incidentes": id_incidentes,
     }
 
     r = client.post(BASE_URL, json=data, headers=token_headers)
@@ -324,6 +351,7 @@ def test_update_problema_titulo(
     assert problem["fecha_creacion"] == problema_created["fecha_creacion"]
     assert problem["owner_id"] == problema_created["owner_id"]
     assert problem["config_items"][0]["id"] == problema_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problema_created["incidentes"][0]["id"]
 
 
 def test_update_problema_descripcion(
@@ -352,6 +380,7 @@ def test_update_problema_descripcion(
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["responsable_id"] == problem_created["responsable_id"]
     assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
 
 
 def test_update_problema_estado(
@@ -383,6 +412,7 @@ def test_update_problema_estado(
     assert problem["estado"] != problem_created["estado"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
 
 
 def test_update_problema_responsable(
@@ -417,6 +447,7 @@ def test_update_problema_responsable(
     assert problem["estado"] == problem_created["estado"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
 
 
 def test_update_problema_prioridad(
@@ -444,6 +475,7 @@ def test_update_problema_prioridad(
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
 
 
 def test_delete_problem(
@@ -472,6 +504,7 @@ def test_delete_problem(
     assert (
         problema["config_items"][0]["id"] == problema_created["config_items"][0]["id"]
     )
+    assert problema["incidentes"][0]["id"] == problema_created["incidentes"][0]["id"]
 
     r = client.get(f"{BASE_URL}/{problema['id']}", headers=empleado_token_headers)
 
@@ -527,3 +560,4 @@ def test_delete_problem_invalid_if_not_empleado(
     assert (
         problema["config_items"][0]["id"] == problema_created["config_items"][0]["id"]
     )
+    assert problema["incidentes"][0]["id"] == problema_created["incidentes"][0]["id"]

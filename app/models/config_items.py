@@ -55,8 +55,6 @@ class ItemConfiguracionPublico(ItemConfiguracionBase):
 
 
 class ItemConfiguracionPublicoConCambios(ItemConfiguracionPublico):
-    id: uuid.UUID
-
     cambios: list["CambioPublico"] = []
 
 

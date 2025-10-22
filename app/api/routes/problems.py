@@ -1,54 +1,56 @@
 import uuid
 
-from app.crud.audits import AuditoriaService
-from app.models.auditoria import AuditoriaCrear
-from fastapi.encoders import jsonable_encoder
 from fastapi import APIRouter, HTTPException
+from fastapi.encoders import jsonable_encoder
 
 from app.api.deps import CurrentUser, SessionDep
+from app.crud.audits import AuditoriaService
 from app.crud.problems import ProblemasService as crud
+from app.models.auditoria import AuditoriaCrear
 from app.models.commons import Operacion, Prioridad, TipoEntidad
 from app.models.problems import (
     EstadoProblema,
     ProblemaActualizar,
     ProblemaCrear,
     ProblemaFilter,
-    ProblemaPublicoConItems,
+    ProblemaPublicoConRelaciones,
 )
 from app.models.users import Rol
 
 router = APIRouter(prefix="/problems")
 
 
-@router.post("/", response_model=ProblemaPublicoConItems)
+@router.post("/", response_model=ProblemaPublicoConRelaciones)
 async def create_problema(
     session: SessionDep, current_user: CurrentUser, problema_in: ProblemaCrear
-) -> ProblemaPublicoConItems:
+) -> ProblemaPublicoConRelaciones:
     problema_crear = ProblemaCrear.model_validate(
         problema_in, update={"owner_id": current_user.id}
     )
 
     problema = crud.create_problema(session=session, problema_crear=problema_crear)
-    
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.PROBLEMA,
-        id_entidad = problema.id,
-        operacion = Operacion.CREAR,
-        estado_nuevo = jsonable_encoder(problema),
-        actualizado_por = current_user.id
+
+    auditoria_crear = AuditoriaCrear(
+        tipo_entidad=TipoEntidad.PROBLEMA,
+        id_entidad=problema.id,
+        operacion=Operacion.CREAR,
+        estado_nuevo=jsonable_encoder(problema),
+        actualizado_por=current_user.id,
     )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+    AuditoriaService.registrar_operacion(
+        session=session, auditoria_crear=auditoria_crear
+    )
 
     return problema
 
 
-@router.get("/", response_model=list[ProblemaPublicoConItems])
+@router.get("/", response_model=list[ProblemaPublicoConRelaciones])
 async def get_problemas(
     session: SessionDep,
     titulo: str | None = None,
     prioridad: Prioridad | None = None,
     estado: EstadoProblema | None = None,
-) -> list[ProblemaPublicoConItems]:
+) -> list[ProblemaPublicoConRelaciones]:
     problema_filter = ProblemaFilter(
         titulo=titulo,
         prioridad=prioridad,
@@ -57,57 +59,60 @@ async def get_problemas(
     return crud.get_problemas(session=session, problema_filter=problema_filter)
 
 
-@router.get("/{id_problema}", response_model=ProblemaPublicoConItems)
+@router.get("/{id_problema}", response_model=ProblemaPublicoConRelaciones)
 async def get_problema(
     session: SessionDep, id_problema: uuid.UUID
-) -> ProblemaPublicoConItems:
+) -> ProblemaPublicoConRelaciones:
     return crud.get_problema_by_id(session=session, id_problema=id_problema)
 
 
-@router.patch("/{id_problema}", response_model=ProblemaPublicoConItems)
+@router.patch("/{id_problema}", response_model=ProblemaPublicoConRelaciones)
 async def update_problema(
     session: SessionDep,
     current_user: CurrentUser,
     id_problema: uuid.UUID,
     problema_actualizar: ProblemaActualizar,
-) -> ProblemaPublicoConItems:
-    
-    problema =  crud.update_problema(
+) -> ProblemaPublicoConRelaciones:
+    problema = crud.update_problema(
         session=session,
         id_problema=id_problema,
         problema_actualizar=problema_actualizar,
     )
-    
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.PROBLEMA,
-        id_entidad = problema.id,
-        operacion = Operacion.ACTUALIZAR,
-        estado_nuevo = jsonable_encoder(problema),
-        actualizado_por = current_user.id
+
+    auditoria_crear = AuditoriaCrear(
+        tipo_entidad=TipoEntidad.PROBLEMA,
+        id_entidad=problema.id,
+        operacion=Operacion.ACTUALIZAR,
+        estado_nuevo=jsonable_encoder(problema),
+        actualizado_por=current_user.id,
     )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
-    
+    AuditoriaService.registrar_operacion(
+        session=session, auditoria_crear=auditoria_crear
+    )
+
     return problema
 
 
-@router.delete("/{id_problema}", response_model=ProblemaPublicoConItems)
+@router.delete("/{id_problema}", response_model=ProblemaPublicoConRelaciones)
 async def delete_problema(
     session: SessionDep, current_user: CurrentUser, id_problema: uuid.UUID
-) -> ProblemaPublicoConItems:
+) -> ProblemaPublicoConRelaciones:
     if current_user.rol != Rol.EMPLEADO:
         raise HTTPException(
             status_code=401, detail="Sólo empleados pueden eliminar un problema"
         )
 
-    problema =  crud.delete_problema(session=session, id_problema=id_problema)
-    
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.PROBLEMA,
-        id_entidad = problema.id,
-        operacion = Operacion.ELIMINAR,
-        estado_nuevo = jsonable_encoder(problema),
-        actualizado_por = current_user.id
+    problema = crud.delete_problema(session=session, id_problema=id_problema)
+
+    auditoria_crear = AuditoriaCrear(
+        tipo_entidad=TipoEntidad.PROBLEMA,
+        id_entidad=problema.id,
+        operacion=Operacion.ELIMINAR,
+        estado_nuevo=jsonable_encoder(problema),
+        actualizado_por=current_user.id,
     )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)    
+    AuditoriaService.registrar_operacion(
+        session=session, auditoria_crear=auditoria_crear
+    )
 
     return problema

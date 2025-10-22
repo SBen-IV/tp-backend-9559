@@ -6,11 +6,13 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from .commons import Prioridad
-from .problems_items_link import ProblemaItemLink
+from app.models.commons import Prioridad
+from app.models.problems_incidents_link import ProblemaIncidenteLink
+from app.models.problems_items_link import ProblemaItemLink
 
 if TYPE_CHECKING:
     from .config_items import ItemConfiguracion, ItemConfiguracionPublico
+    from .incidents import Incidente, IncidentePublico
 
 
 class EstadoProblema(str, Enum):
@@ -36,6 +38,7 @@ class ProblemaCrear(SQLModel):
     owner_id: uuid.UUID | None = Field(default=None)
     prioridad: Prioridad
     id_config_items: list[uuid.UUID]
+    id_incidentes: list[uuid.UUID]
 
 
 class ProblemaPublico(ProblemaBase):
@@ -46,12 +49,27 @@ class ProblemaPublicoConItems(ProblemaPublico):
     config_items: list["ItemConfiguracionPublico"] = []
 
 
+class ProblemaPublicoConIncidentes(ProblemaPublico):
+    incidentes: list["IncidentePublico"] = []
+
+
+# Python can handle multiple inheritance from same base class
+class ProblemaPublicoConRelaciones(
+    ProblemaPublicoConItems, ProblemaPublicoConIncidentes
+):
+    pass
+
+
 class Problema(ProblemaBase, table=True):
     __tablename__: str = "problemas"
     id: uuid.UUID | None = Field(default_factory=uuid.uuid4, primary_key=True)
     config_items: list["ItemConfiguracion"] = Relationship(
         back_populates="problemas", link_model=ProblemaItemLink
     )
+    incidentes: list["Incidente"] = Relationship(
+        back_populates="problemas", link_model=ProblemaIncidenteLink
+    )
+
 
 class ProblemaActualizar(SQLModel):
     titulo: str | None = Field(None, min_length=1)
@@ -59,6 +77,7 @@ class ProblemaActualizar(SQLModel):
     prioridad: Prioridad | None = None
     estado: EstadoProblema | None = None
     responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
+
 
 @dataclass
 class ProblemaFilter:
