@@ -77,6 +77,9 @@ class ProblemaActualizar(SQLModel):
     prioridad: Prioridad | None = None
     estado: EstadoProblema | None = None
     responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
+    id_incidentes: None | list[uuid.UUID] = Field(
+        default=None, foreign_key="incidentes.id"
+    )
 
 
 @dataclass

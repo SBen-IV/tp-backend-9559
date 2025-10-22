@@ -478,6 +478,42 @@ def test_update_problema_prioridad(
     assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
 
 
+def test_update_problema_incidentes(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given an problem
+    problem_created = create_random_problem(client, empleado_token_headers)
+
+    r = client.get(f"{settings.API_V1_STR}/incidents")
+
+    # Pick the last one so that it's different from the original attached
+    incidente = r.json()[-1]
+
+    id_incidentes = [str(incidente["id"])]
+
+    data = {"id_incidentes": id_incidentes}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{problem_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    problem = r.json()
+
+    assert problem
+    assert problem["titulo"] == problem_created["titulo"]
+    assert problem["descripcion"] == problem_created["descripcion"]
+    assert problem["prioridad"] == problem_created["prioridad"]
+    assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
+    assert problem["owner_id"] == problem_created["owner_id"]
+    assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] != problem_created["incidentes"][0]["id"]
+    assert problem["incidentes"][0]["id"] == id_incidentes[0]
+
+
 def test_delete_problem(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
