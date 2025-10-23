@@ -30,6 +30,7 @@ class ProblemaBase(SQLModel):
     estado: EstadoProblema = Field(default=EstadoProblema.EN_ANALISIS)
     prioridad: Prioridad
     responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
+    fecha_cierre: datetime | None = Field(default=None)
 
 
 class ProblemaCrear(SQLModel):
