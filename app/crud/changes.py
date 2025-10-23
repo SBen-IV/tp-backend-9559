@@ -80,6 +80,15 @@ class CambiosService:
 
         if cambio_actualizar.estado is not None:
             cambio.estado = cambio_actualizar.estado
+            
+        if cambio_actualizar.id_config_items is not None:
+            config_items = session.exec(
+                select(ItemConfiguracion).where(
+                    ItemConfiguracion.id.in_(cambio_actualizar.id_config_items)
+                )
+            ).all()
+
+            cambio.config_items = config_items
 
         session.add(cambio)
         session.commit()

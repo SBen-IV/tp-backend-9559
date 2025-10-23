@@ -61,6 +61,9 @@ class CambioActualizar(SQLModel):
     descripcion: str | None = Field(None, min_length=1)
     prioridad: Prioridad | None = None
     estado: EstadoCambio | None = None
+    id_config_items: None | list[uuid.UUID] = Field(
+        default=None, foreign_key="items_configuracion.id"
+    )
 
 
 @dataclass
