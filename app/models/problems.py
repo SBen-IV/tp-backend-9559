@@ -80,6 +80,9 @@ class ProblemaActualizar(SQLModel):
     id_incidentes: None | list[uuid.UUID] = Field(
         default=None, foreign_key="incidentes.id"
     )
+    id_config_items: None | list[uuid.UUID] = Field(
+        default=None, foreign_key="items_configuracion.id"
+    )
 
 
 @dataclass

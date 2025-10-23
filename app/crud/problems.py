@@ -98,6 +98,15 @@ class ProblemasService:
             ).all()
 
             problema.incidentes = incidentes
+            
+        if problema_actualizar.id_config_items is not None:
+            config_items = session.exec(
+                select(ItemConfiguracion).where(
+                    ItemConfiguracion.id.in_(problema_actualizar.id_config_items)
+                )
+            ).all()
+
+            problema.config_items = config_items
 
         session.add(problema)
         session.commit()
