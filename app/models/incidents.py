@@ -82,6 +82,9 @@ class IncidenteActualizar(SQLModel):
     estado: EstadoIncidente | None = None
     categoria: CategoriaIncidente | None = None
     responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
+    id_config_items: None | list[uuid.UUID] = Field(
+        default=None, foreign_key="items_configuracion.id"
+    )
 
 
 @dataclass
