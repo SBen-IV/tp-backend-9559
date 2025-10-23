@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import HTTPException
 from sqlmodel import Session, select
@@ -6,6 +7,7 @@ from sqlmodel import Session, select
 from app.models.config_items import ItemConfiguracion
 from app.models.incidents import Incidente
 from app.models.problems import (
+    EstadoProblema,
     Problema,
     ProblemaActualizar,
     ProblemaCrear,
@@ -84,6 +86,9 @@ class ProblemasService:
         if problema_actualizar.estado is not None:
             problema.estado = problema_actualizar.estado
 
+            if problema_actualizar.estado == EstadoProblema.CERRADO:
+                problema.fecha_cierre = datetime.now(timezone.utc)
+
         if problema_actualizar.responsable_id is not None:
             problema.responsable_id = problema_actualizar.responsable_id
 
@@ -98,7 +103,7 @@ class ProblemasService:
             ).all()
 
             problema.incidentes = incidentes
-            
+
         if problema_actualizar.id_config_items is not None:
             config_items = session.exec(
                 select(ItemConfiguracion).where(
