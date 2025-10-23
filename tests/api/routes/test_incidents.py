@@ -539,6 +539,41 @@ def test_update_incidente_responsable(
     assert (
         incident["config_items"][0]["id"] == incidente_created["config_items"][0]["id"]
     )
+    
+    
+def test_update_incidente_config_items(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given an incident
+    incident_created = create_random_incident(client, empleado_token_headers)
+
+    r = client.get(f"{settings.API_V1_STR}/config-items")
+
+    # Pick the last one so that it's different from the original attached
+    config_item = r.json()[-1]
+
+    id_config_items = [str(config_item["id"])]
+
+    data = {"id_config_items": id_config_items}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{incident_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    incident = r.json()
+
+    assert incident
+    assert incident["titulo"] == incident_created["titulo"]
+    assert incident["descripcion"] == incident_created["descripcion"]
+    assert incident["prioridad"] == incident_created["prioridad"]
+    assert incident["fecha_creacion"] == incident_created["fecha_creacion"]
+    assert incident["owner_id"] == incident_created["owner_id"]
+    assert incident["config_items"][0]["id"] != incident_created["config_items"][0]["id"]
+    assert incident["config_items"][0]["id"] == id_config_items[0]
 
 
 def test_delete_incident(

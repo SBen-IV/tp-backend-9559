@@ -95,6 +95,15 @@ class IncidentesService:
 
         if incidente_actualizar.responsable_id is not None:
             incidente.responsable_id = incidente_actualizar.responsable_id
+            
+        if incidente_actualizar.id_config_items is not None:
+            config_items = session.exec(
+                select(ItemConfiguracion).where(
+                    ItemConfiguracion.id.in_(incidente_actualizar.id_config_items)
+                )
+            ).all()
+
+            incidente.config_items = config_items
 
         session.add(incidente)
         session.commit()
