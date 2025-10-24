@@ -1,6 +1,7 @@
 # ruff: noqa: ARG001
 from datetime import datetime, timezone
 
+from app.models.commons import TipoEntidad
 from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -502,3 +503,26 @@ def test_closing_change_sets_closing_date(
         cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
     )
     assert cambio["fecha_cierre"] is not None
+    
+    
+def test_get_change_history_returns_audits(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a change
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+    
+    # When the user gets the change history
+    r = client.get(
+        f"{BASE_URL}/{cambio_created['id']}/history",
+        headers=empleado_token_headers
+    )
+    
+    assert 200 <= r.status_code < 300
+    
+    history = r.json()
+    
+    # The history should contain at least the CREAR audit
+    assert len(history) >= 1
+    assert history[0]['tipo_entidad'] == TipoEntidad.CAMBIO
+    assert history[0]['estado_nuevo']['id'] == cambio_created['id']
+    
