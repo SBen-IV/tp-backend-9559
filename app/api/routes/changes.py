@@ -77,13 +77,11 @@ async def update_change(
         session=session, id_change=id_change, cambio_actualizar=cambio_actualizar
     )
     
-    encoded_cambio = jsonable_encoder(cambio)
-    encoded_cambio["config_items"] = jsonable_encoder(cambio.config_items)
     auditoria_crear = AuditoriaCrear( 
         tipo_entidad = TipoEntidad.CAMBIO,
         id_entidad = cambio.id,
         operacion = Operacion.ACTUALIZAR,
-        estado_nuevo = encoded_cambio,
+        estado_nuevo = jsonable_encoder(cambio),
         actualizado_por = current_user.id
     )
     AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
