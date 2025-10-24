@@ -31,11 +31,13 @@ async def create_change(
 
     cambio = crud.create_cambio(session=session, cambio_crear=cambio_crear)
     
+    # We dump CambioPublicoConItems since it includes the config_items unlike the class Cambio
+    estado_nuevo = CambioPublicoConItems.model_validate(cambio).model_dump(mode="json")
     auditoria_crear = AuditoriaCrear( 
         tipo_entidad = TipoEntidad.CAMBIO,
         id_entidad = cambio.id,
         operacion = Operacion.CREAR,
-        estado_nuevo = jsonable_encoder(cambio),
+        estado_nuevo = estado_nuevo,
         actualizado_por = current_user.id
     )
     AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
@@ -75,11 +77,13 @@ async def update_change(
         session=session, id_change=id_change, cambio_actualizar=cambio_actualizar
     )
     
+    encoded_cambio = jsonable_encoder(cambio)
+    encoded_cambio["config_items"] = jsonable_encoder(cambio.config_items)
     auditoria_crear = AuditoriaCrear( 
         tipo_entidad = TipoEntidad.CAMBIO,
         id_entidad = cambio.id,
         operacion = Operacion.ACTUALIZAR,
-        estado_nuevo = jsonable_encoder(cambio),
+        estado_nuevo = encoded_cambio,
         actualizado_por = current_user.id
     )
     AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
