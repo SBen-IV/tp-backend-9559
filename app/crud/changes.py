@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import uuid
 
 from fastapi import HTTPException
@@ -9,6 +10,7 @@ from app.models.changes import (
     CambioCrear,
     CambioFilter,
     CambioPublicoConItems,
+    EstadoCambio,
 )
 from app.models.config_items import ItemConfiguracion
 
@@ -80,6 +82,8 @@ class CambiosService:
 
         if cambio_actualizar.estado is not None:
             cambio.estado = cambio_actualizar.estado
+            if cambio_actualizar.estado == EstadoCambio.CERRADO.value:
+                    cambio.fecha_cierre = datetime.now(timezone.utc)
             
         if cambio_actualizar.id_config_items is not None:
             config_items = session.exec(
