@@ -28,6 +28,7 @@ class CambioBase(SQLModel):
     estado: EstadoCambio = Field(default=EstadoCambio.RECIBIDO)
     fecha_creacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     owner_id: None | uuid.UUID = Field(foreign_key="usuarios.id")
+    fecha_cierre: datetime | None = Field(default=None)
 
 
 class CambioCrear(SQLModel):
