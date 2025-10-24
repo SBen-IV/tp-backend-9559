@@ -32,3 +32,11 @@ class AuditoriaService:
     auditorias = session.exec(query).all()
 
     return auditorias
+  
+  def get_audit_by_id(*, session: Session, id_auditoria: uuid.UUID) -> Auditoria:
+    auditoria = session.exec(select(Auditoria).where(Auditoria.id == id_auditoria)).first()
+
+    if not auditoria:
+        raise HTTPException(status_code=404, detail="No existe auditoría")
+
+    return auditoria

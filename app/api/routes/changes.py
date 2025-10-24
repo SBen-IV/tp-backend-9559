@@ -1,7 +1,7 @@
 import uuid
 
 from app.crud.audits import AuditoriaService
-from app.models.auditoria import AuditoriaCrear
+from app.models.auditoria import Auditoria, AuditoriaCrear, AuditoriaFilter
 from app.models.commons import Operacion, TipoEntidad
 from fastapi import APIRouter, HTTPException
 from fastapi.encoders import jsonable_encoder
@@ -108,3 +108,10 @@ async def delete_change(
     AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
     
     return cambio
+
+@router.get("/{id_change}/history", response_model=list[Auditoria])
+async def get_history(session: SessionDep, current_user: CurrentUser, id_change: uuid.UUID
+) -> list[Auditoria]:
+    auditoria_filter = AuditoriaFilter(tipo_entidad=TipoEntidad.CAMBIO, id_entidad=id_change)
+    
+    return AuditoriaService.get_audits(session=session, auditoria_filter=auditoria_filter)

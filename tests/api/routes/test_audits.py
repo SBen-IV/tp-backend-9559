@@ -603,3 +603,33 @@ def test_deleting_problem_creates_audit(
     assert auditoria["id_entidad"] == problem_created["id"]
     assert auditoria["tipo_entidad"] == TipoEntidad.PROBLEMA.value
     assert auditoria["operacion"] == Operacion.ELIMINAR.value
+
+
+def test_get_audit_by_id(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+    
+    r = client.get(
+        AUDITS_URL,
+        params={
+            "tipo_entidad": TipoEntidad.CAMBIO.value,
+            "id_entidad": cambio_created["id"],
+        },
+    )
+    
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert len(auditorias) >= 1
+    
+    r = client.get(
+        f"{AUDITS_URL}/{auditorias[0]['id']}"
+    )
+    
+    assert 200 <= r.status_code < 300
+    
+    auditoria = r.json()
+    
+    assert auditoria
+    assert auditoria["id"] == auditorias[0]["id"]
