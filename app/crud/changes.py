@@ -134,7 +134,7 @@ class CambiosService:
         cambio_actual.estado = estado_anterior["estado"]
         cambio_actual.fecha_cierre = estado_anterior["fecha_cierre"]
         
-        id_config_items = [uuid.UUID(item["id"]) for item in estado_anterior["config_items"]]
+        id_config_items = [uuid.UUID(id_item) for id_item in estado_anterior["id_config_items"]]
         config_items = session.exec(
             select(ItemConfiguracion).where(
                 ItemConfiguracion.id.in_(id_config_items)

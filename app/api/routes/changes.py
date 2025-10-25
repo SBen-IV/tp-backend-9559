@@ -31,8 +31,8 @@ async def create_change(
 
     cambio = crud.create_cambio(session=session, cambio_crear=cambio_crear)
     
-    # We dump CambioPublicoConItems since it includes the config_items unlike the class Cambio
-    estado_nuevo = CambioPublicoConItems.model_validate(cambio).model_dump(mode="json")
+    estado_nuevo = cambio.model_dump(mode='json')
+    estado_nuevo["id_config_items"] = [str(item.id) for item in cambio.config_items]
     auditoria_crear = AuditoriaCrear( 
         tipo_entidad = TipoEntidad.CAMBIO,
         id_entidad = cambio.id,

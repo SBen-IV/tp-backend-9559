@@ -296,10 +296,9 @@ def test_creating_change_creates_audit(
     assert auditoria["estado_nuevo"]["titulo"] == titulo
     assert auditoria["estado_nuevo"]["descripcion"] == descripcion
     assert auditoria["estado_nuevo"]["prioridad"] == prioridad
-    assert auditoria["estado_nuevo"]["config_items"]
-    assert len(auditoria["estado_nuevo"]["config_items"]) >= 1
-    assert auditoria["estado_nuevo"]["config_items"][0]["nombre"] == config_item["nombre"]
-    assert auditoria["estado_nuevo"]["config_items"][0]["version"] == config_item["version"]
+    assert auditoria["estado_nuevo"]["id_config_items"]
+    assert len(auditoria["estado_nuevo"]["id_config_items"]) >= 1
+    assert auditoria["estado_nuevo"]["id_config_items"][0] == config_item["id"]
 
 
 def test_updating_change_creates_audit(
