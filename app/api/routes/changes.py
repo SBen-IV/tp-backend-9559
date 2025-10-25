@@ -31,11 +31,13 @@ async def create_change(
 
     cambio = crud.create_cambio(session=session, cambio_crear=cambio_crear)
     
+    estado_nuevo = cambio.model_dump(mode='json')
+    estado_nuevo["id_config_items"] = [str(item.id) for item in cambio.config_items]
     auditoria_crear = AuditoriaCrear( 
         tipo_entidad = TipoEntidad.CAMBIO,
         id_entidad = cambio.id,
         operacion = Operacion.CREAR,
-        estado_nuevo = jsonable_encoder(cambio),
+        estado_nuevo = estado_nuevo,
         actualizado_por = current_user.id
     )
     AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
@@ -75,11 +77,13 @@ async def update_change(
         session=session, id_change=id_change, cambio_actualizar=cambio_actualizar
     )
     
+    estado_nuevo = cambio.model_dump(mode='json')
+    estado_nuevo["id_config_items"] = [str(item.id) for item in cambio.config_items]
     auditoria_crear = AuditoriaCrear( 
         tipo_entidad = TipoEntidad.CAMBIO,
         id_entidad = cambio.id,
         operacion = Operacion.ACTUALIZAR,
-        estado_nuevo = jsonable_encoder(cambio),
+        estado_nuevo = estado_nuevo,
         actualizado_por = current_user.id
     )
     AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
@@ -115,3 +119,18 @@ async def get_history(session: SessionDep, current_user: CurrentUser, id_change:
     auditoria_filter = AuditoriaFilter(tipo_entidad=TipoEntidad.CAMBIO, id_entidad=id_change)
     
     return AuditoriaService.get_audits(session=session, auditoria_filter=auditoria_filter)
+
+
+@router.post("/{id_change}/rollback", response_model=CambioPublicoConItems)
+async def rollback_change(session: SessionDep, current_user: CurrentUser, id_change: uuid.UUID, id_auditoria: uuid.UUID
+) -> CambioPublicoConItems:
+    cambio = crud.get_change_by_id(session=session, id_change=id_change)
+    
+    cambio_rollback = crud.rollback_change(
+        session=session, 
+        id_change=id_change, 
+        id_audit=id_auditoria,
+        current_user_id=current_user.id
+    )
+    
+    return cambio_rollback

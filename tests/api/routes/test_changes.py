@@ -1,7 +1,7 @@
 # ruff: noqa: ARG001
 from datetime import datetime, timezone
 
-from app.models.commons import TipoEntidad
+from app.models.commons import Operacion, TipoEntidad
 from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -526,3 +526,140 @@ def test_get_change_history_returns_audits(
     assert history[0]['tipo_entidad'] == TipoEntidad.CAMBIO
     assert history[0]['estado_nuevo']['id'] == cambio_created['id']
     
+    
+def test_rollback_change_to_creation(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a change
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    data = {"titulo": "Nuevo titulo"}
+
+    # And the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
+    )
+    
+    assert 200 <= r.status_code < 300
+    
+    cambio_actualizado = r.json()
+    
+    assert cambio_actualizado
+    assert cambio_actualizado["titulo"] != cambio_created["titulo"]
+    assert cambio_actualizado["titulo"] == data["titulo"]
+    
+    # And the user gets the change history
+    r = client.get(
+        f"{BASE_URL}/{cambio_created['id']}/history",
+        headers=empleado_token_headers
+    )
+    
+    assert 200 <= r.status_code < 300    
+    
+    auditorias = r.json()
+    assert auditorias
+    
+    # It should return the CREAR and ACTUALIZAR audits
+    assert len(auditorias) == 2
+    
+    # CREAR audit should be the last since audits are returned from most to least recent
+    auditoria_actualizar_uno = auditorias[1]
+    
+    assert auditoria_actualizar_uno["operacion"] == Operacion.CREAR
+    
+    # When the user rollbacks the change to when it was created
+    r = client.post(
+        f"{BASE_URL}/{cambio_created['id']}/rollback",
+        params={"id_auditoria": auditoria_actualizar_uno['id']},
+        headers=empleado_token_headers,
+    )
+    
+    assert 200 <= r.status_code < 300    
+    
+    cambio_rollback = r.json()
+    
+    # It should return to its original state
+    assert cambio_rollback
+    assert cambio_rollback["id"] == cambio_created["id"]
+    assert cambio_rollback["titulo"] == cambio_created["titulo"]
+    assert cambio_rollback["titulo"] != cambio_actualizado["titulo"]
+    
+    
+def test_rollback_change_to_patched_version(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a change
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    update_uno = {"titulo": "Primer nuevo titulo"}
+    update_dos = {"titulo": "Segundo nuevo titulo"}
+
+    # And the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}",
+        json=update_uno,
+        headers=empleado_token_headers,
+    )
+    
+    assert 200 <= r.status_code < 300
+    
+    cambio_actualizado = r.json()
+    
+    assert cambio_actualizado
+    assert cambio_actualizado["titulo"] != cambio_created["titulo"]
+    assert cambio_actualizado["titulo"] == update_uno["titulo"]
+    
+    # If the user edits it again
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}",
+        json=update_dos,
+        headers=empleado_token_headers,
+    )
+    
+    assert 200 <= r.status_code < 300
+    
+    cambio_actualizado = r.json()
+    
+    assert cambio_actualizado
+    assert cambio_actualizado["titulo"] != cambio_created["titulo"]
+    assert cambio_actualizado["titulo"] != update_uno["titulo"]
+    assert cambio_actualizado["titulo"] == update_dos["titulo"]
+    
+    # When the user gets the change history
+    r = client.get(
+        f"{BASE_URL}/{cambio_created['id']}/history",
+        headers=empleado_token_headers
+    )
+    
+    assert 200 <= r.status_code < 300    
+    
+    auditorias = r.json()
+    assert auditorias
+    
+    # It should return the CREAR and 2 ACTUALIZAR audits
+    assert len(auditorias) == 3
+    
+    # We pick the first update done
+    auditoria_actualizar_uno = auditorias[1]
+    
+    assert auditoria_actualizar_uno["operacion"] == Operacion.ACTUALIZAR
+    
+    # When the user rollbacks the change to when it was first updated
+    r = client.post(
+        f"{BASE_URL}/{cambio_created['id']}/rollback",
+        params={"id_auditoria": auditoria_actualizar_uno['id']},
+        headers=empleado_token_headers,
+    )
+    
+    assert 200 <= r.status_code < 300    
+    
+    cambio_rollback = r.json()
+    
+    # It should return to the state of its first update
+    assert cambio_rollback
+    assert cambio_rollback["id"] == cambio_created["id"]
+    assert cambio_rollback["titulo"] != cambio_created["titulo"]
+    assert cambio_rollback["titulo"] == update_uno["titulo"]
+    assert cambio_rollback["titulo"] != update_dos["titulo"]
