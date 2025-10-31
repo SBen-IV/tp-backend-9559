@@ -1,5 +1,7 @@
 import uuid
 
+from app.crud.audits import AuditoriaService
+from app.models.commons import TipoEntidad
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -102,3 +104,31 @@ class ItemsConfiguracionService:
         session.commit()
 
         return item_config
+
+
+    def rollback_item_config(
+        *, session: Session, id_item_config: uuid.UUID, id_audit: uuid.UUID,current_user_id: uuid.UUID
+    ) -> ItemConfiguracionPublico:
+        item_actual = ItemsConfiguracionService.get_item_configuracion_by_id(session=session, id_item_config=id_item_config)
+        
+        auditoria = AuditoriaService.get_audit_by_id(session=session, id_auditoria=id_audit)
+        
+        if (auditoria.tipo_entidad != TipoEntidad.CONFIG_ITEM or auditoria.id_entidad != id_item_config):
+            raise HTTPException(
+                status_code=400, 
+                detail="Auditoría no corresponde al ítem de configuración"
+            )
+
+        estado_anterior = auditoria.estado_nuevo
+        
+        item_actual.nombre = estado_anterior["nombre"]
+        item_actual.descripcion = estado_anterior["descripcion"]
+        item_actual.version = estado_anterior["version"]
+        item_actual.categoria = estado_anterior["categoria"]
+        item_actual.estado = estado_anterior["estado"]
+        
+        session.add(item_actual)
+        session.commit()
+        session.refresh(item_actual)
+        
+        return item_actual
