@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 
+from app.models.commons import Operacion
 from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -559,3 +560,141 @@ def test_delete_config_item_invalid_if_not_empleado(
     assert item_config["estado"] == item_config_created["estado"]
     assert item_config["fecha_creacion"] == item_config_created["fecha_creacion"]
     assert item_config["owner_id"] == item_config_created["owner_id"]
+
+
+def test_rollback_item_to_creation(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given an item
+    item_created = create_random_item_configuracion(client, empleado_token_headers)
+
+    data = {"nombre": "Nuevo nombre"}
+
+    # And the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{item_created['id']}",
+        json=data,
+        headers=empleado_token_headers,
+    )
+    
+    assert 200 <= r.status_code < 300
+    
+    item_actualizado = r.json()
+    
+    assert item_actualizado
+    assert item_actualizado["nombre"] != item_created["nombre"]
+    assert item_actualizado["nombre"] == data["nombre"]
+    
+    # And the user gets the item history
+    r = client.get(
+        f"{BASE_URL}/{item_created['id']}/history",
+        headers=empleado_token_headers
+    )
+    
+    assert 200 <= r.status_code < 300    
+    
+    auditorias = r.json()
+    assert auditorias
+    
+    # It should return the CREAR and ACTUALIZAR audits
+    assert len(auditorias) == 2
+    
+    # CREAR audit should be the last since audits are returned from most to least recent
+    auditoria = auditorias[1]
+    
+    assert auditoria["operacion"] == Operacion.CREAR
+    
+    # When the user rollbacks the item to when it was created
+    r = client.post(
+        f"{BASE_URL}/{item_created['id']}/rollback",
+        params={"id_auditoria": auditoria['id']},
+        headers=empleado_token_headers,
+    )
+    
+    assert 200 <= r.status_code < 300    
+    
+    item_rollback = r.json()
+    
+    # It should return to its original state
+    assert item_rollback
+    assert item_rollback["id"] == item_created["id"]
+    assert item_rollback["nombre"] == item_created["nombre"]
+    assert item_rollback["nombre"] != item_actualizado["nombre"]
+    
+    
+def test_rollback_item_to_patched_version(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a change
+    item_created = create_random_item_configuracion(client, empleado_token_headers)
+
+    update_uno = {"nombre": "Primer nuevo nombre"}
+    update_dos = {"nombre": "Segundo nuevo nombre"}
+
+    # And the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{item_created['id']}",
+        json=update_uno,
+        headers=empleado_token_headers,
+    )
+    
+    assert 200 <= r.status_code < 300
+    
+    item_actualizado = r.json()
+    
+    assert item_actualizado
+    assert item_actualizado["nombre"] != item_created["nombre"]
+    assert item_actualizado["nombre"] == update_uno["nombre"]
+    
+    # If the user edits it again
+    r = client.patch(
+        f"{BASE_URL}/{item_created['id']}",
+        json=update_dos,
+        headers=empleado_token_headers,
+    )
+    
+    assert 200 <= r.status_code < 300
+    
+    item_actualizado = r.json()
+    
+    assert item_actualizado
+    assert item_actualizado["nombre"] != item_created["nombre"]
+    assert item_actualizado["nombre"] != update_uno["nombre"]
+    assert item_actualizado["nombre"] == update_dos["nombre"]
+    
+    # When the user gets the item history
+    r = client.get(
+        f"{BASE_URL}/{item_created['id']}/history",
+        headers=empleado_token_headers
+    )
+    
+    assert 200 <= r.status_code < 300    
+    
+    auditorias = r.json()
+    assert auditorias
+    
+    # It should return the CREAR and 2 ACTUALIZAR audits
+    assert len(auditorias) == 3
+    
+    # We pick the first update done
+    auditoria_actualizar_uno = auditorias[1]
+    
+    assert auditoria_actualizar_uno["operacion"] == Operacion.ACTUALIZAR
+    
+    # When the user rollbacks the item to when it was first updated
+    r = client.post(
+        f"{BASE_URL}/{item_created['id']}/rollback",
+        params={"id_auditoria": auditoria_actualizar_uno['id']},
+        headers=empleado_token_headers,
+    )
+    
+    assert 200 <= r.status_code < 300    
+    
+    item_rollback = r.json()
+    
+    # It should return to the state of its first update
+    assert item_rollback
+    assert item_rollback["id"] == item_created["id"]
+    assert item_rollback["nombre"] != item_created["nombre"]
+    assert item_rollback["nombre"] == update_uno["nombre"]
+    assert item_rollback["nombre"] != update_dos["nombre"]

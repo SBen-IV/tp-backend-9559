@@ -6,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from app.api.deps import CurrentUser, SessionDep
 from app.crud.audits import AuditoriaService
 from app.crud.config_items import ItemsConfiguracionService as crud
-from app.models.auditoria import AuditoriaCrear
+from app.models.auditoria import Auditoria, AuditoriaCrear, AuditoriaFilter
 from app.models.commons import Operacion, TipoEntidad
 from app.models.config_items import (
     CategoriaItem,
@@ -128,3 +128,26 @@ async def delete_item_config(
     )
     
     return item
+
+
+@router.get("/{id_item_config}/history", response_model=list[Auditoria])
+async def get_history(session: SessionDep, current_user: CurrentUser, id_item_config: uuid.UUID
+) -> list[Auditoria]:
+    auditoria_filter = AuditoriaFilter(tipo_entidad=TipoEntidad.CONFIG_ITEM, id_entidad=id_item_config)
+    
+    return AuditoriaService.get_audits(session=session, auditoria_filter=auditoria_filter)
+
+
+@router.post("/{id_item_config}/rollback", response_model=ItemConfiguracionPublico)
+async def rollback_item_config(session: SessionDep, current_user: CurrentUser, id_item_config: uuid.UUID, id_auditoria: uuid.UUID
+) -> ItemConfiguracionPublico:
+    item = crud.get_item_configuracion_by_id(session=session, id_item_config=id_item_config)
+    
+    item_rollback = crud.rollback_item_config(
+        session=session, 
+        id_item_config=id_item_config, 
+        id_audit=id_auditoria,
+        current_user_id=current_user.id
+    )
+    
+    return item_rollback
