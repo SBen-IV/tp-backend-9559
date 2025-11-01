@@ -95,6 +95,9 @@ class ProblemasService:
         if problema_actualizar.prioridad is not None:
             problema.prioridad = problema_actualizar.prioridad
 
+        if problema_actualizar.solucion is not None:
+            problema.solucion = problema_actualizar.solucion
+
         if problema_actualizar.id_incidentes is not None:
             incidentes = session.exec(
                 select(Incidente).where(

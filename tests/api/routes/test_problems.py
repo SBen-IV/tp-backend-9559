@@ -348,6 +348,7 @@ def test_update_problema_titulo(
     assert problem["titulo"] != problema_created["titulo"]
     assert problem["descripcion"] == problema_created["descripcion"]
     assert problem["prioridad"] == problema_created["prioridad"]
+    assert problem["solucion"] == problema_created["solucion"]
     assert problem["fecha_creacion"] == problema_created["fecha_creacion"]
     assert problem["owner_id"] == problema_created["owner_id"]
     assert problem["config_items"][0]["id"] == problema_created["config_items"][0]["id"]
@@ -376,6 +377,7 @@ def test_update_problema_descripcion(
     assert problem["titulo"] == problem_created["titulo"]
     assert problem["descripcion"] != problem_created["descripcion"]
     assert problem["prioridad"] == problem_created["prioridad"]
+    assert problem["solucion"] == problem_created["solucion"]
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["responsable_id"] == problem_created["responsable_id"]
@@ -408,6 +410,7 @@ def test_update_problema_estado(
     assert problem["titulo"] == problem_created["titulo"]
     assert problem["descripcion"] == problem_created["descripcion"]
     assert problem["prioridad"] == problem_created["prioridad"]
+    assert problem["solucion"] == problem_created["solucion"]
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["estado"] != problem_created["estado"]
     assert problem["owner_id"] == problem_created["owner_id"]
@@ -443,6 +446,7 @@ def test_update_problema_responsable(
     assert problem["titulo"] == problem_created["titulo"]
     assert problem["descripcion"] == problem_created["descripcion"]
     assert problem["prioridad"] == problem_created["prioridad"]
+    assert problem["solucion"] == problem_created["solucion"]
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["estado"] == problem_created["estado"]
     assert problem["owner_id"] == problem_created["owner_id"]
@@ -472,6 +476,7 @@ def test_update_problema_prioridad(
     assert problem["titulo"] == problem_created["titulo"]
     assert problem["descripcion"] == problem_created["descripcion"]
     assert problem["prioridad"] != problem_created["prioridad"]
+    assert problem["solucion"] == problem_created["solucion"]
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
@@ -507,6 +512,7 @@ def test_update_problema_incidentes(
     assert problem["titulo"] == problem_created["titulo"]
     assert problem["descripcion"] == problem_created["descripcion"]
     assert problem["prioridad"] == problem_created["prioridad"]
+    assert problem["solucion"] == problem_created["solucion"]
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
@@ -543,11 +549,43 @@ def test_update_problema_config_items(
     assert problem["titulo"] == problem_created["titulo"]
     assert problem["descripcion"] == problem_created["descripcion"]
     assert problem["prioridad"] == problem_created["prioridad"]
+    assert problem["solucion"] == problem_created["solucion"]
     assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
     assert problem["owner_id"] == problem_created["owner_id"]
     assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
     assert problem["config_items"][0]["id"] != problem_created["config_items"][0]["id"]
     assert problem["config_items"][0]["id"] == id_config_items[0]
+
+
+def test_update_problema_solucion(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given an problem
+    problem_created = create_random_problem(client, empleado_token_headers)
+
+    data = {"solucion": "Eliminar carpeta system32"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{problem_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    problem = r.json()
+
+    assert problem
+    assert problem["titulo"] == problem_created["titulo"]
+    assert problem["descripcion"] == problem_created["descripcion"]
+    assert problem["prioridad"] == problem_created["prioridad"]
+    assert problem["solucion"] != problem_created["solucion"]
+    assert problem["solucion"] == data["solucion"]
+    assert problem["fecha_creacion"] == problem_created["fecha_creacion"]
+    assert problem["owner_id"] == problem_created["owner_id"]
+    assert problem["responsable_id"] == problem_created["responsable_id"]
+    assert problem["config_items"][0]["id"] == problem_created["config_items"][0]["id"]
+    assert problem["incidentes"][0]["id"] == problem_created["incidentes"][0]["id"]
 
 
 def test_delete_problem(

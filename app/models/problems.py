@@ -31,6 +31,7 @@ class ProblemaBase(SQLModel):
     prioridad: Prioridad
     responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
     fecha_cierre: datetime | None = Field(default=None)
+    solucion: str | None = Field(default=None)
 
 
 class ProblemaCrear(SQLModel):
@@ -78,6 +79,7 @@ class ProblemaActualizar(SQLModel):
     prioridad: Prioridad | None = None
     estado: EstadoProblema | None = None
     responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
+    solucion: str | None = None
     id_incidentes: None | list[uuid.UUID] = Field(
         default=None, foreign_key="incidentes.id"
     )
