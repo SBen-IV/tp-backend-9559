@@ -247,6 +247,7 @@ def test_get_change_by_id(
     assert cambio["titulo"] == titulo
     assert cambio["descripcion"] == descripcion
     assert cambio["prioridad"] == prioridad
+    assert cambio["impacto"] == impacto
     assert cambio["fecha_creacion"] > str(now)
     # Just check that `owner_id` is present, maybe if a get user
     # is implemented we can check if it's equal
@@ -299,6 +300,7 @@ def test_update_change_titulo(
     assert cambio["titulo"] != cambio_created["titulo"]
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
@@ -326,6 +328,7 @@ def test_update_change_descripcion(
     assert cambio["titulo"] == cambio_created["titulo"]
     assert cambio["descripcion"] != cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
@@ -353,6 +356,7 @@ def test_update_change_prioridad(
     assert cambio["titulo"] == cambio_created["titulo"]
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] != cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
@@ -380,6 +384,7 @@ def test_update_change_estado(
     assert cambio["titulo"] == cambio_created["titulo"]
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["estado"] != cambio_created["estado"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
@@ -415,6 +420,7 @@ def test_update_change_config_items(
     assert change["titulo"] == cambio_created["titulo"]
     assert change["descripcion"] == cambio_created["descripcion"]
     assert change["prioridad"] == cambio_created["prioridad"]
+    assert change["impacto"] == cambio_created["impacto"]
     assert change["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert change["owner_id"] == cambio_created["owner_id"]
     assert change["config_items"][0]["id"] != cambio_created["config_items"][0]["id"]
@@ -441,6 +447,7 @@ def test_delete_change(
     assert cambio["titulo"] == cambio_created["titulo"]
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["estado"] == cambio_created["estado"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
@@ -492,6 +499,7 @@ def test_delete_change_invalid_if_not_empleado(
     assert cambio["titulo"] == cambio_created["titulo"]
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["estado"] == cambio_created["estado"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
@@ -523,6 +531,7 @@ def test_closing_change_sets_closing_date(
     assert cambio
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
