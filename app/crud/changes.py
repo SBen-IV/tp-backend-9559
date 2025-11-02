@@ -1,11 +1,10 @@
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime, timezone
 
-from app.crud.audits import AuditoriaService
-from app.models.commons import TipoEntidad
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
+from app.crud.audits import AuditoriaService
 from app.models.changes import (
     Cambio,
     CambioActualizar,
@@ -14,6 +13,7 @@ from app.models.changes import (
     CambioPublicoConItems,
     EstadoCambio,
 )
+from app.models.commons import TipoEntidad
 from app.models.config_items import ItemConfiguracion
 
 
@@ -85,8 +85,11 @@ class CambiosService:
         if cambio_actualizar.estado is not None:
             cambio.estado = cambio_actualizar.estado
             if cambio_actualizar.estado == EstadoCambio.CERRADO.value:
-                    cambio.fecha_cierre = datetime.now(timezone.utc)
-            
+                cambio.fecha_cierre = datetime.now(timezone.utc)
+
+        if cambio_actualizar.impacto is not None:
+            cambio.impacto = cambio_actualizar.impacto
+
         if cambio_actualizar.id_config_items is not None:
             config_items = session.exec(
                 select(ItemConfiguracion).where(
@@ -112,38 +115,47 @@ class CambiosService:
 
         return cambio
 
-
     def rollback_change(
-        *, session: Session, id_change: uuid.UUID, id_audit: uuid.UUID,current_user_id: uuid.UUID
+        *,
+        session: Session,
+        id_change: uuid.UUID,
+        id_audit: uuid.UUID,
+        current_user_id: uuid.UUID,
     ) -> CambioPublicoConItems:
-        cambio_actual = CambiosService.get_change_by_id(session=session, id_change=id_change)
-        
-        auditoria = AuditoriaService.get_audit_by_id(session=session, id_auditoria=id_audit)
-        
-        if (auditoria.tipo_entidad != TipoEntidad.CAMBIO or auditoria.id_entidad != id_change):
+        cambio_actual = CambiosService.get_change_by_id(
+            session=session, id_change=id_change
+        )
+
+        auditoria = AuditoriaService.get_audit_by_id(
+            session=session, id_auditoria=id_audit
+        )
+
+        if (
+            auditoria.tipo_entidad != TipoEntidad.CAMBIO
+            or auditoria.id_entidad != id_change
+        ):
             raise HTTPException(
-                status_code=400, 
-                detail="Auditoría no corresponde al cambio"
+                status_code=400, detail="Auditoría no corresponde al cambio"
             )
 
         estado_anterior = auditoria.estado_nuevo
-        
+
         cambio_actual.titulo = estado_anterior["titulo"]
         cambio_actual.descripcion = estado_anterior["descripcion"]
         cambio_actual.prioridad = estado_anterior["prioridad"]
         cambio_actual.estado = estado_anterior["estado"]
         cambio_actual.fecha_cierre = estado_anterior["fecha_cierre"]
-        
-        id_config_items = [uuid.UUID(id_item) for id_item in estado_anterior["id_config_items"]]
+
+        id_config_items = [
+            uuid.UUID(id_item) for id_item in estado_anterior["id_config_items"]
+        ]
         config_items = session.exec(
-            select(ItemConfiguracion).where(
-                ItemConfiguracion.id.in_(id_config_items)
-            )
+            select(ItemConfiguracion).where(ItemConfiguracion.id.in_(id_config_items))
         ).all()
         cambio_actual.config_items = config_items
-        
+
         session.add(cambio_actual)
         session.commit()
         session.refresh(cambio_actual)
-        
+
         return cambio_actual
