@@ -61,6 +61,7 @@ if os.getenv("TESTS", None):
             titulo="Nueva television",
             descripcion="Cambiar la television manual",
             prioridad="BAJA",
+            impacto="MENOR",
             id_config_items=[
                 "1" * 32
             ],  # This item ID doesn't exist, it'll be overwritten in core/db.py anyway

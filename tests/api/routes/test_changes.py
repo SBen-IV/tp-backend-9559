@@ -1,12 +1,12 @@
 # ruff: noqa: ARG001
 from datetime import datetime, timezone
 
-from app.models.commons import Operacion, TipoEntidad
 from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
-from app.models.changes import EstadoCambio, Prioridad
+from app.models.changes import EstadoCambio, ImpactoCambio, Prioridad
+from app.models.commons import Operacion, TipoEntidad
 from app.models.config_items import ItemConfiguracion
 from app.utils.config import settings
 
@@ -22,6 +22,7 @@ def test_create_new_cambio(
     titulo = "Upgrade CPU of server"
     descripcion = "Change old 2 cores CPU to brand new 32 cores CPU"
     prioridad = Prioridad.URGENTE
+    impacto = ImpactoCambio.SIGNIFICATIVO
 
     now = datetime.now(timezone.utc)
 
@@ -32,6 +33,7 @@ def test_create_new_cambio(
         "titulo": titulo,
         "descripcion": descripcion,
         "prioridad": prioridad,
+        "impacto": impacto,
         "id_config_items": id_config_items,
     }
 
@@ -45,6 +47,7 @@ def test_create_new_cambio(
     assert cambio["titulo"] == titulo
     assert cambio["descripcion"] == descripcion
     assert cambio["prioridad"] == prioridad
+    assert cambio["impacto"] == impacto
     assert cambio["fecha_creacion"] > str(now)
     assert cambio["estado"] == EstadoCambio.RECIBIDO
     # Just check that `owner_id` is present, maybe if a get user
@@ -59,8 +62,14 @@ def test_create_cambio_with_empty_title_returns_error(
     titulo = ""
     descripcion = "Change old 2 cores CPU to brand new 32 cores CPU"
     prioridad = Prioridad.URGENTE
+    impacto = ImpactoCambio.SIGNIFICATIVO
 
-    data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "impacto": impacto,
+    }
 
     # When user tries to create a 'cambio'
     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
@@ -81,8 +90,14 @@ def test_create_cambio_with_titulo_too_long_returns_error(
     titulo = "This is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is a very long titleThis is"
     descripcion = "Change old 2 cores CPU to brand new 32 cores CPU"
     prioridad = Prioridad.URGENTE
+    impacto = ImpactoCambio.SIGNIFICATIVO
 
-    data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "impacto": impacto,
+    }
 
     # When user tries to create a 'cambio'
     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
@@ -103,8 +118,14 @@ def test_create_cambio_with_empty_description_returns_error(
     titulo = "Windows update"
     descripcion = ""
     prioridad = Prioridad.URGENTE
+    impacto = ImpactoCambio.SIGNIFICATIVO
 
-    data = {"titulo": titulo, "descripcion": descripcion, "prioridad": prioridad}
+    data = {
+        "titulo": titulo,
+        "descripcion": descripcion,
+        "prioridad": prioridad,
+        "impacto": impacto,
+    }
 
     # When user tries to create a 'cambio'
     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
@@ -198,6 +219,7 @@ def test_get_change_by_id(
     titulo = "Impresora"
     descripcion = "Reemplazar la impresora"
     prioridad = Prioridad.BAJA
+    impacto = ImpactoCambio.MENOR
     id_config_items = [config_item["id"]]
 
     now = datetime.now(timezone.utc)
@@ -206,6 +228,7 @@ def test_get_change_by_id(
         "titulo": titulo,
         "descripcion": descripcion,
         "prioridad": prioridad,
+        "impacto": impacto,
         "id_config_items": id_config_items,
     }
 
@@ -224,6 +247,7 @@ def test_get_change_by_id(
     assert cambio["titulo"] == titulo
     assert cambio["descripcion"] == descripcion
     assert cambio["prioridad"] == prioridad
+    assert cambio["impacto"] == impacto
     assert cambio["fecha_creacion"] > str(now)
     # Just check that `owner_id` is present, maybe if a get user
     # is implemented we can check if it's equal
@@ -238,12 +262,14 @@ def create_random_cambio(client: TestClient, token_headers: dict[str, str]) -> d
     titulo = fake.word()
     descripcion = fake.text(max_nb_chars=100)
     prioridad = Prioridad.BAJA
+    impacto = ImpactoCambio.MENOR
     id_config_items = [config_item["id"]]
 
     data = {
         "titulo": titulo,
         "descripcion": descripcion,
         "prioridad": prioridad,
+        "impacto": impacto,
         "id_config_items": id_config_items,
     }
 
@@ -273,6 +299,7 @@ def test_update_change_titulo(
     assert cambio["titulo"] != cambio_created["titulo"]
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
@@ -300,6 +327,7 @@ def test_update_change_descripcion(
     assert cambio["titulo"] == cambio_created["titulo"]
     assert cambio["descripcion"] != cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
@@ -327,6 +355,7 @@ def test_update_change_prioridad(
     assert cambio["titulo"] == cambio_created["titulo"]
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] != cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
@@ -354,6 +383,7 @@ def test_update_change_estado(
     assert cambio["titulo"] == cambio_created["titulo"]
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["estado"] != cambio_created["estado"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
@@ -389,11 +419,12 @@ def test_update_change_config_items(
     assert change["titulo"] == cambio_created["titulo"]
     assert change["descripcion"] == cambio_created["descripcion"]
     assert change["prioridad"] == cambio_created["prioridad"]
+    assert change["impacto"] == cambio_created["impacto"]
     assert change["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert change["owner_id"] == cambio_created["owner_id"]
     assert change["config_items"][0]["id"] != cambio_created["config_items"][0]["id"]
     assert change["config_items"][0]["id"] == id_config_items[0]
-    
+
 
 def test_delete_change(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
@@ -415,6 +446,7 @@ def test_delete_change(
     assert cambio["titulo"] == cambio_created["titulo"]
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["estado"] == cambio_created["estado"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
@@ -466,6 +498,7 @@ def test_delete_change_invalid_if_not_empleado(
     assert cambio["titulo"] == cambio_created["titulo"]
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["estado"] == cambio_created["estado"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
@@ -477,7 +510,7 @@ def test_closing_change_sets_closing_date(
 ) -> None:
     # Given a change
     cambio_created = create_random_cambio(client, empleado_token_headers)
-    
+
     assert cambio_created["fecha_cierre"] is None
 
     data = {"estado": EstadoCambio.CERRADO}
@@ -497,36 +530,34 @@ def test_closing_change_sets_closing_date(
     assert cambio
     assert cambio["descripcion"] == cambio_created["descripcion"]
     assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
-    assert (
-        cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
-    )
+    assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
     assert cambio["fecha_cierre"] is not None
-    
-    
+
+
 def test_get_change_history_returns_audits(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
     # Given a change
     cambio_created = create_random_cambio(client, empleado_token_headers)
-    
+
     # When the user gets the change history
     r = client.get(
-        f"{BASE_URL}/{cambio_created['id']}/history",
-        headers=empleado_token_headers
+        f"{BASE_URL}/{cambio_created['id']}/history", headers=empleado_token_headers
     )
-    
+
     assert 200 <= r.status_code < 300
-    
+
     history = r.json()
-    
+
     # The history should contain at least the CREAR audit
     assert len(history) >= 1
-    assert history[0]['tipo_entidad'] == TipoEntidad.CAMBIO
-    assert history[0]['estado_nuevo']['id'] == cambio_created['id']
-    
-    
+    assert history[0]["tipo_entidad"] == TipoEntidad.CAMBIO
+    assert history[0]["estado_nuevo"]["id"] == cambio_created["id"]
+
+
 def test_rollback_change_to_creation(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
@@ -541,52 +572,51 @@ def test_rollback_change_to_creation(
         json=data,
         headers=empleado_token_headers,
     )
-    
+
     assert 200 <= r.status_code < 300
-    
+
     cambio_actualizado = r.json()
-    
+
     assert cambio_actualizado
     assert cambio_actualizado["titulo"] != cambio_created["titulo"]
     assert cambio_actualizado["titulo"] == data["titulo"]
-    
+
     # And the user gets the change history
     r = client.get(
-        f"{BASE_URL}/{cambio_created['id']}/history",
-        headers=empleado_token_headers
+        f"{BASE_URL}/{cambio_created['id']}/history", headers=empleado_token_headers
     )
-    
-    assert 200 <= r.status_code < 300    
-    
+
+    assert 200 <= r.status_code < 300
+
     auditorias = r.json()
     assert auditorias
-    
+
     # It should return the CREAR and ACTUALIZAR audits
     assert len(auditorias) == 2
-    
+
     # CREAR audit should be the last since audits are returned from most to least recent
     auditoria_actualizar_uno = auditorias[1]
-    
+
     assert auditoria_actualizar_uno["operacion"] == Operacion.CREAR
-    
+
     # When the user rollbacks the change to when it was created
     r = client.post(
         f"{BASE_URL}/{cambio_created['id']}/rollback",
-        params={"id_auditoria": auditoria_actualizar_uno['id']},
+        params={"id_auditoria": auditoria_actualizar_uno["id"]},
         headers=empleado_token_headers,
     )
-    
-    assert 200 <= r.status_code < 300    
-    
+
+    assert 200 <= r.status_code < 300
+
     cambio_rollback = r.json()
-    
+
     # It should return to its original state
     assert cambio_rollback
     assert cambio_rollback["id"] == cambio_created["id"]
     assert cambio_rollback["titulo"] == cambio_created["titulo"]
     assert cambio_rollback["titulo"] != cambio_actualizado["titulo"]
-    
-    
+
+
 def test_rollback_change_to_patched_version(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
@@ -602,61 +632,60 @@ def test_rollback_change_to_patched_version(
         json=update_uno,
         headers=empleado_token_headers,
     )
-    
+
     assert 200 <= r.status_code < 300
-    
+
     cambio_actualizado = r.json()
-    
+
     assert cambio_actualizado
     assert cambio_actualizado["titulo"] != cambio_created["titulo"]
     assert cambio_actualizado["titulo"] == update_uno["titulo"]
-    
+
     # If the user edits it again
     r = client.patch(
         f"{BASE_URL}/{cambio_created['id']}",
         json=update_dos,
         headers=empleado_token_headers,
     )
-    
+
     assert 200 <= r.status_code < 300
-    
+
     cambio_actualizado = r.json()
-    
+
     assert cambio_actualizado
     assert cambio_actualizado["titulo"] != cambio_created["titulo"]
     assert cambio_actualizado["titulo"] != update_uno["titulo"]
     assert cambio_actualizado["titulo"] == update_dos["titulo"]
-    
+
     # When the user gets the change history
     r = client.get(
-        f"{BASE_URL}/{cambio_created['id']}/history",
-        headers=empleado_token_headers
+        f"{BASE_URL}/{cambio_created['id']}/history", headers=empleado_token_headers
     )
-    
-    assert 200 <= r.status_code < 300    
-    
+
+    assert 200 <= r.status_code < 300
+
     auditorias = r.json()
     assert auditorias
-    
+
     # It should return the CREAR and 2 ACTUALIZAR audits
     assert len(auditorias) == 3
-    
+
     # We pick the first update done
     auditoria_actualizar_uno = auditorias[1]
-    
+
     assert auditoria_actualizar_uno["operacion"] == Operacion.ACTUALIZAR
-    
+
     # When the user rollbacks the change to when it was first updated
     r = client.post(
         f"{BASE_URL}/{cambio_created['id']}/rollback",
-        params={"id_auditoria": auditoria_actualizar_uno['id']},
+        params={"id_auditoria": auditoria_actualizar_uno["id"]},
         headers=empleado_token_headers,
     )
-    
-    assert 200 <= r.status_code < 300    
-    
+
+    assert 200 <= r.status_code < 300
+
     cambio_rollback = r.json()
-    
+
     # It should return to the state of its first update
     assert cambio_rollback
     assert cambio_rollback["id"] == cambio_created["id"]
