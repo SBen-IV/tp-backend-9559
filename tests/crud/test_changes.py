@@ -3,8 +3,15 @@ from datetime import datetime, timezone
 from sqlmodel import Session, select
 
 from app.crud.changes import CambiosService as crud
-from app.models.changes import Cambio, CambioCrear, CambioFilter, EstadoCambio, Prioridad
-from app.models.config_items import ItemConfiguracion, ItemConfiguracionPublico
+from app.models.changes import (
+    Cambio,
+    CambioCrear,
+    CambioFilter,
+    EstadoCambio,
+    ImpactoCambio,
+    Prioridad,
+)
+from app.models.config_items import ItemConfiguracion
 from app.models.users import Usuario
 
 
@@ -12,15 +19,16 @@ def test_create_cambio(session: Session) -> None:
     now = datetime.now(timezone.utc)
     # Get any user
     usuario = session.exec(select(Usuario)).first()
-    
+
     config_items = session.exec(select(ItemConfiguracion))
 
     cambio = CambioCrear(
         titulo="Upgrade CPU",
         descripcion="2 cores to 32 cores",
         prioridad=Prioridad.URGENTE,
+        impacto=ImpactoCambio.MENOR,
         owner_id=usuario.id,
-        id_config_items = [config_item.id for config_item in config_items]
+        id_config_items=[config_item.id for config_item in config_items],
     )
 
     cambio_created = crud.create_cambio(session=session, cambio_crear=cambio)
@@ -45,11 +53,10 @@ def test_create_cambio(session: Session) -> None:
 
 def test_get_change_by_titulo(session: Session) -> None:
     cambio_filter = CambioFilter(titulo="Nueva television")
-    cambios = crud.get_changes(
-        session=session, cambio_filter=cambio_filter
-    )
+    cambios = crud.get_changes(session=session, cambio_filter=cambio_filter)
 
     assert len(cambios) == 1
 
     for cambio in cambios:
         assert cambio.titulo.lower().find(cambio_filter.titulo)
+

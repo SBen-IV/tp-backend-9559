@@ -4,6 +4,7 @@ from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
+from app.models.changes import ImpactoCambio
 from app.models.commons import Operacion, Prioridad, TipoEntidad
 from app.models.config_items import CategoriaItem
 from app.models.incidents import CategoriaIncidente
@@ -19,6 +20,7 @@ PROBLEMS_URL = f"{settings.API_V1_STR}/problems"
 CHANGES_URL = f"{settings.API_V1_STR}/changes"
 
 
+# TODO: check change
 def create_random_cambio(client: TestClient, token_headers: dict[str, str]) -> dict:
     config_items = client.get(f"{settings.API_V1_STR}/config-items")
     config_item = config_items.json()[0]
@@ -26,12 +28,14 @@ def create_random_cambio(client: TestClient, token_headers: dict[str, str]) -> d
     titulo = fake.word()
     descripcion = fake.text(max_nb_chars=100)
     prioridad = Prioridad.BAJA
+    impacto = ImpactoCambio.MENOR
     id_config_items = [config_item["id"]]
 
     data = {
         "titulo": titulo,
         "descripcion": descripcion,
         "prioridad": prioridad,
+        "impacto": impacto,
         "id_config_items": id_config_items,
     }
 
@@ -257,12 +261,14 @@ def test_creating_change_creates_audit(
     titulo = fake.word()
     descripcion = fake.text(max_nb_chars=100)
     prioridad = Prioridad.BAJA
+    impacto = ImpactoCambio.MENOR
     id_config_items = [config_item["id"]]
 
     data = {
         "titulo": titulo,
         "descripcion": descripcion,
         "prioridad": prioridad,
+        "impacto": impacto,
         "id_config_items": id_config_items,
     }
 
@@ -612,7 +618,7 @@ def test_get_audit_by_id(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
     cambio_created = create_random_cambio(client, empleado_token_headers)
-    
+
     r = client.get(
         AUDITS_URL,
         params={
@@ -620,19 +626,17 @@ def test_get_audit_by_id(
             "id_entidad": cambio_created["id"],
         },
     )
-    
+
     assert 200 <= r.status_code < 300
 
     auditorias = r.json()
     assert len(auditorias) >= 1
-    
-    r = client.get(
-        f"{AUDITS_URL}/{auditorias[0]['id']}"
-    )
-    
+
+    r = client.get(f"{AUDITS_URL}/{auditorias[0]['id']}")
+
     assert 200 <= r.status_code < 300
-    
+
     auditoria = r.json()
-    
+
     assert auditoria
     assert auditoria["id"] == auditorias[0]["id"]
