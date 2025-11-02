@@ -20,7 +20,6 @@ PROBLEMS_URL = f"{settings.API_V1_STR}/problems"
 CHANGES_URL = f"{settings.API_V1_STR}/changes"
 
 
-# TODO: check change
 def create_random_cambio(client: TestClient, token_headers: dict[str, str]) -> dict:
     config_items = client.get(f"{settings.API_V1_STR}/config-items")
     config_item = config_items.json()[0]

@@ -255,7 +255,6 @@ def test_get_change_by_id(
     assert cambio["config_items"][0]["id"] == config_item["id"]
 
 
-# TODO: check this change
 def create_random_cambio(client: TestClient, token_headers: dict[str, str]) -> dict:
     config_items = client.get(f"{settings.API_V1_STR}/config-items")
     config_item = config_items.json()[0]
