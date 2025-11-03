@@ -426,6 +426,36 @@ def test_update_change_config_items(
     assert change["config_items"][0]["id"] == id_config_items[0]
 
 
+def test_update_change_impacto(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a cambio
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    data = {"impacto": "MAYOR"}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    cambio = r.json()
+
+    assert cambio
+    assert cambio["titulo"] == cambio_created["titulo"]
+    assert cambio["descripcion"] == cambio_created["descripcion"]
+    assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] != cambio_created["impacto"]
+    assert cambio["impacto"] == data["impacto"]
+    assert cambio["estado"] == cambio_created["estado"]
+    assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
+    assert cambio["owner_id"] == cambio_created["owner_id"]
+    assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
+
+
 def test_delete_change(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
