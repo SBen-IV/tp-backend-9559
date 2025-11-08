@@ -28,18 +28,7 @@ async def create_problema(
         problema_in, update={"owner_id": current_user.id}
     )
 
-    problema = crud.create_problema(session=session, problema_crear=problema_crear)
-
-    auditoria_crear = AuditoriaCrear(
-        tipo_entidad=TipoEntidad.PROBLEMA,
-        id_entidad=problema.id,
-        operacion=Operacion.CREAR,
-        estado_nuevo=jsonable_encoder(problema),
-        actualizado_por=current_user.id,
-    )
-    AuditoriaService.registrar_operacion(
-        session=session, auditoria_crear=auditoria_crear
-    )
+    problema = crud.create_problema(session=session, problema_crear=problema_crear, current_user_id=current_user.id)
 
     return problema
 

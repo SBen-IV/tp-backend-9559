@@ -85,7 +85,7 @@ def populate_db(session: Session) -> None:
             problema.owner_id = usuario.id
             problema.id_config_items = [id_items_config[0]]
             problema.id_incidentes = [id_incidentes[0]]
-            ProblemasService.create_problema(session=session, problema_crear=problema)
+            ProblemasService.create_problema(session=session, problema_crear=problema, current_user_id=usuario.id)
 
 
 def init_db(session: Session) -> None:
