@@ -72,7 +72,7 @@ def populate_db(session: Session) -> None:
             incidente.owner_id = usuario.id
             incidente.id_config_items = [id_items_config[0]]
             IncidentesService.create_incidente(
-                session=session, incidente_crear=incidente
+                session=session, incidente_crear=incidente, current_user_id=usuario.id
             )
 
     problemas = [problema.titulo for problema in session.exec(select(Problema)).all()]
