@@ -1,7 +1,8 @@
 import uuid
 
 from app.crud.audits import AuditoriaService
-from app.models.commons import TipoEntidad
+from app.models.auditoria import AuditoriaCrear
+from app.models.commons import Operacion, TipoEntidad
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -16,13 +17,26 @@ from app.models.config_items import (
 
 class ItemsConfiguracionService:
     def create_item_configuracion(
-        *, session: Session, item_config_crear: ItemConfiguracionCrear
+        *, session: Session, item_config_crear: ItemConfiguracionCrear, current_user_id: uuid
     ) -> ItemConfiguracion:
         db_obj = ItemConfiguracion.model_validate(item_config_crear)
 
         session.add(db_obj)
         session.commit()
         session.refresh(db_obj)
+        
+
+        estado_nuevo = db_obj.model_dump(mode='json')
+        auditoria_crear = AuditoriaCrear(
+            tipo_entidad=TipoEntidad.CONFIG_ITEM,
+            id_entidad=db_obj.id,
+            operacion=Operacion.CREAR,
+            estado_nuevo=estado_nuevo,
+            actualizado_por=current_user_id,
+        )
+        AuditoriaService.registrar_operacion(
+            session=session, auditoria_crear=auditoria_crear
+        )
 
         return db_obj
 

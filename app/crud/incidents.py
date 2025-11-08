@@ -1,6 +1,9 @@
 from datetime import datetime, timezone
 import uuid
 
+from app.crud.audits import AuditoriaService
+from app.models.auditoria import AuditoriaCrear
+from app.models.commons import Operacion, TipoEntidad
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -17,7 +20,7 @@ from app.models.incidents import (
 
 class IncidentesService:
     def create_incidente(
-        *, session: Session, incidente_crear: IncidenteCrear
+        *, session: Session, incidente_crear: IncidenteCrear, current_user_id: uuid
     ) -> Incidente:
         db_obj = Incidente.model_validate(incidente_crear)
 
@@ -32,6 +35,16 @@ class IncidentesService:
         session.add(db_obj)
         session.commit()
         session.refresh(db_obj)
+        
+        estado_nuevo = db_obj.model_dump(mode='json')
+        auditoria_crear = AuditoriaCrear( 
+            tipo_entidad = TipoEntidad.INCIDENTE,
+            id_entidad = db_obj.id,
+            operacion = Operacion.CREAR,
+            estado_nuevo = estado_nuevo,
+            actualizado_por = current_user_id
+        )
+        AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
 
         return db_obj
 

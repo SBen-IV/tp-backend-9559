@@ -29,16 +29,7 @@ async def create_incidente(
         incidente_in, update={"owner_id": current_user.id}
     )
 
-    incidente = crud.create_incidente(session=session, incidente_crear=incidente_crear)
-    
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.INCIDENTE,
-        id_entidad = incidente.id,
-        operacion = Operacion.CREAR,
-        estado_nuevo = jsonable_encoder(incidente),
-        actualizado_por = current_user.id
-    )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+    incidente = crud.create_incidente(session=session, incidente_crear=incidente_crear, current_user_id=current_user.id)
 
     return incidente
 

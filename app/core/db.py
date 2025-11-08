@@ -48,7 +48,7 @@ def populate_db(session: Session) -> None:
         if item_config.nombre not in items_config:
             item_config.owner_id = usuario.id
             ItemsConfiguracionService.create_item_configuracion(
-                session=session, item_config_crear=item_config
+                session=session, item_config_crear=item_config, current_user_id=usuario.id
             )
 
     id_items_config = [
@@ -61,7 +61,7 @@ def populate_db(session: Session) -> None:
         if cambio.titulo not in cambios:
             cambio.owner_id = usuario.id
             cambio.id_config_items = [id_items_config[0]]
-            CambiosService.create_cambio(session=session, cambio_crear=cambio)
+            CambiosService.create_cambio(session=session, cambio_crear=cambio, current_user_id=usuario.id)
 
     incidentes = [
         incidente.titulo for incidente in session.exec(select(Incidente)).all()
@@ -72,7 +72,7 @@ def populate_db(session: Session) -> None:
             incidente.owner_id = usuario.id
             incidente.id_config_items = [id_items_config[0]]
             IncidentesService.create_incidente(
-                session=session, incidente_crear=incidente
+                session=session, incidente_crear=incidente, current_user_id=usuario.id
             )
 
     problemas = [problema.titulo for problema in session.exec(select(Problema)).all()]
@@ -85,7 +85,7 @@ def populate_db(session: Session) -> None:
             problema.owner_id = usuario.id
             problema.id_config_items = [id_items_config[0]]
             problema.id_incidentes = [id_incidentes[0]]
-            ProblemasService.create_problema(session=session, problema_crear=problema)
+            ProblemasService.create_problema(session=session, problema_crear=problema, current_user_id=usuario.id)
 
 
 def init_db(session: Session) -> None:

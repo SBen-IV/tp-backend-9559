@@ -31,7 +31,7 @@ def test_create_cambio(session: Session) -> None:
         id_config_items=[config_item.id for config_item in config_items],
     )
 
-    cambio_created = crud.create_cambio(session=session, cambio_crear=cambio)
+    cambio_created = crud.create_cambio(session=session, cambio_crear=cambio, current_user_id=usuario.id)
 
     assert cambio_created
     assert cambio_created.titulo == cambio.titulo
