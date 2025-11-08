@@ -61,7 +61,7 @@ def populate_db(session: Session) -> None:
         if cambio.titulo not in cambios:
             cambio.owner_id = usuario.id
             cambio.id_config_items = [id_items_config[0]]
-            CambiosService.create_cambio(session=session, cambio_crear=cambio)
+            CambiosService.create_cambio(session=session, cambio_crear=cambio, current_user_id=usuario.id)
 
     incidentes = [
         incidente.titulo for incidente in session.exec(select(Incidente)).all()

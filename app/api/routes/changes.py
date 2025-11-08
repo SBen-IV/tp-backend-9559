@@ -29,18 +29,7 @@ async def create_change(
         cambio_in, update={"owner_id": current_user.id}
     )
 
-    cambio = crud.create_cambio(session=session, cambio_crear=cambio_crear)
-    
-    estado_nuevo = cambio.model_dump(mode='json')
-    estado_nuevo["id_config_items"] = [str(item.id) for item in cambio.config_items]
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.CAMBIO,
-        id_entidad = cambio.id,
-        operacion = Operacion.CREAR,
-        estado_nuevo = estado_nuevo,
-        actualizado_por = current_user.id
-    )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+    cambio = crud.create_cambio(session=session, cambio_crear=cambio_crear, current_user_id=current_user.id)
 
     return cambio
 

@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
+from app.models.auditoria import AuditoriaCrear
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -13,12 +14,12 @@ from app.models.changes import (
     CambioPublicoConItems,
     EstadoCambio,
 )
-from app.models.commons import TipoEntidad
+from app.models.commons import Operacion, TipoEntidad
 from app.models.config_items import ItemConfiguracion
 
 
 class CambiosService:
-    def create_cambio(*, session: Session, cambio_crear: CambioCrear) -> Cambio:
+    def create_cambio(*, session: Session, cambio_crear: CambioCrear, current_user_id: uuid) -> Cambio:
         db_obj = Cambio.model_validate(cambio_crear)
 
         config_items = session.exec(
@@ -32,6 +33,17 @@ class CambiosService:
         session.add(db_obj)
         session.commit()
         session.refresh(db_obj)
+        
+        estado_nuevo = db_obj.model_dump(mode='json')
+        estado_nuevo["id_config_items"] = [str(item.id) for item in db_obj.config_items]
+        auditoria_crear = AuditoriaCrear( 
+            tipo_entidad = TipoEntidad.CAMBIO,
+            id_entidad = db_obj.id,
+            operacion = Operacion.CREAR,
+            estado_nuevo = estado_nuevo,
+            actualizado_por = current_user_id
+        )
+        AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
 
         return db_obj
 
