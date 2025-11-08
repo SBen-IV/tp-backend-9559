@@ -40,7 +40,7 @@ def test_create_item_configuracion(session: Session) -> None:
     )
 
     item_config_created = crud.create_item_configuracion(
-        session=session, item_config_crear=item_config
+        session=session, item_config_crear=item_config, current_user_id=usuario.id
     )
 
     assert item_config_created

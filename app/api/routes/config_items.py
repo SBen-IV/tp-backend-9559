@@ -32,18 +32,7 @@ async def create_config_item(
     )
 
     item_configuracion = crud.create_item_configuracion(
-        session=session, item_config_crear=item_config_crear
-    )
-
-    auditoria_crear = AuditoriaCrear(
-        tipo_entidad=TipoEntidad.CONFIG_ITEM,
-        id_entidad=item_configuracion.id,
-        operacion=Operacion.CREAR,
-        estado_nuevo=jsonable_encoder(item_configuracion),
-        actualizado_por=current_user.id,
-    )
-    AuditoriaService.registrar_operacion(
-        session=session, auditoria_crear=auditoria_crear
+        session=session, item_config_crear=item_config_crear, current_user_id=current_user.id
     )
 
     return item_configuracion

@@ -48,7 +48,7 @@ def populate_db(session: Session) -> None:
         if item_config.nombre not in items_config:
             item_config.owner_id = usuario.id
             ItemsConfiguracionService.create_item_configuracion(
-                session=session, item_config_crear=item_config
+                session=session, item_config_crear=item_config, current_user_id=usuario.id
             )
 
     id_items_config = [
