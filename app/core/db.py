@@ -91,6 +91,8 @@ def populate_db(session: Session) -> None:
                 new_cambio.fecha_creacion = fake.date_time_between(start_date="-30d")
                 session.add(new_cambio)
 
+    session.commit()
+
     incidentes = [
         incidente.titulo for incidente in session.exec(select(Incidente)).all()
     ]
@@ -111,6 +113,8 @@ def populate_db(session: Session) -> None:
             if not automated_test:
                 new_incidente.fecha_creacion = fake.date_time_between(start_date="-30d")
                 session.add(new_incidente)
+
+    session.commit()
 
     problemas = [problema.titulo for problema in session.exec(select(Problema)).all()]
     id_incidentes = [
@@ -135,6 +139,8 @@ def populate_db(session: Session) -> None:
             if not automated_test:
                 new_problema.fecha_creacion = fake.date_time_between(start_date="-30d")
                 session.add(new_problema)
+
+    session.commit()
 
 
 def init_db(session: Session) -> None:
