@@ -1,4 +1,8 @@
+import os
+import random
+
 import sqlalchemy as sa
+from faker import Faker
 from sqlmodel import Session, create_engine, select
 
 from app.crud.changes import CambiosService
@@ -21,6 +25,9 @@ from app.models.problems import Problema
 from app.models.users import Usuario
 from app.utils.config import settings
 
+Faker.seed(0)
+fake = Faker()
+
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
@@ -30,6 +37,8 @@ def set_version(session: Session, version: AppVersion) -> None:
 
 
 def populate_db(session: Session) -> None:
+    automated_test = os.getenv("TESTS", None)
+
     usuarios = [usuario.email for usuario in session.exec(select(Usuario)).all()]
 
     for usuario in seed_usuarios:
@@ -47,9 +56,17 @@ def populate_db(session: Session) -> None:
     for item_config in seed_items_config:
         if item_config.nombre not in items_config:
             item_config.owner_id = usuario.id
-            ItemsConfiguracionService.create_item_configuracion(
-                session=session, item_config_crear=item_config, current_user_id=usuario.id
+            new_item = ItemsConfiguracionService.create_item_configuracion(
+                session=session,
+                item_config_crear=item_config,
+                current_user_id=usuario.id,
             )
+
+            if not automated_test:
+                new_item.fecha_creacion = fake.date_time_between(start_date="-30d")
+                session.add(new_item)
+
+    session.commit()
 
     id_items_config = [
         item_config.id for item_config in session.exec(select(ItemConfiguracion)).all()
@@ -60,8 +77,19 @@ def populate_db(session: Session) -> None:
     for cambio in seed_cambios:
         if cambio.titulo not in cambios:
             cambio.owner_id = usuario.id
-            cambio.id_config_items = [id_items_config[0]]
-            CambiosService.create_cambio(session=session, cambio_crear=cambio, current_user_id=usuario.id)
+
+            if automated_test:
+                cambio.id_config_items = [id_items_config[0]]
+            else:
+                cambio.id_config_items = [random.choice(id_items_config)]
+
+            new_cambio = CambiosService.create_cambio(
+                session=session, cambio_crear=cambio, current_user_id=usuario.id
+            )
+
+            if not automated_test:
+                new_cambio.fecha_creacion = fake.date_time_between(start_date="-30d")
+                session.add(new_cambio)
 
     incidentes = [
         incidente.titulo for incidente in session.exec(select(Incidente)).all()
@@ -70,10 +98,19 @@ def populate_db(session: Session) -> None:
     for incidente in seed_incidentes:
         if incidente.titulo not in incidentes:
             incidente.owner_id = usuario.id
-            incidente.id_config_items = [id_items_config[0]]
-            IncidentesService.create_incidente(
+
+            if automated_test:
+                incidente.id_config_items = [id_items_config[0]]
+            else:
+                incidente.id_config_items = [random.choice(id_items_config)]
+
+            new_incidente = IncidentesService.create_incidente(
                 session=session, incidente_crear=incidente, current_user_id=usuario.id
             )
+
+            if not automated_test:
+                new_incidente.fecha_creacion = fake.date_time_between(start_date="-30d")
+                session.add(new_incidente)
 
     problemas = [problema.titulo for problema in session.exec(select(Problema)).all()]
     id_incidentes = [
@@ -83,9 +120,21 @@ def populate_db(session: Session) -> None:
     for problema in seed_problemas:
         if problema.titulo not in problemas:
             problema.owner_id = usuario.id
-            problema.id_config_items = [id_items_config[0]]
-            problema.id_incidentes = [id_incidentes[0]]
-            ProblemasService.create_problema(session=session, problema_crear=problema, current_user_id=usuario.id)
+
+            if automated_test:
+                problema.id_config_items = [id_items_config[0]]
+                problema.id_incidentes = [id_incidentes[0]]
+            else:
+                problema.id_config_items = [random.choice(id_items_config)]
+                problema.id_incidentes = [random.choice(id_incidentes)]
+
+            new_problema = ProblemasService.create_problema(
+                session=session, problema_crear=problema, current_user_id=usuario.id
+            )
+
+            if not automated_test:
+                new_problema.fecha_creacion = fake.date_time_between(start_date="-30d")
+                session.add(new_problema)
 
 
 def init_db(session: Session) -> None:

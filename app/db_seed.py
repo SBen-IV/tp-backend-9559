@@ -7,6 +7,12 @@ from app.models.config_items import CategoriaItem, ItemConfiguracionCrear
 from app.models.incidents import CategoriaIncidente, IncidenteCrear
 from app.models.problems import ProblemaCrear
 from app.models.users import Rol, UsuarioRegistrar
+from app.utils.db_seed_generator import (
+    generate_random_cambios,
+    generate_random_config_item,
+    generate_random_incidentes,
+    generate_random_problemas,
+)
 
 seed_usuarios = []
 seed_items_config = []
@@ -133,9 +139,30 @@ else:
             contraseña="12345678",
         ),
         UsuarioRegistrar(
+            nombre="John",
+            apellido="Doe",
+            email="john@company.com",
+            rol=Rol.EMPLEADO,
+            contraseña="12345678",
+        ),
+        UsuarioRegistrar(
+            nombre="Bruce",
+            apellido="Wayne",
+            email="bruce@company.com",
+            rol=Rol.EMPLEADO,
+            contraseña="12345678",
+        ),
+        UsuarioRegistrar(
             nombre="Bob",
             apellido="Johnson",
             email="bob@client.com",
+            rol=Rol.CLIENTE,
+            contraseña="12345678",
+        ),
+        UsuarioRegistrar(
+            nombre="Carl",
+            apellido="Kent",
+            email="carl@client.com",
             rol=Rol.CLIENTE,
             contraseña="12345678",
         ),
@@ -161,6 +188,8 @@ else:
             categoria=CategoriaItem.DOCUMENTACION,
         ),
     ]
+
+    seed_items_config.extend(generate_random_config_item())
 
     seed_incidentes = [
         IncidenteCrear(
@@ -193,6 +222,8 @@ else:
         ),
     ]
 
+    seed_incidentes.extend(generate_random_incidentes())
+
     seed_problemas = [
         ProblemaCrear(
             titulo="No funciona webcam",
@@ -216,3 +247,7 @@ else:
             id_incidentes=[],
         ),
     ]
+
+    seed_problemas.extend(generate_random_problemas())
+
+    seed_cambios = generate_random_cambios()
