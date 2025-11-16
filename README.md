@@ -118,6 +118,16 @@ The app will be running on `localhost:8000`.
 
 To use Swagger UI (which provides an interface to interact with the API) use `localhost:8000/docs`.
 
+## Generate random data
+
+In order to add updates randomly, there is the script `generate-random-data.py`. To use it, run the app, use `make enter_backend` to enter backend container and inside run:
+
+```
+python scripts/generate-random-data.py
+```
+
+It will randomly generate update like changing `estado`, `responsable_id`, `descripcion` and more.
+
 ## References
 
 - [FastAPI template](https://github.com/fastapi/full-stack-fastapi-template)
