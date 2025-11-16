@@ -8,6 +8,7 @@ from app.models.changes import EstadoCambio, ImpactoCambio
 from app.models.commons import Prioridad
 from app.models.config_items import EstadoItem
 from app.models.incidents import EstadoIncidente
+from app.models.problems import EstadoProblema
 
 fake = Faker()
 
@@ -19,7 +20,7 @@ CHANGES_URL = f"{BASE_URL}/changes"
 PROBLEMS_URL = f"{BASE_URL}/problems"
 INCIDENTS_URL = f"{BASE_URL}/incidents"
 
-RANDOM_CHANGES = 100
+MAX_UPDATES = 100
 MAX_DESCRIPTION = 100
 
 
@@ -115,7 +116,7 @@ def random_config_items(data: dict, config_items_id: dict):
 
 
 def chaos_config_items(config_items, headers):
-    for _ in range(RANDOM_CHANGES):
+    for _ in range(MAX_UPDATES):
         config_item = random.choice(config_items)
         config_item_id = config_item["id"]
         data = {}
@@ -133,7 +134,7 @@ def chaos_config_items(config_items, headers):
 
 
 def chaos_incidents(incidents, config_items_id, empleados_id, headers):
-    for _ in range(RANDOM_CHANGES):
+    for _ in range(MAX_UPDATES):
         incident = random.choice(incidents)
         incident_id = incident["id"]
         data = {}
@@ -152,7 +153,7 @@ def chaos_incidents(incidents, config_items_id, empleados_id, headers):
 
 
 def chaos_changes(changes, config_items_id, headers):
-    for _ in range(RANDOM_CHANGES):
+    for _ in range(MAX_UPDATES):
         change = random.choice(changes)
         change_id = change["id"]
         data = {}
@@ -163,7 +164,30 @@ def chaos_changes(changes, config_items_id, headers):
         random_apply(data, "estado", lambda: fake.enum(EstadoCambio).value)
         random_config_items(data, config_items_id)
 
+        # Skip if there's no update
+        if len(data.keys()) == 0:
+            continue
+
         requests.patch(f"{CHANGES_URL}/{change_id}", json=data, headers=headers)
+
+
+def chaos_problems(problems, incidents_id, config_items_id, empleados_id, headers):
+    for _ in range(MAX_UPDATES):
+        problem = random.choice(problems)
+        problem_id = problem["id"]
+        data = {}
+
+        random_descripcion(data)
+        random_prioridad(data)
+        random_apply(data, "estado", lambda: fake.enum(EstadoProblema).value)
+        random_responsable(data, empleados_id)
+        random_apply(data, "id_incidentes", lambda: random.choice(incidents_id))
+
+        # Skip if there's no update
+        if len(data.keys()) == 0:
+            continue
+
+        requests.patch(f"{PROBLEMS_URL}/{problem_id}", json=data, headers=headers)
 
 
 def main():
@@ -181,6 +205,10 @@ def main():
 
     chaos_incidents(incidents, config_items_id, empleados_id, headers)
     chaos_changes(changes, config_items_id, headers)
+
+    incidents_id = [incident["id"] for incident in incidents]
+
+    chaos_problems(problems, incidents_id, config_items_id, empleados_id, headers)
 
 
 main()
