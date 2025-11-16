@@ -1,8 +1,22 @@
+import random
+
 import requests
+from faker import Faker
+
+from app.models.config_items import EstadoItem
+
+fake = Faker()
 
 BASE_URL = "http://localhost:8000/api/v1"
 USERS_URL = f"{BASE_URL}/users"
 LOGIN_URL = f"{BASE_URL}/login/access-token"
+CONFIG_ITEMS_URL = f"{BASE_URL}/config-items"
+CHANGES_URL = f"{BASE_URL}/changes"
+PROBLEMS_URL = f"{BASE_URL}/problems"
+INCIDENTS_URL = f"{BASE_URL}/incidents"
+
+RANDOM_CHANGES = 100
+MAX_DESCRIPTION = 100
 
 
 def get_headers():
@@ -15,14 +29,75 @@ def get_headers():
     return {"Authorization": f"Bearer {token}"}
 
 
-headers = get_headers()
+def get_empleados(headers: dict):
+    r = requests.get(USERS_URL, headers=headers)
 
-r = requests.get(USERS_URL, headers=headers)
+    empleados = []
 
-empleados = []
+    for user in r.json():
+        if user["rol"] == "EMPLEADO":
+            empleados.append(user)
 
-for user in r.json():
-    if user["rol"] == "EMPLEADO":
-        empleados.append(user)
+    return empleados
 
-print(empleados)
+
+def get_config_items():
+    r = requests.get(CONFIG_ITEMS_URL)
+
+    return r.json()
+
+
+def get_changes():
+    r = requests.get(CHANGES_URL)
+
+    return r.json()
+
+
+def get_problems():
+    r = requests.get(PROBLEMS_URL)
+
+    return r.json()
+
+
+def get_incidents():
+    r = requests.get(INCIDENTS_URL)
+
+    return r.json()
+
+
+### CHAOS
+def chaos_config_items(config_items, headers):
+    for _ in range(RANDOM_CHANGES):
+        config_item = random.choice(config_items)
+        config_item_id = config_item["id"]
+        data = {}
+
+        if random.random() < 0.3:
+            data["descripcion"] = fake.text(max_nb_chars=MAX_DESCRIPTION)
+
+        if random.random() < 0.5:
+            data["estado"] = fake.enum(EstadoItem).value
+
+        # Skip if there's no update
+        if len(data.keys()) == 0:
+            continue
+
+        requests.patch(
+            f"{CONFIG_ITEMS_URL}/{config_item_id}", json=data, headers=headers
+        )
+
+
+def main():
+    headers = get_headers()
+    empleados = get_empleados(headers=headers)
+    config_items = get_config_items()
+    changes = get_changes()
+    problems = get_problems()
+    incidents = get_incidents()
+
+    empleados_id = (empleado["id"] for empleado in empleados)
+
+    chaos_config_items(config_items, headers)
+
+
+main()
