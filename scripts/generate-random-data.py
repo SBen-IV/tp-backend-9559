@@ -182,6 +182,7 @@ def chaos_problems(problems, incidents_id, config_items_id, empleados_id, header
         random_apply(data, "estado", lambda: fake.enum(EstadoProblema).value)
         random_responsable(data, empleados_id)
         random_apply(data, "id_incidentes", lambda: random.choice(incidents_id))
+        random_config_items(data, config_items_id)
 
         # Skip if there's no update
         if len(data.keys()) == 0:
