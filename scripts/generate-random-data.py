@@ -1,8 +1,10 @@
 import random
+from collections.abc import Callable
 
 import requests
 from faker import Faker
 
+from app.models.changes import EstadoCambio, ImpactoCambio
 from app.models.commons import Prioridad
 from app.models.config_items import EstadoItem
 from app.models.incidents import EstadoIncidente
@@ -68,17 +70,58 @@ def get_incidents():
 
 
 ### CHAOS
+
+
+def random_apply(data: dict, key: str, randomizer: Callable, chances: float = 0.5):
+    if random.random() < chances:
+        data[key] = randomizer()
+
+
+def random_descripcion(data: dict):
+    random_apply(
+        data=data,
+        key="descripcion",
+        randomizer=lambda: fake.text(max_nb_chars=MAX_DESCRIPTION),
+        chances=0.3,
+    )
+
+
+def random_prioridad(data: dict):
+    random_apply(
+        data=data, key="prioridad", randomizer=lambda: fake.enum(Prioridad).value
+    )
+
+
+def random_responsable(data: dict, empleados_id: dict):
+    random_apply(
+        data=data,
+        key="responsable_id",
+        randomizer=lambda: random.choice(empleados_id),
+        chances=0.7,
+    )
+
+
+def random_config_items(data: dict, config_items_id: dict):
+    def generate_random_config_items():
+        k = random.randint(1, 4)
+        return random.choices(config_items_id, k=k)
+
+    random_apply(
+        data=data,
+        key="config_items_id",
+        randomizer=generate_random_config_items,
+        chances=0.4,
+    )
+
+
 def chaos_config_items(config_items, headers):
     for _ in range(RANDOM_CHANGES):
         config_item = random.choice(config_items)
         config_item_id = config_item["id"]
         data = {}
 
-        if random.random() < 0.3:
-            data["descripcion"] = fake.text(max_nb_chars=MAX_DESCRIPTION)
-
-        if random.random() < 0.5:
-            data["estado"] = fake.enum(EstadoItem).value
+        random_descripcion(data)
+        random_apply(data, "estado", lambda: fake.enum(EstadoItem).value)
 
         # Skip if there's no update
         if len(data.keys()) == 0:
@@ -95,23 +138,32 @@ def chaos_incidents(incidents, config_items_id, empleados_id, headers):
         incident_id = incident["id"]
         data = {}
 
-        if random.random() < 0.3:
-            data["descripcion"] = fake.text(max_nb_chars=MAX_DESCRIPTION)
+        random_descripcion(data)
+        random_prioridad(data)
+        random_apply(data, "estado", lambda: fake.enum(EstadoIncidente).value)
+        random_responsable(data, empleados_id)
+        random_config_items(data, config_items_id)
 
-        if random.random() < 0.5:
-            data["prioridad"] = fake.enum(Prioridad).value
-
-        if random.random() < 0.5:
-            data["estado"] = fake.enum(EstadoIncidente).value
-
-        if random.random() < 0.7:
-            data["responsable_id"] = random.choice(empleados_id)
-
-        if random.random() < 0.4:
-            k = random.randint(1, 4)
-            data["id_config_items"] = random.choices(config_items_id, k=k)
+        # Skip if there's no update
+        if len(data.keys()) == 0:
+            continue
 
         requests.patch(f"{INCIDENTS_URL}/{incident_id}", json=data, headers=headers)
+
+
+def chaos_changes(changes, config_items_id, headers):
+    for _ in range(RANDOM_CHANGES):
+        change = random.choice(changes)
+        change_id = change["id"]
+        data = {}
+
+        random_descripcion(data)
+        random_prioridad(data)
+        random_apply(data, "impacto", lambda: fake.enum(ImpactoCambio).value)
+        random_apply(data, "estado", lambda: fake.enum(EstadoCambio).value)
+        random_config_items(data, config_items_id)
+
+        requests.patch(f"{CHANGES_URL}/{change_id}", json=data, headers=headers)
 
 
 def main():
@@ -128,6 +180,7 @@ def main():
     config_items_id = [config_item["id"] for config_item in config_items]
 
     chaos_incidents(incidents, config_items_id, empleados_id, headers)
+    chaos_changes(changes, config_items_id, headers)
 
 
 main()
