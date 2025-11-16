@@ -3,7 +3,9 @@ import random
 import requests
 from faker import Faker
 
+from app.models.commons import Prioridad
 from app.models.config_items import EstadoItem
+from app.models.incidents import EstadoIncidente
 
 fake = Faker()
 
@@ -87,17 +89,45 @@ def chaos_config_items(config_items, headers):
         )
 
 
+def chaos_incidents(incidents, config_items_id, empleados_id, headers):
+    for _ in range(RANDOM_CHANGES):
+        incident = random.choice(incidents)
+        incident_id = incident["id"]
+        data = {}
+
+        if random.random() < 0.3:
+            data["descripcion"] = fake.text(max_nb_chars=MAX_DESCRIPTION)
+
+        if random.random() < 0.5:
+            data["prioridad"] = fake.enum(Prioridad).value
+
+        if random.random() < 0.5:
+            data["estado"] = fake.enum(EstadoIncidente).value
+
+        if random.random() < 0.7:
+            data["responsable_id"] = random.choice(empleados_id)
+
+        if random.random() < 0.4:
+            k = random.randint(1, 4)
+            data["id_config_items"] = random.choices(config_items_id, k=k)
+
+        requests.patch(f"{INCIDENTS_URL}/{incident_id}", json=data, headers=headers)
+
+
 def main():
     headers = get_headers()
     empleados = get_empleados(headers=headers)
     config_items = get_config_items()
+    incidents = get_incidents()
     changes = get_changes()
     problems = get_problems()
-    incidents = get_incidents()
-
-    empleados_id = (empleado["id"] for empleado in empleados)
 
     chaos_config_items(config_items, headers)
+
+    empleados_id = [empleado["id"] for empleado in empleados]
+    config_items_id = [config_item["id"] for config_item in config_items]
+
+    chaos_incidents(incidents, config_items_id, empleados_id, headers)
 
 
 main()
