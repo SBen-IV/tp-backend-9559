@@ -79,6 +79,7 @@ def random_apply(data: dict, key: str, randomizer: Callable, chances: float = 0.
 
 
 def random_descripcion(data: dict):
+    # 0.3 chances because it should be unlikely to change a description
     random_apply(
         data=data,
         key="descripcion",
@@ -94,6 +95,7 @@ def random_prioridad(data: dict):
 
 
 def random_responsable(data: dict, empleados_id: dict):
+    # 0.7 chances to make it likely to set a responsable_id
     random_apply(
         data=data,
         key="responsable_id",
@@ -111,7 +113,6 @@ def random_config_items(data: dict, config_items_id: dict):
         data=data,
         key="config_items_id",
         randomizer=generate_random_config_items,
-        chances=0.4,
     )
 
 
