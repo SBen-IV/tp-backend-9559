@@ -4,7 +4,7 @@ from app.models.incidents import (
     IncidentePulicoConProblemas,
 )
 
-from .changes import CambioPublico, CambioPublicoConItems
+from .changes import CambioPublico, CambioPublicoConItems, CambioPublicoConRelaciones
 from .config_items import (
     ItemConfiguracionPublico,
     ItemConfiguracionPublicoConCambios,
@@ -24,6 +24,7 @@ ItemConfiguracionPublicoConCambios.model_rebuild()
 ItemConfiguracionPublicoConProblemas.model_rebuild()
 ItemConfiguracionPublicoConIncidentes.model_rebuild()
 CambioPublicoConItems.model_rebuild()
+CambioPublicoConRelaciones.model_rebuild()
 CambioPublico.model_rebuild()
 ProblemaPublicoConIncidentes.model_rebuild()
 ProblemaPublicoConItems.model_rebuild()

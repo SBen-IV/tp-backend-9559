@@ -8,6 +8,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.problems import Problema
 from app.models.problems_incidents_link import ProblemaIncidenteLink
+from app.models.changes_incidents_link import CambioIncidenteLink
 
 from .commons import Prioridad
 from .incidents_items_link import IncidenteItemLink
@@ -15,6 +16,7 @@ from .incidents_items_link import IncidenteItemLink
 if TYPE_CHECKING:
     from .config_items import ItemConfiguracion, ItemConfiguracionPublico
     from .problems import Problema, ProblemaPublico
+    from .changes import Cambio
 
 
 class EstadoIncidente(str, Enum):
@@ -73,6 +75,10 @@ class Incidente(IncidenteBase, table=True):
     problemas: list["Problema"] = Relationship(
         back_populates="incidentes", link_model=ProblemaIncidenteLink
     )
+    cambios: list["Cambio"] = Relationship(
+        back_populates="incidentes", link_model=CambioIncidenteLink
+    )
+    
 
 
 class IncidenteActualizar(SQLModel):

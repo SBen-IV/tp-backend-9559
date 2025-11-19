@@ -7,10 +7,11 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
 from .changes_items_link import CambioItemLink
+from .changes_incidents_link import CambioIncidenteLink
 from .commons import Prioridad
 
 if TYPE_CHECKING:
-    from .config_items import ItemConfiguracion, ItemConfiguracionPublico
+    from .config_items import ItemConfiguracion, ItemConfiguracionPublico, Incidente, IncidentePublico
 
 
 class EstadoCambio(str, Enum):
@@ -46,6 +47,7 @@ class CambioCrear(SQLModel):
     owner_id: None | uuid.UUID = Field(default=None)
 
     id_config_items: list[uuid.UUID]
+    id_incidentes: list[uuid.UUID] = Field(default=[])
 
 
 class CambioPublico(CambioBase):
@@ -54,6 +56,14 @@ class CambioPublico(CambioBase):
 
 class CambioPublicoConItems(CambioPublico):
     config_items: list["ItemConfiguracionPublico"] = []
+    
+    
+class CambioPublicoConIncidentes(CambioPublico):
+    incidentes: list["IncidentePublico"] = []
+    
+    
+class CambioPublicoConRelaciones(CambioPublicoConIncidentes, CambioPublicoConItems):
+    pass
 
 
 class Cambio(CambioBase, table=True):
@@ -62,6 +72,9 @@ class Cambio(CambioBase, table=True):
 
     config_items: list["ItemConfiguracion"] = Relationship(
         back_populates="cambios", link_model=CambioItemLink
+    )
+    incidentes: list["Incidente"] = Relationship(
+        back_populates="cambios", link_model=CambioIncidenteLink
     )
 
 
@@ -73,6 +86,9 @@ class CambioActualizar(SQLModel):
     impacto: ImpactoCambio | None = None
     id_config_items: None | list[uuid.UUID] = Field(
         default=None, foreign_key="items_configuracion.id"
+    )
+    id_incidentes: None | list[uuid.UUID] = Field(
+        default=None, foreign_key="incidentes.id"
     )
 
 

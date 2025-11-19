@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 from app.models.auditoria import AuditoriaCrear
+from app.models.incidents import Incidente
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -11,7 +12,7 @@ from app.models.changes import (
     CambioActualizar,
     CambioCrear,
     CambioFilter,
-    CambioPublicoConItems,
+    CambioPublicoConRelaciones,
     EstadoCambio,
 )
 from app.models.commons import Operacion, TipoEntidad
@@ -27,8 +28,14 @@ class CambiosService:
                 ItemConfiguracion.id.in_(cambio_crear.id_config_items)
             )
         ).all()
+        incidentes = session.exec(
+            select(Incidente).where(
+                Incidente.id.in_(cambio_crear.id_incidentes)
+            )
+        ).all()
 
         db_obj.config_items = config_items
+        db_obj.incidentes = incidentes
 
         session.add(db_obj)
         session.commit()
@@ -36,6 +43,7 @@ class CambiosService:
         
         estado_nuevo = db_obj.model_dump(mode='json')
         estado_nuevo["id_config_items"] = [str(item.id) for item in db_obj.config_items]
+        estado_nuevo["id_incidentes"] = [str(incidente.id) for incidente in db_obj.incidentes]
         auditoria_crear = AuditoriaCrear( 
             tipo_entidad = TipoEntidad.CAMBIO,
             id_entidad = db_obj.id,
@@ -49,7 +57,7 @@ class CambiosService:
 
     def get_changes(
         *, session: Session, cambio_filter: CambioFilter
-    ) -> list[CambioPublicoConItems]:
+    ) -> list[CambioPublicoConRelaciones]:
         query = select(Cambio)
 
         if cambio_filter.titulo is not None:
@@ -72,7 +80,7 @@ class CambiosService:
 
     def get_change_by_id(
         *, session: Session, id_change: uuid.UUID
-    ) -> CambioPublicoConItems:
+    ) -> CambioPublicoConRelaciones:
         cambio = session.exec(select(Cambio).where(Cambio.id == id_change)).first()
 
         if not cambio:
@@ -82,7 +90,7 @@ class CambiosService:
 
     def update_change(
         *, session: Session, id_change: uuid.UUID, cambio_actualizar: CambioActualizar
-    ) -> CambioPublicoConItems:
+    ) -> CambioPublicoConRelaciones:
         cambio = CambiosService.get_change_by_id(session=session, id_change=id_change)
 
         if cambio_actualizar.titulo is not None:
@@ -110,6 +118,15 @@ class CambiosService:
             ).all()
 
             cambio.config_items = config_items
+            
+        if cambio_actualizar.id_incidentes is not None:
+            incidentes = session.exec(
+                select(Incidente).where(
+                    Incidente.id.in_(cambio_actualizar.id_incidentes)
+                )
+            ).all()
+
+            cambio.incidentes = incidentes
 
         session.add(cambio)
         session.commit()
@@ -119,7 +136,7 @@ class CambiosService:
 
     def delete_change(
         *, session: Session, id_change: uuid.UUID
-    ) -> CambioPublicoConItems:
+    ) -> CambioPublicoConRelaciones:
         cambio = CambiosService.get_change_by_id(session=session, id_change=id_change)
 
         session.delete(cambio)
@@ -133,7 +150,7 @@ class CambiosService:
         id_change: uuid.UUID,
         id_audit: uuid.UUID,
         current_user_id: uuid.UUID,
-    ) -> CambioPublicoConItems:
+    ) -> CambioPublicoConRelaciones:
         cambio_actual = CambiosService.get_change_by_id(
             session=session, id_change=id_change
         )
