@@ -7,10 +7,11 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
 from .changes_items_link import CambioItemLink
+from .changes_incidents_link import CambioIncidenteLink
 from .commons import Prioridad
 
 if TYPE_CHECKING:
-    from .config_items import ItemConfiguracion, ItemConfiguracionPublico
+    from .config_items import ItemConfiguracion, ItemConfiguracionPublico, Incidente
 
 
 class EstadoCambio(str, Enum):
@@ -54,6 +55,14 @@ class CambioPublico(CambioBase):
 
 class CambioPublicoConItems(CambioPublico):
     config_items: list["ItemConfiguracionPublico"] = []
+    
+    
+class CambioPublicoConIncidentes(CambioPublico):
+    incidentes: list["Cambio"] = []
+    
+    
+class CambioPublicoConRelaciones(CambioPublicoConIncidentes, CambioPublicoConItems):
+    pass
 
 
 class Cambio(CambioBase, table=True):
@@ -62,6 +71,9 @@ class Cambio(CambioBase, table=True):
 
     config_items: list["ItemConfiguracion"] = Relationship(
         back_populates="cambios", link_model=CambioItemLink
+    )
+    incidentes: list["Incidente"] = Relationship(
+        back_populates="cambios", link_model=CambioIncidenteLink
     )
 
 
