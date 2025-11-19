@@ -11,7 +11,7 @@ from .changes_incidents_link import CambioIncidenteLink
 from .commons import Prioridad
 
 if TYPE_CHECKING:
-    from .config_items import ItemConfiguracion, ItemConfiguracionPublico, Incidente
+    from .config_items import ItemConfiguracion, ItemConfiguracionPublico, Incidente, IncidentePublico
 
 
 class EstadoCambio(str, Enum):
@@ -59,7 +59,7 @@ class CambioPublicoConItems(CambioPublico):
     
     
 class CambioPublicoConIncidentes(CambioPublico):
-    incidentes: list["Cambio"] = []
+    incidentes: list["IncidentePublico"] = []
     
     
 class CambioPublicoConRelaciones(CambioPublicoConIncidentes, CambioPublicoConItems):
