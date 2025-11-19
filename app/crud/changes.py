@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from app.models.auditoria import AuditoriaCrear
 from app.models.incidents import Incidente
+from app.models.problems import Problema
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -33,9 +34,15 @@ class CambiosService:
                 Incidente.id.in_(cambio_crear.id_incidentes)
             )
         ).all()
+        problemas = session.exec(
+            select(Problema).where(
+                Problema.id.in_(cambio_crear.id_problemas)
+            )
+        ).all()
 
         db_obj.config_items = config_items
         db_obj.incidentes = incidentes
+        db_obj.problemas = problemas
 
         session.add(db_obj)
         session.commit()
@@ -44,6 +51,7 @@ class CambiosService:
         estado_nuevo = db_obj.model_dump(mode='json')
         estado_nuevo["id_config_items"] = [str(item.id) for item in db_obj.config_items]
         estado_nuevo["id_incidentes"] = [str(incidente.id) for incidente in db_obj.incidentes]
+        estado_nuevo["id_problemas"] = [str(problema.id) for problema in db_obj.problemas]
         auditoria_crear = AuditoriaCrear( 
             tipo_entidad = TipoEntidad.CAMBIO,
             id_entidad = db_obj.id,

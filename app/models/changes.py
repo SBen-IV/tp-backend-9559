@@ -52,6 +52,7 @@ class CambioCrear(SQLModel):
 
     id_config_items: list[uuid.UUID]
     id_incidentes: list[uuid.UUID] = Field(default=[])
+    id_problemas: list[uuid.UUID] = Field(default=[])
 
 
 class CambioPublico(CambioBase):
@@ -65,8 +66,12 @@ class CambioPublicoConItems(CambioPublico):
 class CambioPublicoConIncidentes(CambioPublico):
     incidentes: list["IncidentePublico"] = []
     
+
+class CambioPublicoConProblemas(CambioPublico):
+    problemas: list["ProblemaPublico"] = []    
     
-class CambioPublicoConRelaciones(CambioPublicoConIncidentes, CambioPublicoConItems):
+    
+class CambioPublicoConRelaciones(CambioPublicoConIncidentes, CambioPublicoConItems, CambioPublicoConProblemas):
     pass
 
 

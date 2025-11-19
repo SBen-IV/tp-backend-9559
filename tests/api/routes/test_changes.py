@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 
 from app.models.incidents import Incidente
+from app.models.problems import Problema
 from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -33,6 +34,9 @@ def test_create_new_cambio(
     incidentes = list(session.exec(select(Incidente)))
     id_incidentes = [str(incidente.id) for incidente in incidentes]
 
+    problemas = list(session.exec(select(Problema)))
+    id_problemas = [str(problema.id) for problema in problemas]
+
     data = {
         "titulo": titulo,
         "descripcion": descripcion,
@@ -40,6 +44,7 @@ def test_create_new_cambio(
         "impacto": impacto,
         "id_config_items": id_config_items,
         "id_incidentes": id_incidentes,
+        "id_problemas": id_problemas,
     }
 
     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
@@ -59,10 +64,13 @@ def test_create_new_cambio(
     # is implemented we can check if it's equal
     assert cambio["owner_id"]
     assert cambio["incidentes"]
-    print(cambio['incidentes'])
     assert len(cambio["incidentes"]) == len(incidentes)
     for incidente in cambio["incidentes"]:
         assert incidente["id"] in id_incidentes
+    assert cambio["problemas"]
+    assert len(cambio["problemas"]) == len(problemas)
+    for problema in cambio["problemas"]:
+        assert problema["id"] in id_problemas
 
 
 def test_create_cambio_with_empty_title_returns_error(
@@ -272,12 +280,16 @@ def create_random_cambio(client: TestClient, token_headers: dict[str, str]) -> d
     incidentes = client.get(f"{settings.API_V1_STR}/incidents")
     incidente = incidentes.json()[0]
 
+    problemas = client.get(f"{settings.API_V1_STR}/problems")
+    problema = problemas.json()[0]
+
     titulo = fake.word()
     descripcion = fake.text(max_nb_chars=100)
     prioridad = Prioridad.BAJA
     impacto = ImpactoCambio.MENOR
     id_config_items = [config_item["id"]]
     id_incidentes = [incidente["id"]]
+    id_problemas = [problema["id"]]
 
     data = {
         "titulo": titulo,
@@ -286,6 +298,7 @@ def create_random_cambio(client: TestClient, token_headers: dict[str, str]) -> d
         "impacto": impacto,
         "id_config_items": id_config_items,
         "id_incidentes": id_incidentes,
+        "id_problemas": id_problemas,
     }
 
     r = client.post(BASE_URL, json=data, headers=token_headers)
