@@ -47,6 +47,7 @@ class CambioCrear(SQLModel):
     owner_id: None | uuid.UUID = Field(default=None)
 
     id_config_items: list[uuid.UUID]
+    id_incidentes: list[uuid.UUID] = Field(default=[])
 
 
 class CambioPublico(CambioBase):
