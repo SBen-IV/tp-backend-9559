@@ -4,14 +4,18 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import TYPE_CHECKING
 
+from app.models.problems import Problema
 from sqlmodel import Field, Relationship, SQLModel
 
 from .changes_items_link import CambioItemLink
 from .changes_incidents_link import CambioIncidenteLink
+from .changes_problems_link import CambioProblemaLink
 from .commons import Prioridad
 
 if TYPE_CHECKING:
-    from .config_items import ItemConfiguracion, ItemConfiguracionPublico, Incidente, IncidentePublico
+    from .config_items import ItemConfiguracion, ItemConfiguracionPublico
+    from .incidents import Incidente, IncidentePublico
+    from .problems import Problema, ProblemaPublico
 
 
 class EstadoCambio(str, Enum):
@@ -75,6 +79,9 @@ class Cambio(CambioBase, table=True):
     )
     incidentes: list["Incidente"] = Relationship(
         back_populates="cambios", link_model=CambioIncidenteLink
+    )
+    problemas: list["Problema"] = Relationship(
+        back_populates="cambios", link_model=CambioProblemaLink
     )
 
 
