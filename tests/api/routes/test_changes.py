@@ -1,6 +1,7 @@
 # ruff: noqa: ARG001
 from datetime import datetime, timezone
 
+from app.models.incidents import Incidente
 from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -28,6 +29,9 @@ def test_create_new_cambio(
 
     config_items = session.exec(select(ItemConfiguracion))
     id_config_items = [str(config_item.id) for config_item in config_items]
+    
+    incidentes = list(session.exec(select(Incidente)))
+    id_incidentes = [str(incidente.id) for incidente in incidentes]
 
     data = {
         "titulo": titulo,
@@ -35,6 +39,7 @@ def test_create_new_cambio(
         "prioridad": prioridad,
         "impacto": impacto,
         "id_config_items": id_config_items,
+        "id_incidentes": id_incidentes,
     }
 
     r = client.post(BASE_URL, json=data, headers=empleado_token_headers)
@@ -53,6 +58,11 @@ def test_create_new_cambio(
     # Just check that `owner_id` is present, maybe if a get user
     # is implemented we can check if it's equal
     assert cambio["owner_id"]
+    assert cambio["incidentes"]
+    print(cambio['incidentes'])
+    assert len(cambio["incidentes"]) == len(incidentes)
+    for incidente in cambio["incidentes"]:
+        assert incidente["id"] in id_incidentes
 
 
 def test_create_cambio_with_empty_title_returns_error(
