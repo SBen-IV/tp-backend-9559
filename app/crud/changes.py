@@ -118,6 +118,15 @@ class CambiosService:
             ).all()
 
             cambio.config_items = config_items
+            
+        if cambio_actualizar.id_incidentes is not None:
+            incidentes = session.exec(
+                select(Incidente).where(
+                    Incidente.id.in_(cambio_actualizar.id_incidentes)
+                )
+            ).all()
+
+            cambio.incidentes = incidentes
 
         session.add(cambio)
         session.commit()
