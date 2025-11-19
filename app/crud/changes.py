@@ -135,6 +135,15 @@ class CambiosService:
             ).all()
 
             cambio.incidentes = incidentes
+            
+        if cambio_actualizar.id_problemas is not None:
+            problemas = session.exec(
+                select(Problema).where(
+                    Problema.id.in_(cambio_actualizar.id_problemas)
+                )
+            ).all()
+
+            cambio.problemas = problemas
 
         session.add(cambio)
         session.commit()

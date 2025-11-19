@@ -102,6 +102,9 @@ class CambioActualizar(SQLModel):
     id_incidentes: None | list[uuid.UUID] = Field(
         default=None, foreign_key="incidentes.id"
     )
+    id_problemas: None | list[uuid.UUID] = Field(
+        default=None, foreign_key="problemas.id"
+    )
 
 
 @dataclass

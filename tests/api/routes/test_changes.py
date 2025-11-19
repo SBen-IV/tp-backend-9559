@@ -332,6 +332,7 @@ def test_update_change_titulo(
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
     assert cambio["incidentes"][0]["id"] == cambio_created["incidentes"][0]["id"]
+    assert cambio["problemas"][0]["id"] == cambio_created["problemas"][0]["id"]
 
 
 def test_update_change_descripcion(
@@ -455,6 +456,43 @@ def test_update_change_config_items(
     assert change["config_items"][0]["id"] == id_config_items[0]
     assert change["incidentes"][0]["id"] == cambio_created["incidentes"][0]["id"]
     
+def test_update_change_problems(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Given a cambio
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    r = client.get(f"{settings.API_V1_STR}/problems")
+
+    # Pick the last one so that it's different from the original attached
+    problemas = r.json()[-1]
+
+    id_problemas = [str(problemas["id"])]
+
+    data = {"id_problemas": id_problemas}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    change = r.json()
+
+    assert change
+    assert change["titulo"] == cambio_created["titulo"]
+    assert change["descripcion"] == cambio_created["descripcion"]
+    assert change["prioridad"] == cambio_created["prioridad"]
+    assert change["impacto"] == cambio_created["impacto"]
+    assert change["fecha_creacion"] == cambio_created["fecha_creacion"]
+    assert change["owner_id"] == cambio_created["owner_id"]
+    assert change["incidentes"][0]["id"] == cambio_created["incidentes"][0]["id"]
+    assert change["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
+    assert change["problemas"][0]["id"] != cambio_created["problemas"][0]["id"]
+    assert change["problemas"][0]["id"] == problemas["id"]
+
 def test_update_change_incidents(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
