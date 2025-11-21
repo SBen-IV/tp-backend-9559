@@ -94,34 +94,7 @@ def populate_db(session: Session) -> None:
                 session.add(new_incidente)
 
     session.commit()
-
-    id_incidentes = [
-        incidente.id for incidente in session.exec(select(Incidente)).all()
-    ]
-
-    cambios = [cambio.titulo for cambio in session.exec(select(Cambio)).all()]
-
-    for cambio in seed_cambios:
-        if cambio.titulo not in cambios:
-            cambio.owner_id = usuario.id
-
-            if automated_test:
-                cambio.id_config_items = [id_items_config[0]]
-                cambio.id_incidentes = [id_incidentes[0]]
-            else:
-                cambio.id_config_items = [random.choice(id_items_config)]
-                cambio.id_incidentes = [random.choice(id_incidentes)]
-
-            new_cambio = CambiosService.create_cambio(
-                session=session, cambio_crear=cambio, current_user_id=usuario.id
-            )
-
-            if not automated_test:
-                new_cambio.fecha_creacion = fake.date_time_between(start_date="-30d")
-                session.add(new_cambio)
-
-    session.commit()
-
+    
     problemas = [problema.titulo for problema in session.exec(select(Problema)).all()]
     id_incidentes = [
         incidente.id for incidente in session.exec(select(Incidente)).all()
@@ -145,6 +118,38 @@ def populate_db(session: Session) -> None:
             if not automated_test:
                 new_problema.fecha_creacion = fake.date_time_between(start_date="-30d")
                 session.add(new_problema)
+
+    session.commit()
+
+    id_incidentes = [
+        incidente.id for incidente in session.exec(select(Incidente)).all()
+    ]
+    id_problemas = [
+        problema.id for problema in session.exec(select(Problema)).all()
+    ]
+
+    cambios = [cambio.titulo for cambio in session.exec(select(Cambio)).all()]
+
+    for cambio in seed_cambios:
+        if cambio.titulo not in cambios:
+            cambio.owner_id = usuario.id
+
+            if automated_test:
+                cambio.id_config_items = [id_items_config[0]]
+                cambio.id_incidentes = [id_incidentes[0]]
+                cambio.id_problemas = [id_problemas[0]]
+            else:
+                cambio.id_config_items = [random.choice(id_items_config)]
+                cambio.id_incidentes = [random.choice(id_incidentes)]
+                cambio.id_problemas = [random.choice(id_problemas)]
+
+            new_cambio = CambiosService.create_cambio(
+                session=session, cambio_crear=cambio, current_user_id=usuario.id
+            )
+
+            if not automated_test:
+                new_cambio.fecha_creacion = fake.date_time_between(start_date="-30d")
+                session.add(new_cambio)
 
     session.commit()
 

@@ -4,14 +4,18 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import TYPE_CHECKING
 
+from app.models.problems import Problema
 from sqlmodel import Field, Relationship, SQLModel
 
 from .changes_items_link import CambioItemLink
 from .changes_incidents_link import CambioIncidenteLink
+from .changes_problems_link import CambioProblemaLink
 from .commons import Prioridad
 
 if TYPE_CHECKING:
-    from .config_items import ItemConfiguracion, ItemConfiguracionPublico, Incidente, IncidentePublico
+    from .config_items import ItemConfiguracion, ItemConfiguracionPublico
+    from .incidents import Incidente, IncidentePublico
+    from .problems import Problema, ProblemaPublico
 
 
 class EstadoCambio(str, Enum):
@@ -48,6 +52,7 @@ class CambioCrear(SQLModel):
 
     id_config_items: list[uuid.UUID]
     id_incidentes: list[uuid.UUID] = Field(default=[])
+    id_problemas: list[uuid.UUID] = Field(default=[])
 
 
 class CambioPublico(CambioBase):
@@ -61,8 +66,12 @@ class CambioPublicoConItems(CambioPublico):
 class CambioPublicoConIncidentes(CambioPublico):
     incidentes: list["IncidentePublico"] = []
     
+
+class CambioPublicoConProblemas(CambioPublico):
+    problemas: list["ProblemaPublico"] = []    
     
-class CambioPublicoConRelaciones(CambioPublicoConIncidentes, CambioPublicoConItems):
+    
+class CambioPublicoConRelaciones(CambioPublicoConIncidentes, CambioPublicoConItems, CambioPublicoConProblemas):
     pass
 
 
@@ -75,6 +84,9 @@ class Cambio(CambioBase, table=True):
     )
     incidentes: list["Incidente"] = Relationship(
         back_populates="cambios", link_model=CambioIncidenteLink
+    )
+    problemas: list["Problema"] = Relationship(
+        back_populates="cambios", link_model=CambioProblemaLink
     )
 
 
@@ -89,6 +101,9 @@ class CambioActualizar(SQLModel):
     )
     id_incidentes: None | list[uuid.UUID] = Field(
         default=None, foreign_key="incidentes.id"
+    )
+    id_problemas: None | list[uuid.UUID] = Field(
+        default=None, foreign_key="problemas.id"
     )
 
 
