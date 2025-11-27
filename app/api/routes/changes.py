@@ -1,22 +1,21 @@
 import uuid
 
-from app.crud.audits import AuditoriaService
-from app.models.auditoria import Auditoria, AuditoriaCrear, AuditoriaFilter
-from app.models.commons import Operacion, TipoEntidad
 from fastapi import APIRouter, HTTPException
 from fastapi.encoders import jsonable_encoder
 
 from app.api.deps import CurrentUser, SessionDep
+from app.crud.audits import AuditoriaService
 from app.crud.changes import CambiosService as crud
+from app.models.auditoria import Auditoria, AuditoriaCrear, AuditoriaFilter
 from app.models.changes import (
     CambioActualizar,
     CambioCrear,
     CambioFilter,
-    CambioPublicoConItems,
     CambioPublicoConRelaciones,
     EstadoCambio,
     Prioridad,
 )
+from app.models.commons import Operacion, TipoEntidad
 from app.models.users import Rol
 
 router = APIRouter(prefix="/changes")
@@ -30,7 +29,9 @@ async def create_change(
         cambio_in, update={"owner_id": current_user.id}
     )
 
-    cambio = crud.create_cambio(session=session, cambio_crear=cambio_crear, current_user_id=current_user.id)
+    cambio = crud.create_cambio(
+        session=session, cambio_crear=cambio_crear, current_user_id=current_user.id
+    )
 
     return cambio
 
@@ -66,19 +67,23 @@ async def update_change(
     cambio = crud.update_change(
         session=session, id_change=id_change, cambio_actualizar=cambio_actualizar
     )
-    
-    estado_nuevo = cambio.model_dump(mode='json')
+
+    estado_nuevo = cambio.model_dump(mode="json")
     estado_nuevo["id_config_items"] = [str(item.id) for item in cambio.config_items]
-    estado_nuevo["id_incidentes"] = [str(incidente.id) for incidente in cambio.incidentes]
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.CAMBIO,
-        id_entidad = cambio.id,
-        operacion = Operacion.ACTUALIZAR,
-        estado_nuevo = estado_nuevo,
-        actualizado_por = current_user.id
+    estado_nuevo["id_incidentes"] = [
+        str(incidente.id) for incidente in cambio.incidentes
+    ]
+    auditoria_crear = AuditoriaCrear(
+        tipo_entidad=TipoEntidad.CAMBIO,
+        id_entidad=cambio.id,
+        operacion=Operacion.ACTUALIZAR,
+        estado_nuevo=estado_nuevo,
+        actualizado_por=current_user.id,
     )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
-    
+    AuditoriaService.registrar_operacion(
+        session=session, auditoria_crear=auditoria_crear
+    )
+
     return cambio
 
 
@@ -91,37 +96,50 @@ async def delete_change(
             status_code=401, detail="Sólo empleados pueden eliminar un cambio"
         )
 
-    cambio =  crud.delete_change(session=session, id_change=id_change)
-    
-    auditoria_crear = AuditoriaCrear( 
-        tipo_entidad = TipoEntidad.CAMBIO,
-        id_entidad = cambio.id,
-        operacion = Operacion.ELIMINAR,
-        estado_nuevo = jsonable_encoder(cambio),
-        actualizado_por = current_user.id
+    cambio = crud.delete_change(session=session, id_change=id_change)
+
+    auditoria_crear = AuditoriaCrear(
+        tipo_entidad=TipoEntidad.CAMBIO,
+        id_entidad=cambio.id,
+        operacion=Operacion.ELIMINAR,
+        estado_nuevo=jsonable_encoder(cambio),
+        actualizado_por=current_user.id,
     )
-    AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
-    
+    AuditoriaService.registrar_operacion(
+        session=session, auditoria_crear=auditoria_crear
+    )
+
     return cambio
 
+
 @router.get("/{id_change}/history", response_model=list[Auditoria])
-async def get_history(session: SessionDep, current_user: CurrentUser, id_change: uuid.UUID
+async def get_history(
+    session: SessionDep, current_user: CurrentUser, id_change: uuid.UUID
 ) -> list[Auditoria]:
-    auditoria_filter = AuditoriaFilter(tipo_entidad=TipoEntidad.CAMBIO, id_entidad=id_change)
-    
-    return AuditoriaService.get_audits(session=session, auditoria_filter=auditoria_filter)
+    auditoria_filter = AuditoriaFilter(
+        tipo_entidad=TipoEntidad.CAMBIO, id_entidad=id_change
+    )
+
+    return AuditoriaService.get_audits(
+        session=session, auditoria_filter=auditoria_filter
+    )
 
 
 @router.post("/{id_change}/rollback", response_model=CambioPublicoConRelaciones)
-async def rollback_change(session: SessionDep, current_user: CurrentUser, id_change: uuid.UUID, id_auditoria: uuid.UUID
+async def rollback_change(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id_change: uuid.UUID,
+    id_auditoria: uuid.UUID,
 ) -> CambioPublicoConRelaciones:
     cambio = crud.get_change_by_id(session=session, id_change=id_change)
-    
+
     cambio_rollback = crud.rollback_change(
-        session=session, 
-        id_change=id_change, 
+        session=session,
+        id_change=id_change,
         id_audit=id_auditoria,
-        current_user_id=current_user.id
+        current_user_id=current_user.id,
     )
-    
+
     return cambio_rollback
+

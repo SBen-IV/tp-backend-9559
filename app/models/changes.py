@@ -4,11 +4,12 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from app.models.problems import Problema
 from sqlmodel import Field, Relationship, SQLModel
 
-from .changes_items_link import CambioItemLink
+from app.models.problems import Problema
+
 from .changes_incidents_link import CambioIncidenteLink
+from .changes_items_link import CambioItemLink
 from .changes_problems_link import CambioProblemaLink
 from .commons import Prioridad
 
@@ -41,6 +42,7 @@ class CambioBase(SQLModel):
     fecha_creacion: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     owner_id: None | uuid.UUID = Field(foreign_key="usuarios.id")
     fecha_cierre: datetime | None = Field(default=None)
+    responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
 
 
 class CambioCrear(SQLModel):
@@ -61,17 +63,19 @@ class CambioPublico(CambioBase):
 
 class CambioPublicoConItems(CambioPublico):
     config_items: list["ItemConfiguracionPublico"] = []
-    
-    
+
+
 class CambioPublicoConIncidentes(CambioPublico):
     incidentes: list["IncidentePublico"] = []
-    
+
 
 class CambioPublicoConProblemas(CambioPublico):
-    problemas: list["ProblemaPublico"] = []    
-    
-    
-class CambioPublicoConRelaciones(CambioPublicoConIncidentes, CambioPublicoConItems, CambioPublicoConProblemas):
+    problemas: list["ProblemaPublico"] = []
+
+
+class CambioPublicoConRelaciones(
+    CambioPublicoConIncidentes, CambioPublicoConItems, CambioPublicoConProblemas
+):
     pass
 
 
@@ -96,6 +100,7 @@ class CambioActualizar(SQLModel):
     prioridad: Prioridad | None = None
     estado: EstadoCambio | None = None
     impacto: ImpactoCambio | None = None
+    responsable_id: None | uuid.UUID = Field(default=None, foreign_key="usuarios.id")
     id_config_items: None | list[uuid.UUID] = Field(
         default=None, foreign_key="items_configuracion.id"
     )

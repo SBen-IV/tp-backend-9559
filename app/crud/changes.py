@@ -1,13 +1,11 @@
 import uuid
 from datetime import datetime, timezone
 
-from app.models.auditoria import AuditoriaCrear
-from app.models.incidents import Incidente
-from app.models.problems import Problema
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.crud.audits import AuditoriaService
+from app.models.auditoria import AuditoriaCrear
 from app.models.changes import (
     Cambio,
     CambioActualizar,
@@ -18,10 +16,14 @@ from app.models.changes import (
 )
 from app.models.commons import Operacion, TipoEntidad
 from app.models.config_items import ItemConfiguracion
+from app.models.incidents import Incidente
+from app.models.problems import Problema
 
 
 class CambiosService:
-    def create_cambio(*, session: Session, cambio_crear: CambioCrear, current_user_id: uuid) -> Cambio:
+    def create_cambio(
+        *, session: Session, cambio_crear: CambioCrear, current_user_id: uuid
+    ) -> Cambio:
         db_obj = Cambio.model_validate(cambio_crear)
 
         config_items = session.exec(
@@ -30,14 +32,10 @@ class CambiosService:
             )
         ).all()
         incidentes = session.exec(
-            select(Incidente).where(
-                Incidente.id.in_(cambio_crear.id_incidentes)
-            )
+            select(Incidente).where(Incidente.id.in_(cambio_crear.id_incidentes))
         ).all()
         problemas = session.exec(
-            select(Problema).where(
-                Problema.id.in_(cambio_crear.id_problemas)
-            )
+            select(Problema).where(Problema.id.in_(cambio_crear.id_problemas))
         ).all()
 
         db_obj.config_items = config_items
@@ -47,19 +45,25 @@ class CambiosService:
         session.add(db_obj)
         session.commit()
         session.refresh(db_obj)
-        
-        estado_nuevo = db_obj.model_dump(mode='json')
+
+        estado_nuevo = db_obj.model_dump(mode="json")
         estado_nuevo["id_config_items"] = [str(item.id) for item in db_obj.config_items]
-        estado_nuevo["id_incidentes"] = [str(incidente.id) for incidente in db_obj.incidentes]
-        estado_nuevo["id_problemas"] = [str(problema.id) for problema in db_obj.problemas]
-        auditoria_crear = AuditoriaCrear( 
-            tipo_entidad = TipoEntidad.CAMBIO,
-            id_entidad = db_obj.id,
-            operacion = Operacion.CREAR,
-            estado_nuevo = estado_nuevo,
-            actualizado_por = current_user_id
+        estado_nuevo["id_incidentes"] = [
+            str(incidente.id) for incidente in db_obj.incidentes
+        ]
+        estado_nuevo["id_problemas"] = [
+            str(problema.id) for problema in db_obj.problemas
+        ]
+        auditoria_crear = AuditoriaCrear(
+            tipo_entidad=TipoEntidad.CAMBIO,
+            id_entidad=db_obj.id,
+            operacion=Operacion.CREAR,
+            estado_nuevo=estado_nuevo,
+            actualizado_por=current_user_id,
         )
-        AuditoriaService.registrar_operacion(session=session, auditoria_crear=auditoria_crear)
+        AuditoriaService.registrar_operacion(
+            session=session, auditoria_crear=auditoria_crear
+        )
 
         return db_obj
 
@@ -126,7 +130,7 @@ class CambiosService:
             ).all()
 
             cambio.config_items = config_items
-            
+
         if cambio_actualizar.id_incidentes is not None:
             incidentes = session.exec(
                 select(Incidente).where(
@@ -135,15 +139,16 @@ class CambiosService:
             ).all()
 
             cambio.incidentes = incidentes
-            
+
         if cambio_actualizar.id_problemas is not None:
             problemas = session.exec(
-                select(Problema).where(
-                    Problema.id.in_(cambio_actualizar.id_problemas)
-                )
+                select(Problema).where(Problema.id.in_(cambio_actualizar.id_problemas))
             ).all()
 
             cambio.problemas = problemas
+
+        if cambio_actualizar.responsable_id is not None:
+            cambio.responsable_id = cambio_actualizar.responsable_id
 
         session.add(cambio)
         session.commit()
