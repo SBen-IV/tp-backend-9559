@@ -1,8 +1,6 @@
 # ruff: noqa: ARG001
 from datetime import datetime, timezone
 
-from app.models.incidents import Incidente
-from app.models.problems import Problema
 from faker import Faker
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -10,6 +8,9 @@ from sqlmodel import Session, select
 from app.models.changes import EstadoCambio, ImpactoCambio, Prioridad
 from app.models.commons import Operacion, TipoEntidad
 from app.models.config_items import ItemConfiguracion
+from app.models.incidents import Incidente
+from app.models.problems import Problema
+from app.models.users import Usuario
 from app.utils.config import settings
 
 Faker.seed(0)
@@ -30,7 +31,7 @@ def test_create_new_cambio(
 
     config_items = session.exec(select(ItemConfiguracion))
     id_config_items = [str(config_item.id) for config_item in config_items]
-    
+
     incidentes = list(session.exec(select(Incidente)))
     id_incidentes = [str(incidente.id) for incidente in incidentes]
 
@@ -276,7 +277,7 @@ def test_get_change_by_id(
 def create_random_cambio(client: TestClient, token_headers: dict[str, str]) -> dict:
     config_items = client.get(f"{settings.API_V1_STR}/config-items")
     config_item = config_items.json()[0]
-    
+
     incidentes = client.get(f"{settings.API_V1_STR}/incidents")
     incidente = incidentes.json()[0]
 
@@ -363,6 +364,7 @@ def test_update_change_descripcion(
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
     assert cambio["incidentes"][0]["id"] == cambio_created["incidentes"][0]["id"]
 
+
 def test_update_change_prioridad(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
@@ -390,6 +392,7 @@ def test_update_change_prioridad(
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
     assert cambio["incidentes"][0]["id"] == cambio_created["incidentes"][0]["id"]
+
 
 def test_update_change_estado(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
@@ -419,6 +422,7 @@ def test_update_change_estado(
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
     assert cambio["incidentes"][0]["id"] == cambio_created["incidentes"][0]["id"]
+
 
 def test_update_change_config_items(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
@@ -455,7 +459,8 @@ def test_update_change_config_items(
     assert change["config_items"][0]["id"] != cambio_created["config_items"][0]["id"]
     assert change["config_items"][0]["id"] == id_config_items[0]
     assert change["incidentes"][0]["id"] == cambio_created["incidentes"][0]["id"]
-    
+
+
 def test_update_change_problems(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
@@ -493,6 +498,7 @@ def test_update_change_problems(
     assert change["problemas"][0]["id"] != cambio_created["problemas"][0]["id"]
     assert change["problemas"][0]["id"] == problemas["id"]
 
+
 def test_update_change_incidents(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
@@ -529,6 +535,7 @@ def test_update_change_incidents(
     assert change["incidentes"][0]["id"] == incidentes["id"]
     assert change["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
 
+
 def test_update_change_impacto(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
@@ -557,6 +564,40 @@ def test_update_change_impacto(
     assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
     assert cambio["owner_id"] == cambio_created["owner_id"]
     assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
+
+
+def test_update_change_responsable_id(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    # Get any user
+    usuario = session.exec(select(Usuario)).first()
+
+    # Given a cambio
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    data = {"responsable_id": str(usuario.id)}
+
+    # When the user edits it
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}", json=data, headers=empleado_token_headers
+    )
+
+    # Then the cambio is persisted
+    assert 200 <= r.status_code < 300
+
+    cambio = r.json()
+
+    assert cambio
+    assert cambio["titulo"] == cambio_created["titulo"]
+    assert cambio["descripcion"] == cambio_created["descripcion"]
+    assert cambio["prioridad"] == cambio_created["prioridad"]
+    assert cambio["impacto"] == cambio_created["impacto"]
+    assert cambio["estado"] == cambio_created["estado"]
+    assert cambio["fecha_creacion"] == cambio_created["fecha_creacion"]
+    assert cambio["owner_id"] == cambio_created["owner_id"]
+    assert cambio["config_items"][0]["id"] == cambio_created["config_items"][0]["id"]
+    assert cambio["responsable_id"] is not None
+    assert cambio["responsable_id"] != cambio_created["responsable_id"]
 
 
 def test_delete_change(
