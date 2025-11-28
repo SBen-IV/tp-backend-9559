@@ -104,15 +104,32 @@ def random_responsable(data: dict, empleados_id: dict):
     )
 
 
-def random_config_items(data: dict, config_items_id: dict):
-    def generate_random_config_items():
-        k = random.randint(1, 4)
-        return random.choices(config_items_id, k=k)
+def generate_random_id_choices(data_id: dict, min_rand: int = 1, max_rand: int = 4):
+    k = random.randint(min_rand, max_rand)
+    return random.choices(data_id, k=k)
 
+
+def random_config_items(data: dict, config_items_id: dict):
     random_apply(
         data=data,
-        key="config_items_id",
-        randomizer=generate_random_config_items,
+        key="id_config_items",
+        randomizer=lambda: generate_random_id_choices(config_items_id),
+    )
+
+
+def random_problemas(data: dict, problems_id: dict):
+    random_apply(
+        data=data,
+        key="id_problemas",
+        randomizer=lambda: generate_random_id_choices(problems_id, max_rand=2),
+    )
+
+
+def random_incidentes(data: dict, incidents_id: dict):
+    random_apply(
+        data=data,
+        key="id_incidentes",
+        randomizer=lambda: generate_random_id_choices(incidents_id, max_rand=2),
     )
 
 
@@ -129,9 +146,12 @@ def chaos_config_items(config_items, headers):
         if len(data.keys()) == 0:
             continue
 
-        requests.patch(
+        r = requests.patch(
             f"{CONFIG_ITEMS_URL}/{config_item_id}", json=data, headers=headers
         )
+
+        if r.status_code >= 400:
+            print("[config items] ", r.json())
 
 
 def chaos_incidents(incidents, config_items_id, empleados_id, headers):
@@ -150,10 +170,15 @@ def chaos_incidents(incidents, config_items_id, empleados_id, headers):
         if len(data.keys()) == 0:
             continue
 
-        requests.patch(f"{INCIDENTS_URL}/{incident_id}", json=data, headers=headers)
+        r = requests.patch(f"{INCIDENTS_URL}/{incident_id}", json=data, headers=headers)
+
+        if r.status_code >= 400:
+            print("[incidents]: ", r.json())
 
 
-def chaos_changes(changes, config_items_id, headers):
+def chaos_changes(
+    changes, incidents_id, problems_id, config_items_id, empleados_id, headers
+):
     for _ in range(MAX_UPDATES):
         change = random.choice(changes)
         change_id = change["id"]
@@ -164,12 +189,18 @@ def chaos_changes(changes, config_items_id, headers):
         random_apply(data, "impacto", lambda: fake.enum(ImpactoCambio).value)
         random_apply(data, "estado", lambda: fake.enum(EstadoCambio).value)
         random_config_items(data, config_items_id)
+        random_problemas(data, problems_id)
+        random_incidentes(data, incidents_id)
+        random_responsable(data, empleados_id)
 
         # Skip if there's no update
         if len(data.keys()) == 0:
             continue
 
-        requests.patch(f"{CHANGES_URL}/{change_id}", json=data, headers=headers)
+        r = requests.patch(f"{CHANGES_URL}/{change_id}", json=data, headers=headers)
+
+        if r.status_code >= 400:
+            print("[changes] ", r.json())
 
 
 def chaos_problems(problems, incidents_id, config_items_id, empleados_id, headers):
@@ -182,14 +213,18 @@ def chaos_problems(problems, incidents_id, config_items_id, empleados_id, header
         random_prioridad(data)
         random_apply(data, "estado", lambda: fake.enum(EstadoProblema).value)
         random_responsable(data, empleados_id)
-        random_apply(data, "id_incidentes", lambda: random.choice(incidents_id))
+        # random_apply(data, "id_incidentes", lambda: random.choice(incidents_id))
+        random_incidentes(data, incidents_id)
         random_config_items(data, config_items_id)
 
         # Skip if there's no update
         if len(data.keys()) == 0:
             continue
 
-        requests.patch(f"{PROBLEMS_URL}/{problem_id}", json=data, headers=headers)
+        r = requests.patch(f"{PROBLEMS_URL}/{problem_id}", json=data, headers=headers)
+
+        if r.status_code >= 400:
+            print("[problems] ", r.json())
 
 
 def main():
@@ -200,17 +235,38 @@ def main():
     changes = get_changes()
     problems = get_problems()
 
-    chaos_config_items(config_items, headers)
+    chaos_config_items(config_items=config_items, headers=headers)
 
     empleados_id = [empleado["id"] for empleado in empleados]
     config_items_id = [config_item["id"] for config_item in config_items]
 
-    chaos_incidents(incidents, config_items_id, empleados_id, headers)
-    chaos_changes(changes, config_items_id, headers)
+    chaos_incidents(
+        incidents=incidents,
+        config_items_id=config_items_id,
+        empleados_id=empleados_id,
+        headers=headers,
+    )
 
     incidents_id = [incident["id"] for incident in incidents]
 
-    chaos_problems(problems, incidents_id, config_items_id, empleados_id, headers)
+    chaos_problems(
+        problems=problems,
+        incidents_id=incidents_id,
+        config_items_id=config_items_id,
+        empleados_id=empleados_id,
+        headers=headers,
+    )
+
+    problems_id = [problem["id"] for problem in problems]
+
+    chaos_changes(
+        changes=changes,
+        incidents_id=incidents_id,
+        problems_id=problems_id,
+        config_items_id=config_items_id,
+        empleados_id=empleados_id,
+        headers=headers,
+    )
 
 
 main()
