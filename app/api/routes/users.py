@@ -27,6 +27,11 @@ async def register_user(
     return usuario
 
 
+@router.get("/me", response_model=UsuarioPublico)
+async def get_current_user(current_user: CurrentUser) -> UsuarioPublico:
+    return current_user
+
+
 @router.get("", response_model=list[UsuarioPublico])
 async def get_usuarios(
     session: SessionDep, current_user: CurrentUser, rol: Rol | None = None
