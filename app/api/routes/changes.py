@@ -73,6 +73,7 @@ async def update_change(
     estado_nuevo["id_incidentes"] = [
         str(incidente.id) for incidente in cambio.incidentes
     ]
+    estado_nuevo["id_problemas"] = [str(problema.id) for problema in cambio.problemas]
     auditoria_crear = AuditoriaCrear(
         tipo_entidad=TipoEntidad.CAMBIO,
         id_entidad=cambio.id,
@@ -142,4 +143,3 @@ async def rollback_change(
     )
 
     return cambio_rollback
-
