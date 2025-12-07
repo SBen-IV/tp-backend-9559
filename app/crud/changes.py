@@ -54,6 +54,8 @@ class CambiosService:
         estado_nuevo["id_problemas"] = [
             str(problema.id) for problema in db_obj.problemas
         ]
+        estado_nuevo["responsable_id"] = None
+
         auditoria_crear = AuditoriaCrear(
             tipo_entidad=TipoEntidad.CAMBIO,
             id_entidad=db_obj.id,
@@ -196,14 +198,37 @@ class CambiosService:
         cambio_actual.prioridad = estado_anterior["prioridad"]
         cambio_actual.estado = estado_anterior["estado"]
         cambio_actual.fecha_cierre = estado_anterior["fecha_cierre"]
+        cambio_actual.responsable_id = estado_anterior["responsable_id"]
 
         id_config_items = [
             uuid.UUID(id_item) for id_item in estado_anterior["id_config_items"]
         ]
+
         config_items = session.exec(
             select(ItemConfiguracion).where(ItemConfiguracion.id.in_(id_config_items))
         ).all()
+
         cambio_actual.config_items = config_items
+
+        id_incidentes = [
+            uuid.UUID(id_incidente) for id_incidente in estado_anterior["id_incidentes"]
+        ]
+
+        incidentes = session.exec(
+            select(Incidente).where(Incidente.id.in_(id_incidentes))
+        ).all()
+
+        cambio_actual.incidentes = incidentes
+
+        id_problemas = [
+            uuid.UUID(id_problema) for id_problema in estado_anterior["id_problemas"]
+        ]
+
+        problemas = session.exec(
+            select(Problema).where(Problema.id.in_(id_problemas))
+        ).all()
+
+        cambio_actual.problemas = problemas
 
         session.add(cambio_actual)
         session.commit()
