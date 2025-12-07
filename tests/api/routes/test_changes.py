@@ -985,3 +985,67 @@ def test_rollback_change_incidentes(
     assert len(cambio_rollback["incidentes"]) == len(update_1["id_incidentes"])
     for i in range(len(update_1["id_incidentes"])):
         assert cambio_rollback["incidentes"][i]["id"] == update_1["id_incidentes"][i]
+
+
+def test_rollback_change_problemas(
+    client: TestClient, session: Session, empleado_token_headers: dict[str, str]
+) -> None:
+    problemas = session.exec(select(Problema).limit(2)).all()
+
+    # Given a change
+    cambio_created = create_random_cambio(client, empleado_token_headers)
+
+    update_1 = {"id_problemas": [str(problemas[0].id)]}
+    update_2 = {"id_problemas": [str(problemas[1].id)]}
+
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}",
+        json=update_1,
+        headers=empleado_token_headers,
+    )
+
+    assert 200 <= r.status_code < 300
+
+    r = client.patch(
+        f"{BASE_URL}/{cambio_created['id']}",
+        json=update_2,
+        headers=empleado_token_headers,
+    )
+
+    assert 200 <= r.status_code < 300
+
+    # When the user gets the change history
+    r = client.get(
+        f"{BASE_URL}/{cambio_created['id']}/history", headers=empleado_token_headers
+    )
+
+    assert 200 <= r.status_code < 300
+
+    auditorias = r.json()
+    assert auditorias
+
+    # It should return the CREAR and 2 ACTUALIZAR audits
+    assert len(auditorias) == 3
+
+    # We pick the first update done
+    auditoria_crear = auditorias[1]
+
+    assert auditoria_crear["operacion"] == Operacion.ACTUALIZAR
+
+    # When the user rollbacks the change to when it was first updated
+    r = client.post(
+        f"{BASE_URL}/{cambio_created['id']}/rollback",
+        params={"id_auditoria": auditoria_crear["id"]},
+        headers=empleado_token_headers,
+    )
+
+    assert 200 <= r.status_code < 300
+
+    cambio_rollback = r.json()
+
+    # It should return to the state of its first update
+    assert cambio_rollback
+    assert cambio_rollback["id"] == cambio_created["id"]
+    assert len(cambio_rollback["problemas"]) == len(update_1["id_problemas"])
+    for i in range(len(update_1["id_problemas"])):
+        assert cambio_rollback["problemas"][i]["id"] == update_1["id_problemas"][i]
