@@ -226,7 +226,7 @@ def test_create_user_validate_password_too_long(
     assert details["field"] == "contraseña"
 
 
-def test_get_users_me(
+def test_get_users_me_ok(
     client: TestClient, session: Session, empleado_token_headers: dict[str, str]
 ) -> None:
     # Get the user from token headers
@@ -244,3 +244,10 @@ def test_get_users_me(
     assert user_data["email"] == usuario.email
     assert user_data["rol"] == usuario.rol
     assert user_data["id"] == str(usuario.id)
+
+
+def test_get_users_me_error(client: TestClient, session: Session) -> None:
+    # If no headers provided return error
+    r = client.get(f"{BASE_URL}/me")
+
+    assert 400 <= r.status_code < 500
